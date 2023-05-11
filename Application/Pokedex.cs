@@ -12,7 +12,7 @@ namespace autoteambuilder
     {
         private List<Pokemon> pokemonList = new List<Pokemon>();
 
-        public Pokedex(StringReader reader) 
+        public Pokedex(StringReader reader)
         {
             if (reader == null)
                 return;
@@ -37,15 +37,17 @@ namespace autoteambuilder
                 Pokemon pokemon = new(pokedexNum, name, type1, type2, variant);
 
                 // Add the Pokemon to the list
-                pokemonList.Add(pokemon);
+                PokemonList.Add(pokemon);
             }
         }
+
+        internal List<Pokemon> PokemonList { get => pokemonList; set => pokemonList = value; }
 
         public Pokemon RandomPokemon()
         {
             Random rnd = new();
-            int randomIdx = rnd.Next(pokemonList.Count);
-            return pokemonList[randomIdx];
+            int randomIdx = rnd.Next(PokemonList.Count);
+            return PokemonList[randomIdx];
         }
     }
 }

@@ -7,13 +7,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="522" Width="708">
     <Grid Background="#FF242424">
-        <ComboBox HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox HorizontalAlignment="Left" Margin="10,91,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox HorizontalAlignment="Left" Margin="10,118,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox HorizontalAlignment="Left" Margin="10,145,0,0" VerticalAlignment="Top" Width="200"/>
+        <ComboBox x:Name="comboPoke1" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="200"/>
+        <ComboBox x:Name="comboPoke2" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="200"/>
+        <ComboBox x:Name="comboPoke3" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="200"/>
+        <ComboBox x:Name="comboPoke4" HorizontalAlignment="Left" Margin="10,91,0,0" VerticalAlignment="Top" Width="200"/>
+        <ComboBox x:Name="comboPoke5" HorizontalAlignment="Left" Margin="10,118,0,0" VerticalAlignment="Top" Width="200"/>
+        <ComboBox x:Name="comboPoke6" HorizontalAlignment="Left" Margin="10,145,0,0" VerticalAlignment="Top" Width="200"/>
         <DataGrid d:ItemsSource="{d:SampleData ItemCount=5}" Height="NaN" Margin="10,172,10,10" Width="NaN"/>
-        <Button Content="Button" HorizontalAlignment="Left" Margin="426,55,0,0" VerticalAlignment="Top" Click="CalculateTeamWeighting"/>
+        <Button Content="Calculate Weighting" HorizontalAlignment="Left" Margin="244,141,0,0" VerticalAlignment="Top" Click="CalculateTeamWeighting"/>
+        <Label x:Name="labelWeighting" Content="" HorizontalAlignment="Left" Margin="406,141,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3"/>
+        <Label Content="Score:" HorizontalAlignment="Left" Margin="359,141,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3"/>
     </Grid>
 </Window>
