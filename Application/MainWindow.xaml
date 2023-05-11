@@ -14,5 +14,6 @@
         <ComboBox HorizontalAlignment="Left" Margin="10,118,0,0" VerticalAlignment="Top" Width="200"/>
         <ComboBox HorizontalAlignment="Left" Margin="10,145,0,0" VerticalAlignment="Top" Width="200"/>
         <DataGrid d:ItemsSource="{d:SampleData ItemCount=5}" Height="NaN" Margin="10,172,10,10" Width="NaN"/>
+        <Button Content="Button" HorizontalAlignment="Left" Margin="426,55,0,0" VerticalAlignment="Top" Click="CalculateTeamWeighting"/>
     </Grid>
 </Window>

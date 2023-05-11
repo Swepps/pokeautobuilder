@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Windows.Controls;
+using System.Windows;
 
-namespace PokemonAutoTeamBuilder
+namespace autoteambuilder
 {
     internal class PokemonTypes
     {
@@ -62,6 +65,31 @@ namespace PokemonAutoTeamBuilder
         public static double GetEffectiveness(PokemonType attack, PokemonType defense)
         {
             return typeEffectivenessTable[(int)attack, (int)defense];
+        }
+
+        public static PokemonType[] GetTypeArray()
+        {
+            return new PokemonType[18] 
+            {
+            PokemonType.Normal,
+            PokemonType.Fire,
+            PokemonType.Water,
+            PokemonType.Electric,
+            PokemonType.Grass,
+            PokemonType.Ice,
+            PokemonType.Fighting,
+            PokemonType.Poison,
+            PokemonType.Ground,
+            PokemonType.Flying,
+            PokemonType.Psychic,
+            PokemonType.Bug,
+            PokemonType.Rock,
+            PokemonType.Ghost,
+            PokemonType.Dragon,
+            PokemonType.Dark,
+            PokemonType.Steel,
+            PokemonType.Fairy
+            };
         }
     }
 }
