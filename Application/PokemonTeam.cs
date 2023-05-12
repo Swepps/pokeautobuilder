@@ -11,17 +11,46 @@ namespace autoteambuilder
     using PokemonType = PokemonTypes.PokemonType;
     class PokemonTeam
     {
-        private Pokemon[] team = new Pokemon[6];
+        public Pokemon[] Pokemon = new Pokemon[6];
 
         public void SetPokemon(int i, Pokemon p)
         {
-            if (i >= 0 && i < team.Length)
+            if (i >= 0 && i < Pokemon.Length)
             {
-                team[i] = p;
+                Pokemon[i] = p;
             }            
         }
 
-        private double CalculateStandardDeviation(Dictionary<PokemonType, int> typeDictionary)
+        public int CountWeaknesses(PokemonType type)
+        {
+            int weaknesses = 0;
+            foreach (Pokemon p in Pokemon)
+            {
+                if (p == null) continue;
+
+                if (p.GetEffectiveness(type) > 1.0)
+                    weaknesses++;
+            }
+
+            return weaknesses;
+        }
+
+        public int CountResistances(PokemonType type)
+        {
+            int resistances = 0;
+            foreach (Pokemon p in Pokemon)
+            {
+                if (p == null) continue;
+
+                if (p.GetEffectiveness(type) < 1.0)
+                    resistances++;
+            }
+
+            return resistances;
+        }
+
+        // Aah GCSE maths... this seems much easier than I thought it was when I was 15
+        private static double CalculateStandardDeviation(Dictionary<PokemonType, int> typeDictionary)
         {
             PokemonType[] typeArray = PokemonTypes.GetTypeArray();
             double mean = 0;
@@ -49,32 +78,10 @@ namespace autoteambuilder
             Dictionary<PokemonType, int> weaknesses = new Dictionary<PokemonType, int>();
             Dictionary<PokemonType, int> resistances = new Dictionary<PokemonType, int>();
 
-            foreach (Pokemon p in team)
+            foreach (PokemonType t in typeArray)
             {
-                foreach (PokemonType t in typeArray)
-                {
-                    double typeEffectiveness = p.GetEffectiveness(t);
-
-                    // make sure the maps contains something for this type
-                    if (!weaknesses.ContainsKey(t))
-                    {
-                        weaknesses[t] = 0;
-                    }
-                    if (!resistances.ContainsKey(t))
-                    {
-                        resistances[t] = 0;
-                    }
-
-                    // use effectiveness of type against this pokemon to determine weakness or resistance
-                    if (typeEffectiveness > 1.0)
-                    {
-                        weaknesses[t]++;
-                    }
-                    else if (typeEffectiveness < 1.0)
-                    {
-                        resistances[t]++;
-                    }
-                }
+                weaknesses[t] = CountWeaknesses(t);
+                resistances[t] = CountResistances(t);
             }
 
             double weaknessesSD = CalculateStandardDeviation(weaknesses);

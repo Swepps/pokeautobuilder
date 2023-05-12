@@ -5,16 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:autoteambuilder"
         mc:Ignorable="d"
-        Title="MainWindow" Height="522" Width="708">
+        Title="MainWindow" Height="614" Width="708">
     <Grid Background="#FF242424">
-        <ComboBox x:Name="comboPoke1" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox x:Name="comboPoke2" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox x:Name="comboPoke3" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox x:Name="comboPoke4" HorizontalAlignment="Left" Margin="10,91,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox x:Name="comboPoke5" HorizontalAlignment="Left" Margin="10,118,0,0" VerticalAlignment="Top" Width="200"/>
-        <ComboBox x:Name="comboPoke6" HorizontalAlignment="Left" Margin="10,145,0,0" VerticalAlignment="Top" Width="200"/>
-        <DataGrid d:ItemsSource="{d:SampleData ItemCount=5}" Height="NaN" Margin="10,172,10,10" Width="NaN"/>
-        <Button Content="Calculate Weighting" HorizontalAlignment="Left" Margin="244,141,0,0" VerticalAlignment="Top" Click="CalculateTeamWeighting"/>
+        <ComboBox x:Name="comboPoke1" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam"/>
+        <ComboBox x:Name="comboPoke2" HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam"/>
+        <ComboBox x:Name="comboPoke3" HorizontalAlignment="Left" Margin="10,64,0,0" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam"/>
+        <ComboBox x:Name="comboPoke4" HorizontalAlignment="Left" Margin="10,91,0,0" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam"/>
+        <ComboBox x:Name="comboPoke5" HorizontalAlignment="Left" Margin="10,118,0,0" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam"/>
+        <ComboBox x:Name="comboPoke6" HorizontalAlignment="Left" Margin="10,145,0,0" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam"/>
+        <DataGrid x:Name="gridResults" d:ItemsSource="{d:SampleData ItemCount=5}" Height="NaN" Margin="10,172,10,10" Width="NaN" Background="#FF222222" AutoGenerateColumns="False" ColumnWidth="*" AlternatingRowBackground="#FFF2F2F2" AreRowDetailsFrozen="True" RowHeight="20"/>
         <Label x:Name="labelWeighting" Content="" HorizontalAlignment="Left" Margin="406,141,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3"/>
         <Label Content="Score:" HorizontalAlignment="Left" Margin="359,141,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3"/>
     </Grid>

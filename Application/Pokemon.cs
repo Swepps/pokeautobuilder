@@ -10,9 +10,9 @@ namespace autoteambuilder
     using PokemonType = PokemonTypes.PokemonType; 
     internal class Pokemon
     {
-        private int pokedexNum;
-        private string name;
-        private string variant;
+        private int pokedexNum = -1;
+        private string name = "";
+        private string variant = "";
         private PokemonType type1 = PokemonType.Normal;
         private PokemonType type2 = PokemonType.None;
 
