@@ -45,6 +45,8 @@ namespace autoteambuilder
         {
             InitializeComponent();
 
+            // I should probably move all the controls initialisation into their own function
+
             StringReader reader = new StringReader(FileStore.Resource.pokedexAll);
             pokedex = new(reader);
 
@@ -62,6 +64,7 @@ namespace autoteambuilder
             typeCol.Width = DataGridLength.SizeToCells;
             gridResults.Columns.Add(typeCol);
 
+            // this is pretty repetitive, can it be put in a function?
             DataGridTextColumn pokemon1Col = new DataGridTextColumn();
             pokemon1Col.Header = "";
             pokemon1Col.Binding = new Binding("Pokemon1Eff");
@@ -99,6 +102,7 @@ namespace autoteambuilder
             resistsCol.Width = DataGridLength.SizeToHeader;
             gridResults.Columns.Add(resistsCol);
 
+            // filling grid with a row for each pokemon type
             PokemonType[] pokemonTypes = PokemonTypes.GetTypeArray();
             foreach (PokemonType t in pokemonTypes)
             {
@@ -115,6 +119,9 @@ namespace autoteambuilder
 
         private void OnChangeTeam(object sender, SelectionChangedEventArgs e)
         {
+            // I could maybe be cleverer here and use the sender to only change the
+            // pokemon that was modified... but it's pretty cheap to just do it all so hey ho
+
             team.SetPokemon(0, (Pokemon)comboPoke1.SelectedItem);
             team.SetPokemon(1, (Pokemon)comboPoke2.SelectedItem);
             team.SetPokemon(2, (Pokemon)comboPoke3.SelectedItem);
@@ -124,13 +131,14 @@ namespace autoteambuilder
 
             CalculateTeamWeighting();
 
+            // update the grid headers
             for (int i = 0; i < 6; i++)
             {
                 Pokemon p = team.Pokemon[i];
                 DataGridTextColumn col = (DataGridTextColumn)gridResults.Columns[i + 1];
                 if (p != null) 
                 {
-                    col.Header = p.Name;
+                    col.Header = p.ToString();
                 }
                 else
                 {
@@ -138,6 +146,7 @@ namespace autoteambuilder
                 }                
             }            
 
+            // update the grid rows
             foreach (TypeRow row in gridResults.Items) 
             {
                 row.Pokemon1Eff = team.Pokemon[0] != null ? team.Pokemon[0].GetEffectiveness(row.Type) : 0.0;
@@ -150,6 +159,7 @@ namespace autoteambuilder
                 row.Resists = team.CountResistances(row.Type);
             }
 
+            // needs a refresh or the changes won't be reflected
             gridResults.Items.Refresh();
         }
     }

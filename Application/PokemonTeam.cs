@@ -18,9 +18,10 @@ namespace autoteambuilder
             if (i >= 0 && i < Pokemon.Length)
             {
                 Pokemon[i] = p;
-            }            
+            }
         }
 
+        // these functions should probs have been one function but oh well
         public int CountWeaknesses(PokemonType type)
         {
             int weaknesses = 0;
