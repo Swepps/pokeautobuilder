@@ -24,13 +24,6 @@ namespace autoteambuilder
                 // Parse the values from the CSV line
                 int pokedexNum = int.Parse(values[0]);
                 string name = values[1];
-                string variant = values[2];
-                //OLDPokemonType type1 = (OLDPokemonType)Enum.Parse(typeof(OLDPokemonType), values[3]);
-                //OLDPokemonType type2 = OLDPokemonType.None;
-                //if (values[4] != "")
-                //{
-                //    type2 = (OLDPokemonType)Enum.Parse(typeof(OLDPokemonType), values[4]);
-                //}
 
                 Add(name);
             }

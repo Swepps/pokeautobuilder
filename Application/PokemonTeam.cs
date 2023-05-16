@@ -110,10 +110,12 @@ namespace autoteambuilder
             Dictionary<Type, int> weaknesses = new Dictionary<Type, int>();
             Dictionary<Type, int> resistances = new Dictionary<Type, int>();
 
+            double totalWeaknesses = 0;
+            double totalResistances = 0;
             foreach (Type t in typeArray)
             {
-                weaknesses[t] = CountWeaknesses(t.Name);
-                resistances[t] = CountResistances(t.Name);
+                totalWeaknesses += weaknesses[t] = CountWeaknesses(t.Name);
+                totalResistances += resistances[t] = CountResistances(t.Name);
             }
 
             double weaknessesSD = CalculateStandardDeviation(weaknesses);
@@ -121,7 +123,7 @@ namespace autoteambuilder
 
             weighting += 3 - weaknessesSD;
             weighting += 3 - resistancesSD;
-            weighting *= ((double)CountPokemon() / 6.0);
+            weighting *= (CountPokemon() / 6.0);
 
             // for now we're just saying that a balanced spread of resistances and weakness is best
 

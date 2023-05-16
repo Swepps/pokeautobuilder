@@ -126,10 +126,5 @@ namespace autoteambuilder
 
             return multipliers;
         }
-
-        //public static async Task<PokemonSprites> GetPokemonSpritesAsync(SmartPokemon pokemon)
-        //{
-        //    PokemonSprites sprites = await ApiClient.GetResourceAsync(pokemon.Sprites);
-        //}
     }
 }
