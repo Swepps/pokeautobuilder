@@ -8,12 +8,13 @@ using System.Windows.Media;
 
 namespace autoteambuilder
 {
-    using PokemonType = PokemonTypes.PokemonType;
+    using Type = PokeApiNet.Type;
+
     class PokemonTeam
     {
-        public Pokemon[] Pokemon = new Pokemon[6];
+        private SmartPokemon?[] Pokemon = new SmartPokemon[6];
 
-        public void SetPokemon(int i, Pokemon p)
+        public void SetPokemon(int i, SmartPokemon? p)
         {
             if (i >= 0 && i < Pokemon.Length)
             {
@@ -21,52 +22,82 @@ namespace autoteambuilder
             }
         }
 
+        public SmartPokemon? GetPokemon(int i)
+        {
+            if (i >= 0 && i < Pokemon.Length)
+                return Pokemon[i];
+            else
+                return null;
+        }
+
+        public int CountPokemon()
+        {
+            int count = 0;
+            foreach (SmartPokemon? p in Pokemon)
+            {
+                if (p != null) count++;
+            }
+            return count;
+        }
+
         // these functions should probs have been one function but oh well
-        public int CountWeaknesses(PokemonType type)
+        public int CountWeaknesses(string typeName)
         {
             int weaknesses = 0;
-            foreach (Pokemon p in Pokemon)
+            foreach (SmartPokemon? p in Pokemon)
             {
                 if (p == null) continue;
 
-                if (p.GetEffectiveness(type) > 1.0)
+                Multipliers multipliers = p.GetMultipliers();
+
+                if (multipliers.defense.TryGetValue(typeName, out double value)
+                    &&
+                    value > 1.0)
+                {
                     weaknesses++;
+                }
             }
 
             return weaknesses;
         }
 
-        public int CountResistances(PokemonType type)
+        public int CountResistances(string typeName)
         {
             int resistances = 0;
-            foreach (Pokemon p in Pokemon)
+            foreach (SmartPokemon? p in Pokemon)
             {
                 if (p == null) continue;
 
-                if (p.GetEffectiveness(type) < 1.0)
+                Multipliers multipliers = p.GetMultipliers();
+
+                if (multipliers.defense.TryGetValue(typeName, out double value)
+                    &&
+                    value < 1.0)
+                {
                     resistances++;
+                }
             }
 
             return resistances;
         }
 
         // Aah GCSE maths... this seems much easier than I thought it was when I was 15
-        private static double CalculateStandardDeviation(Dictionary<PokemonType, int> typeDictionary)
+        private static double CalculateStandardDeviation(Dictionary<Type, int> typeDictionary)
         {
-            PokemonType[] typeArray = PokemonTypes.GetTypeArray();
+            List<Type> typeArray = MainWindow.AllTypes;
             double mean = 0;
-            foreach (PokemonType type in typeArray) 
+            foreach (Type type in typeArray) 
             {
                 mean += typeDictionary[type];
             }
-            mean /= typeArray.Length;
+            mean /= typeArray.Count;
 
             double variance = 0;
-            foreach (PokemonType type in typeArray)
+            foreach (Type type in typeArray)
             {
                 variance += Math.Pow((typeDictionary[type] - mean), 2);
             }
-            variance /= typeArray.Length;
+            variance /= typeArray.Count;
 
             return Math.Sqrt(variance);
         }
@@ -75,14 +106,14 @@ namespace autoteambuilder
         {
             double weighting = 0;
 
-            PokemonType[] typeArray = PokemonTypes.GetTypeArray();
-            Dictionary<PokemonType, int> weaknesses = new Dictionary<PokemonType, int>();
-            Dictionary<PokemonType, int> resistances = new Dictionary<PokemonType, int>();
+            List<Type> typeArray = MainWindow.AllTypes;
+            Dictionary<Type, int> weaknesses = new Dictionary<Type, int>();
+            Dictionary<Type, int> resistances = new Dictionary<Type, int>();
 
-            foreach (PokemonType t in typeArray)
+            foreach (Type t in typeArray)
             {
-                weaknesses[t] = CountWeaknesses(t);
-                resistances[t] = CountResistances(t);
+                weaknesses[t] = CountWeaknesses(t.Name);
+                resistances[t] = CountResistances(t.Name);
             }
 
             double weaknessesSD = CalculateStandardDeviation(weaknesses);
@@ -90,6 +121,7 @@ namespace autoteambuilder
 
             weighting += 3 - weaknessesSD;
             weighting += 3 - resistancesSD;
+            weighting *= ((double)CountPokemon() / 6.0);
 
             // for now we're just saying that a balanced spread of resistances and weakness is best
 

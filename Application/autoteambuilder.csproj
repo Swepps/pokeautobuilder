@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="PokeApiNet" Version="3.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FileStore\FileStore.csproj" />
   </ItemGroup>
 
