@@ -23,7 +23,7 @@ namespace autoteambuilder
         }
     }
 
-    internal class SmartPokemon : Pokemon
+    public class SmartPokemon : Pokemon
     {
         public Multipliers? Multipliers;
 

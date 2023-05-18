@@ -1,6 +1,8 @@
 ﻿using PokeApiNet;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -12,11 +14,13 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Documents.Serialization;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml.Serialization;
 
 namespace autoteambuilder
 {
@@ -30,9 +34,12 @@ namespace autoteambuilder
     public partial class MainWindow : Window
     {
         private Pokedex pokedex;
+        private Pokedex box;
         private PokemonTeam team = new PokemonTeam();
 
         public static List<Type> AllTypes = new List<Type>();
+        public static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
+        public static readonly string SaveFile = BaseDir + "/save/box.xml";
 
         public MainWindow()
         {
@@ -42,22 +49,44 @@ namespace autoteambuilder
             // TODO: use PokeApi to build the pokedex
             StringReader reader = new StringReader(FileStore.Resource.pokedexAll);
             pokedex = new(reader);
+            box = new Pokedex();
 
             Init();
         }
 
+        // ----------------------------------- Public Methods -----------------------------------
+
+        public void RefreshBox()
+        {
+            listBox.Items.Refresh();
+            comboPoke1.Items.Refresh();
+            comboPoke2.Items.Refresh();
+            comboPoke3.Items.Refresh();
+            comboPoke4.Items.Refresh();
+            comboPoke5.Items.Refresh();
+            comboPoke6.Items.Refresh();
+        }
+
+        // ----------------------------------- Private Methods -----------------------------------
+
         private void Init()
         {
-            comboPoke1.ItemsSource = pokedex;
-            comboPoke2.ItemsSource = pokedex;
-            comboPoke3.ItemsSource = pokedex;
-            comboPoke4.ItemsSource = pokedex;
-            comboPoke5.ItemsSource = pokedex;
-            comboPoke6.ItemsSource = pokedex;
+            // need to attempt to read the saved box before setting the listBox.ItemsSource
+            ReadBox();
+
+            comboPoke1.ItemsSource = box;
+            comboPoke2.ItemsSource = box;
+            comboPoke3.ItemsSource = box;
+            comboPoke4.ItemsSource = box;
+            comboPoke5.ItemsSource = box;
+            comboPoke6.ItemsSource = box;
 
             gridResults.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
 
-            InitGrid();
+            listBox.ItemTemplate = (DataTemplate)Resources["boxPokemon"];
+            listBox.ItemsSource = box;
+
+            InitGrid();            
         }
 
         private async void InitGrid()
@@ -122,9 +151,49 @@ namespace autoteambuilder
             }
         }
 
+        private void WriteBox()
+        {
+            // save the contents of the box when closing the app
+            XmlSerializer ser = new XmlSerializer(typeof(Pokedex));
+
+            if (!Directory.Exists(BaseDir + "/save/"))
+                Directory.CreateDirectory(BaseDir + "/save/");
+
+            TextWriter writer = new StreamWriter(SaveFile);
+            ser.Serialize(writer, box);
+            writer.Close();
+        }
+        private async void ReadBox()
+        {
+            if (!File.Exists(SaveFile))
+                return;
+
+            XmlSerializer ser = new XmlSerializer(typeof(Pokedex));
+            FileStream fs = new FileStream(SaveFile, FileMode.Open);
+            Pokedex? box = (Pokedex?)ser.Deserialize(fs);
+
+            if (box != null)
+            {
+                this.box = box;
+                await this.box.DownloadPokemon();
+                RefreshBox();
+            }
+        }
+
+        private void RemoveSelectedFromBox()
+        {
+            var selectedItems = listBox.SelectedItems.Cast<PokedexEntry>().ToArray();
+            foreach (PokedexEntry entry in selectedItems)
+            {
+                ((ObservableCollection<PokedexEntry>)listBox.ItemsSource).Remove(entry);
+                //box.RemovePokemon(entry.Name);
+            }
+            RefreshBox();
+        }
+
         private void CalculateTeamWeighting()
         {
-            double weighting = team.CalculateWeighting();
+            double weighting = TeamBuilder.CalculateWeighting(team);
 
             labelWeighting.Content = weighting.ToString();
         }
@@ -151,10 +220,11 @@ namespace autoteambuilder
                 return;
             }
 
+            // get the selected pokemon from the combobox
             SmartPokemon? pokemon = null;
             if (comboBox.SelectedItem != null)
             {
-                pokemon = await PokeApiHandler.GetPokemonAsync((string)comboBox.SelectedItem);
+                pokemon = await PokeApiHandler.GetPokemonAsync(((PokedexEntry)comboBox.SelectedItem).Name);
                 team.SetPokemon(teamIdx, pokemon);
             }
             else
@@ -199,10 +269,59 @@ namespace autoteambuilder
             // needs a refresh or the changes won't be reflected
             gridResults.Items.Refresh();
         }
+
+        private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            WriteBox();
+        }
+
+        private async void OnClickAddToBox(object sender, RoutedEventArgs e)
+        {
+            Random rand = new Random();
+            PokedexEntry randomPokemonName = pokedex[rand.Next(pokedex.Count)];
+            box.Add(randomPokemonName);
+            await box.DownloadPokemon();
+            RefreshBox();
+        }
+
+        private void OnClickBuildTeam(object sender, RoutedEventArgs e)
+        {
+            PokemonTeam newTeam = TeamBuilder.BuildTeam(box, team);
+
+            SmartPokemon? pokemon1 = newTeam.GetPokemon(0);
+            SmartPokemon? pokemon2 = newTeam.GetPokemon(1);
+            SmartPokemon? pokemon3 = newTeam.GetPokemon(2);
+            SmartPokemon? pokemon4 = newTeam.GetPokemon(3);
+            SmartPokemon? pokemon5 = newTeam.GetPokemon(4);
+            SmartPokemon? pokemon6 = newTeam.GetPokemon(5);
+
+            comboPoke1.SelectedItem = pokemon1 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon1.Name)) : null;
+            comboPoke2.SelectedItem = pokemon2 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon2.Name)) : null;
+            comboPoke3.SelectedItem = pokemon3 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon3.Name)) : null;
+            comboPoke4.SelectedItem = pokemon4 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon4.Name)) : null;
+            comboPoke5.SelectedItem = pokemon5 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon5.Name)) : null;
+            comboPoke6.SelectedItem = pokemon6 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon6.Name)) : null;
+
+            RefreshBox();
+        }
+
+        private void OnKeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key) 
+            {
+                case Key.Delete:
+                    RemoveSelectedFromBox();
+                    break;
+
+                default:
+                    break;
+            }
+        }
     }
 
     // ----------------------------------- Helper classes -----------------------------------
 
+    // each row of the results grid
     internal class TypeRow
     {
         public string Type { get; set; }
@@ -221,7 +340,9 @@ namespace autoteambuilder
         }
     }
 
+    // ----------------------------------- Conversion classes -----------------------------------
 
+    // function used for turning lower case pokemon names into normal case
     public class LowercaseToNamecaseConverter : IValueConverter
     {
         public static string FirstCharToUpper(string input)
@@ -249,6 +370,23 @@ namespace autoteambuilder
             }
 
             return value;
+        }
+    }
+
+    // function used for inverting value in data binding
+    public class InverseBooleanConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (targetType != typeof(bool))
+                throw new InvalidOperationException("The target must be a boolean");
+
+            return !(bool)value;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
         }
     }
 }

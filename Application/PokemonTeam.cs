@@ -1,5 +1,6 @@
 ﻿using autoteambuilder;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -81,53 +82,9 @@ namespace autoteambuilder
             return resistances;
         }
 
-        // Aah GCSE maths... this seems much easier than I thought it was when I was 15
-        private static double CalculateStandardDeviation(Dictionary<Type, int> typeDictionary)
+        public IEnumerator GetEnumerator() 
         {
-            List<Type> typeArray = MainWindow.AllTypes;
-            double mean = 0;
-            foreach (Type type in typeArray) 
-            {
-                mean += typeDictionary[type];
-            }
-            mean /= typeArray.Count;
-
-            double variance = 0;
-            foreach (Type type in typeArray)
-            {
-                variance += Math.Pow((typeDictionary[type] - mean), 2);
-            }
-            variance /= typeArray.Count;
-
-            return Math.Sqrt(variance);
-        }
-
-        public double CalculateWeighting()
-        {
-            double weighting = 0;
-
-            List<Type> typeArray = MainWindow.AllTypes;
-            Dictionary<Type, int> weaknesses = new Dictionary<Type, int>();
-            Dictionary<Type, int> resistances = new Dictionary<Type, int>();
-
-            double totalWeaknesses = 0;
-            double totalResistances = 0;
-            foreach (Type t in typeArray)
-            {
-                totalWeaknesses += weaknesses[t] = CountWeaknesses(t.Name);
-                totalResistances += resistances[t] = CountResistances(t.Name);
-            }
-
-            double weaknessesSD = CalculateStandardDeviation(weaknesses);
-            double resistancesSD = CalculateStandardDeviation(resistances);
-
-            weighting += 3 - weaknessesSD;
-            weighting += 3 - resistancesSD;
-            weighting *= (CountPokemon() / 6.0);
-
-            // for now we're just saying that a balanced spread of resistances and weakness is best
-
-            return weighting;
+            return Pokemon.GetEnumerator();
         }
     }
 }
