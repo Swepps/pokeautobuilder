@@ -59,6 +59,8 @@ namespace autoteambuilder
         public void RefreshBox()
         {
             listBox.Items.Refresh();
+
+            // TODO: put combo boxes into a collection which can be iterated through
             comboPoke1.Items.Refresh();
             comboPoke2.Items.Refresh();
             comboPoke3.Items.Refresh();
@@ -286,7 +288,17 @@ namespace autoteambuilder
 
         private void OnClickBuildTeam(object sender, RoutedEventArgs e)
         {
-            PokemonTeam newTeam = TeamBuilder.BuildTeam(box, team);
+            PokemonTeam? lockedMembers = new PokemonTeam();
+
+            // setting locked members to the selected combobox controls
+            lockedMembers.SetPokemon(0, !comboPoke1.IsEnabled ? comboPoke1.SelectedItem != null ? ((PokedexEntry)comboPoke1.SelectedItem).Pokemon : null : null);
+            lockedMembers.SetPokemon(1, !comboPoke2.IsEnabled ? comboPoke2.SelectedItem != null ? ((PokedexEntry)comboPoke2.SelectedItem).Pokemon : null : null);
+            lockedMembers.SetPokemon(2, !comboPoke3.IsEnabled ? comboPoke3.SelectedItem != null ? ((PokedexEntry)comboPoke3.SelectedItem).Pokemon : null : null);
+            lockedMembers.SetPokemon(3, !comboPoke4.IsEnabled ? comboPoke4.SelectedItem != null ? ((PokedexEntry)comboPoke4.SelectedItem).Pokemon : null : null);
+            lockedMembers.SetPokemon(4, !comboPoke5.IsEnabled ? comboPoke5.SelectedItem != null ? ((PokedexEntry)comboPoke5.SelectedItem).Pokemon : null : null);
+            lockedMembers.SetPokemon(5, !comboPoke6.IsEnabled ? comboPoke6.SelectedItem != null ? ((PokedexEntry)comboPoke6.SelectedItem).Pokemon : null : null);
+
+            PokemonTeam newTeam = TeamBuilder.BuildTeam(box, lockedMembers);
 
             SmartPokemon? pokemon1 = newTeam.GetPokemon(0);
             SmartPokemon? pokemon2 = newTeam.GetPokemon(1);

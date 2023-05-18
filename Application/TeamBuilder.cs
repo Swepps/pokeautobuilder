@@ -15,7 +15,7 @@ namespace autoteambuilder
 
         // Enumerate all possible m-size combinations of [0, 1, ..., n-1] array
         // in lexicographic order (first [0, 1, 2, ..., m-1]).
-        private static IEnumerable<int[]> CombinationsRosettaWoRecursion(int m, int n)
+        private static IEnumerable<int[]> Combinations(int m, int n)
         {
             int[] result = new int[m];
             Stack<int> stack = new Stack<int>(m);
@@ -36,14 +36,14 @@ namespace autoteambuilder
             }
         }
 
-        public static IEnumerable<T[]> CombinationsRosettaWoRecursion<T>(T[] array, int m)
+        public static IEnumerable<T[]> Combinations<T>(T[] array, int m)
         {
             if (array.Length < m)
                 throw new ArgumentException("Array length can't be less than number of selected elements");
             if (m < 1)
                 throw new ArgumentException("Number of selected elements can't be less than 1");
             T[] result = new T[m];
-            foreach (int[] j in CombinationsRosettaWoRecursion(m, array.Length))
+            foreach (int[] j in Combinations(m, array.Length))
             {
                 for (int i = 0; i < m; i++)
                 {
@@ -108,12 +108,30 @@ namespace autoteambuilder
             {
                 lockedMembers = new PokemonTeam();
             }
+            else if (lockedMembers.CountPokemon() >= 6)
+            {
+                // they're all locked!
+                return lockedMembers;
+            }
 
             PokemonTeam bestTeam = new PokemonTeam();
             double bestTeamWeighting = 0;
 
-            foreach (PokedexEntry[] team in CombinationsRosettaWoRecursion<PokedexEntry>(availablePokemon.ToArray(), 6 - lockedMembers.CountPokemon()))
+            // using the clever combinations code to quickly iterate through each combination of teams
+            // we are selecting (6 - lockedMembers.Count) from all the pokemon in the box
+            foreach (PokedexEntry[] team in Combinations<PokedexEntry>(availablePokemon.ToArray(), 6 - lockedMembers.CountPokemon()))
             {
+                // check that we're not already using one of these selected pokemon in our team already
+                foreach (PokedexEntry entry in team)
+                {
+                    foreach (SmartPokemon pokemon in lockedMembers)
+                    {
+                        if (entry.Pokemon == pokemon)
+                            continue;
+                    }
+                }
+
+                // create a new team using lockedMembers and chosen combination
                 PokemonTeam newTeam = new PokemonTeam();
                 int combinIdx = 0;
                 for (int i = 0; i < 6; i++)
@@ -129,6 +147,7 @@ namespace autoteambuilder
                     }
                 }
 
+                // check to see if new team is better
                 double newTeamWeighting = CalculateWeighting(newTeam);
                 if (newTeamWeighting > bestTeamWeighting)
                 {

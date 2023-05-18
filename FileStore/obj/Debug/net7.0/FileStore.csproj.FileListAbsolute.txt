@@ -12,3 +12,17 @@ D:\dev\autoteambuilder\FileStore\obj\Debug\net7.0\FileStore.dll
 D:\dev\autoteambuilder\FileStore\obj\Debug\net7.0\refint\FileStore.dll
 D:\dev\autoteambuilder\FileStore\obj\Debug\net7.0\FileStore.pdb
 D:\dev\autoteambuilder\FileStore\obj\Debug\net7.0\ref\FileStore.dll
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\bin\Debug\net7.0\FileStore.deps.json
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\bin\Debug\net7.0\FileStore.dll
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\bin\Debug\net7.0\FileStore.pdb
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\FileStore.csproj.AssemblyReference.cache
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\FileStore.Resource.resources
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\FileStore.csproj.GenerateResource.cache
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\FileStore.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\FileStore.AssemblyInfoInputs.cache
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\FileStore.AssemblyInfo.cs
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\FileStore.csproj.CoreCompileInputs.cache
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\FileStore.dll
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\refint\FileStore.dll
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\FileStore.pdb
+C:\Users\Gorg\source\repos\pokemonautoteambuilder\FileStore\obj\Debug\net7.0\ref\FileStore.dll
