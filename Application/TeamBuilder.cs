@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -102,13 +103,13 @@ namespace autoteambuilder
             return weighting;
         }
 
-        public static PokemonTeam BuildTeam(Pokedex availablePokemon, PokemonTeam? lockedMembers = null)
+        public static PokemonTeam BuildTeam(ObservableCollection<SmartPokemon> availablePokemon, PokemonTeam? lockedMembers = null)
         {
             if (lockedMembers == null)
             {
                 lockedMembers = new PokemonTeam();
             }
-            else if (lockedMembers.CountPokemon() >= 6)
+            else if (lockedMembers.CountPokemon() >= 6 || availablePokemon.Count < 6)
             {
                 // they're all locked!
                 return lockedMembers;
@@ -119,14 +120,15 @@ namespace autoteambuilder
 
             // using the clever combinations code to quickly iterate through each combination of teams
             // we are selecting (6 - lockedMembers.Count) from all the pokemon in the box
-            foreach (PokedexEntry[] team in Combinations<PokedexEntry>(availablePokemon.ToArray(), 6 - lockedMembers.CountPokemon()))
+            foreach (SmartPokemon[] remainingTeamCombination in Combinations<SmartPokemon>(availablePokemon.ToArray(), 6 - lockedMembers.CountPokemon()))
             {
                 // check that we're not already using one of these selected pokemon in our team already
-                foreach (PokedexEntry entry in team)
+                // this is inefficient but the lists will always be small so should be pretty quick
+                foreach (SmartPokemon entry in remainingTeamCombination)
                 {
                     foreach (SmartPokemon pokemon in lockedMembers)
                     {
-                        if (entry.Pokemon == pokemon)
+                        if (entry == pokemon)
                             continue;
                     }
                 }
@@ -136,13 +138,13 @@ namespace autoteambuilder
                 int combinIdx = 0;
                 for (int i = 0; i < 6; i++)
                 {
-                    if (lockedMembers.GetPokemon(i) != null)
+                    if (lockedMembers.Pokemon[i] != null)
                     {
-                        newTeam.SetPokemon(i, lockedMembers.GetPokemon(i));
+                        newTeam.Pokemon[i] = lockedMembers.Pokemon[i];
                     }
-                    else if (combinIdx < team.Length)
+                    else if (combinIdx < remainingTeamCombination.Length)
                     {
-                        newTeam.SetPokemon(i, team[combinIdx].Pokemon);
+                        newTeam.Pokemon[i] = remainingTeamCombination[combinIdx];
                         combinIdx++;
                     }
                 }

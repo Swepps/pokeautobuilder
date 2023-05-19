@@ -13,23 +13,7 @@ namespace autoteambuilder
 
     class PokemonTeam
     {
-        private SmartPokemon?[] Pokemon = new SmartPokemon[6];
-
-        public void SetPokemon(int i, SmartPokemon? p)
-        {
-            if (i >= 0 && i < Pokemon.Length)
-            {
-                Pokemon[i] = p;
-            }
-        }
-
-        public SmartPokemon? GetPokemon(int i)
-        {
-            if (i >= 0 && i < Pokemon.Length)
-                return Pokemon[i];
-            else
-                return null;
-        }
+        public SmartPokemon?[] Pokemon = new SmartPokemon[6];
 
         public int CountPokemon()
         {

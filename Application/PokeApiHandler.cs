@@ -31,11 +31,61 @@ namespace autoteambuilder
             return pokemonTypes;
         }
 
-        public static async Task<SmartPokemon?> GetPokemonAsync(string pokemonName)
+        public static async Task<Pokedex?> GetNationalDex()
+        {
+            return await GetPokedex(1);
+        }
+
+        public static async Task<Pokedex?> GetPokedex(int i)
         {
             try
             {
+                Pokedex pokedex = await ApiClient.GetResourceAsync<Pokedex>(i);
+                return pokedex;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+
+        public static async Task<PokemonSpecies?> GetPokemonSpeciesAsync(PokemonEntry entry)
+        {
+            try
+            {
+                PokemonSpecies species = await ApiClient.GetResourceAsync(entry.PokemonSpecies);
+                return species;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+
+        public static async Task<SmartPokemon?> GetPokemonAsync(string pokemonName)
+        {
+            pokemonName = pokemonName.ToLower();
+            try
+            {
                 Pokemon pokemon = await ApiClient.GetResourceAsync<Pokemon>(pokemonName);
+                SmartPokemon smartPokemon = new SmartPokemon(pokemon);
+
+                return smartPokemon;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+
+        public static async Task<SmartPokemon?> GetPokemonAsync(int pokedexId)
+        {
+            try
+            {
+                Pokemon pokemon = await ApiClient.GetResourceAsync<Pokemon>(pokedexId);
                 SmartPokemon smartPokemon = new SmartPokemon(pokemon);
 
                 return smartPokemon;

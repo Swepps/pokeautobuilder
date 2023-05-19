@@ -85,11 +85,7 @@ namespace autoteambuilder
 
         public override string ToString()
         {
-            string name = Name;
-            //if (Variant != "")
-            //    name += " - " + Variant;
-
-            return name;
+            return LowercaseToNamecaseConverter.FirstCharToUpper(Name);
         }
     }
 }

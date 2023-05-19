@@ -17,7 +17,7 @@
         </DataTemplate>
         <DataTemplate x:Key="boxPokemon">
             <StackPanel>
-                <Image Source="{Binding Path=Pokemon.Sprites.FrontDefault}" MaxHeight="30"/>
+                <Image Source="{Binding Path=Sprites.FrontDefault}" MaxHeight="35"/>
             </StackPanel>
         </DataTemplate>
     </Window.Resources>
@@ -34,6 +34,10 @@
         <CheckBox x:Name="checkLock4" Content="" HorizontalAlignment="Left" Margin="215,94,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="checkLock5" Content="" HorizontalAlignment="Left" Margin="215,121,0,0" VerticalAlignment="Top"/>
         <CheckBox x:Name="checkLock6" Content="" HorizontalAlignment="Left" Margin="215,148,0,0" VerticalAlignment="Top"/>
+
+        <ComboBox x:Name="comboPokedex" HorizontalAlignment="Left" Margin="241,118,0,0" VerticalAlignment="Top" Width="200" IsEditable="True" Tag="5" SelectionChanged="OnChangePokedexCombo"/>
+        <ComboBox x:Name="comboPokemonVariety" DisplayMemberPath="Name" HorizontalAlignment="Left" Margin="241,145,0,0" VerticalAlignment="Top" Width="200" IsEditable="True" Tag="5" Visibility="Hidden"/>
+        
         <DataGrid x:Name="gridResults" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="10,172,10,10" Width="NaN" Background="#FF222222" AutoGenerateColumns="False" ColumnWidth="*" AlternatingRowBackground="#FF535353" AreRowDetailsFrozen="True" RowHeight="20" HeadersVisibility="Column" HorizontalScrollBarVisibility="Disabled" CanUserSortColumns="False" CanUserReorderColumns="False" HorizontalGridLinesBrush="{x:Null}" VerticalGridLinesBrush="#FF505050" EnableRowVirtualization="False" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False" ColumnHeaderHeight="92" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden" IsHitTestVisible="False">
             <DataGrid.RowStyle>
                 <Style TargetType="DataGridRow">
@@ -56,16 +60,28 @@
                 </Style>
             </DataGrid.ColumnHeaderStyle>
         </DataGrid>
-        <Label x:Name="labelWeighting" Content="" HorizontalAlignment="Left" Margin="610,141,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3"/>
-        <Label Content="Score:" HorizontalAlignment="Left" Margin="563,141,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3"/>
-        <ListView x:Name="listBox" Margin="241,10,230,514" Background="#FF3F3F3F" HorizontalContentAlignment="Center" ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyDown="OnKeyDown">
+        <Label x:Name="labelWeighting" Content="" HorizontalAlignment="Left" Margin="613,8,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3"/>
+        <Label Content="Score:" HorizontalAlignment="Left" Margin="566,8,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3"/>
+        <ListView x:Name="listBox" Margin="241,10,217,518" Background="#FF3F3F3F" HorizontalContentAlignment="Center" ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyDown="OnKeyDown">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel />
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="{x:Type ListViewItem}" >
+                    <Setter Property="ToolTip" >
+                        <Setter.Value>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Path=Name}" />
+                            </StackPanel>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
         </ListView>
-        <Button Content="Add Random Pokemon" HorizontalAlignment="Left" Margin="241,146,0,0" VerticalAlignment="Top" Width="140" Click="OnClickAddToBox"/>
-        <Button Content="Build Team" HorizontalAlignment="Left" Margin="522,51,0,0" VerticalAlignment="Top" Click="OnClickBuildTeam"/>
+        <Button Content="Add Random Pokemon" HorizontalAlignment="Left" Margin="483,119,0,0" VerticalAlignment="Top" Width="140" Click="OnClickAddToBox" Tag="random"/>
+        <Button Content="Build Team" HorizontalAlignment="Left" Margin="483,11,0,0" VerticalAlignment="Top" Click="OnClickBuildTeam" Width="75"/>
+        <Button Content="Add" HorizontalAlignment="Left" Margin="446,119,0,0" VerticalAlignment="Top" Width="32" Click="OnClickAddToBox"/>
     </Grid>
 </Window>

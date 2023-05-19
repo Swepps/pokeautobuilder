@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PokeApiNet;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -13,85 +14,81 @@ using System.Xml.Serialization;
 
 namespace autoteambuilder
 {
+    // this class stores a single pokedex entry which is typically a single pokemon
+    // however there are some pokemon with multiple varieties (e.g. rotom) which is
+    // not stored in the pokedex so we can use this class to get each variety
+
     [Serializable]
     [XmlRoot(ElementName = "Entry")]
-    public class PokedexEntry
+    public class SmartPokemonEntry
     {
-        public string Name { get; set; }
+        public int Id { get; set; }
+        public PokemonSpecies Species { get; set; }
 
-        [XmlIgnore]
-        public SmartPokemon? Pokemon { get; set; }
-
-        public PokedexEntry() 
+        public SmartPokemonEntry(int Id, PokemonSpecies Species) 
         {
-            Name = "";
-            Pokemon = null;
+            this.Id = Id;
+            this.Species = Species;
         }
-        public PokedexEntry(string Name) 
-        { 
-            this.Name = Name.Trim();
-            Pokemon = null;
+
+        public List<NamedApiResource<Pokemon>> GetAllVarieties()
+        {
+            List<NamedApiResource<Pokemon>> varieties = new List<NamedApiResource<Pokemon>>();
+
+            foreach (PokemonSpeciesVariety variety in Species.Varieties)
+            {
+                varieties.Add(variety.Pokemon);
+            }
+
+            return varieties;
         }
 
         public override string ToString()
         {
-            return Name;
+            return LowercaseToNamecaseConverter.FirstCharToUpper(Species.Name);
         }
     }
 
+    // an observable collection of SmartPokemonEntry objects which is used as a binding
+    // for the pokedex combobox
     [Serializable]
     [XmlRoot(ElementName = "PokemonList")]
-    public class Pokedex : ObservableCollection<PokedexEntry>
+    public class SmartPokedex : ObservableCollection<SmartPokemonEntry>
     {
-        public Pokedex() { }
-        public Pokedex(StringReader reader)
+        public SmartPokedex() { }
+        public SmartPokedex(Pokedex pokedex) 
         {
-            if (reader == null)
-                return;
-
-            string? line;
-            while ((line = reader.ReadLine()) != null)
-            {
-                if (line == null) continue;
-
-                string[] values = line.Split(',');
-
-                // Parse the values from the CSV line
-                int pokedexNum = int.Parse(values[0]);
-                string name = values[1];
-
-                Add(new PokedexEntry(name));
-            }
+            SetPokedex(pokedex);
         }
 
-        // uses the list of pokemon names to populate the dictionary with all the pokemon in this pokedex
-        public async Task DownloadPokemon()
+        public async void SetPokedex(Pokedex pokedex)
         {
-            var tasks = this.Select(async pokedexEntry =>
+            var tasks = pokedex.PokemonEntries.Select(async entry =>
             {
-                if (pokedexEntry.Pokemon == null)
-                {
-                    SmartPokemon? pokemon = await PokeApiHandler.GetPokemonAsync(pokedexEntry.Name);
-                    if (pokemon != null)
-                    {
-                        pokedexEntry.Pokemon = pokemon;
-                    }
-                }
+                PokemonSpecies? species = await PokeApiHandler.GetPokemonSpeciesAsync(entry);
+                if (species != null)
+                    Add(new SmartPokemonEntry(entry.EntryNumber, species));
             });
 
             await Task.WhenAll(tasks);
         }
 
-        public bool RemovePokemon(string pokemonName)
+        public bool RemovePokemon(string speciesName)
         {
-            PokedexEntry? pokedexEntry = this.FirstOrDefault(entry => entry.Name == pokemonName);
-            if (pokedexEntry == null) return false;
-            return Remove(pokedexEntry);
+            SmartPokemonEntry? entry = this.FirstOrDefault(entry => entry.Species.Name == speciesName);
+            if (entry == null) return false;
+            return Remove(entry);
         }
 
-        public PokedexEntry? FindPokemon(string pokemonName)
+        public SmartPokemonEntry? FindPokemon(string pokemonName)
         {
-            return this.Where(entry => entry.Name.Equals(pokemonName)).FirstOrDefault();
+            return this.Where(entry => entry.Species.Name.Equals(pokemonName)).FirstOrDefault();
+        }
+
+        public SmartPokemonEntry? RandomPokemon()
+        {
+            Random rand = new Random();
+            return this[rand.Next(Count)];
         }
     }
 }

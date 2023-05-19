@@ -33,13 +33,14 @@ namespace autoteambuilder
 
     public partial class MainWindow : Window
     {
-        private Pokedex pokedex;
-        private Pokedex box;
+        private SmartPokedex pokedex;
+        private ObservableCollection<SmartPokemon> box;
         private PokemonTeam team = new PokemonTeam();
 
         public static List<Type> AllTypes = new List<Type>();
         public static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
         public static readonly string SaveFile = BaseDir + "/save/box.xml";
+        public static readonly string PokedexFile = BaseDir + "/save/pokedex.xml";
 
         public MainWindow()
         {
@@ -47,9 +48,9 @@ namespace autoteambuilder
 
             // create the pokedex from the text file resource
             // TODO: use PokeApi to build the pokedex
-            StringReader reader = new StringReader(FileStore.Resource.pokedexAll);
-            pokedex = new(reader);
-            box = new Pokedex();
+            //StringReader reader = new StringReader(FileStore.Resource.pokedexAll);
+            pokedex = new();
+            box = new ObservableCollection<SmartPokemon>();
 
             Init();
         }
@@ -75,6 +76,7 @@ namespace autoteambuilder
         {
             // need to attempt to read the saved box before setting the listBox.ItemsSource
             ReadBox();
+            FillPokedex();
 
             comboPoke1.ItemsSource = box;
             comboPoke2.ItemsSource = box;
@@ -83,10 +85,12 @@ namespace autoteambuilder
             comboPoke5.ItemsSource = box;
             comboPoke6.ItemsSource = box;
 
-            gridResults.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-
             listBox.ItemTemplate = (DataTemplate)Resources["boxPokemon"];
             listBox.ItemsSource = box;
+
+            comboPokedex.ItemsSource = pokedex;
+
+            gridResults.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
 
             InitGrid();            
         }
@@ -155,39 +159,69 @@ namespace autoteambuilder
 
         private void WriteBox()
         {
-            // save the contents of the box when closing the app
-            XmlSerializer ser = new XmlSerializer(typeof(Pokedex));
+            try
+            {
+                // save the contents of the box when closing the app
+                XmlSerializer ser = new XmlSerializer(typeof(SmartPokedex));
 
-            if (!Directory.Exists(BaseDir + "/save/"))
-                Directory.CreateDirectory(BaseDir + "/save/");
+                if (!Directory.Exists(BaseDir + "/save/"))
+                    Directory.CreateDirectory(BaseDir + "/save/");
 
-            TextWriter writer = new StreamWriter(SaveFile);
-            ser.Serialize(writer, box);
-            writer.Close();
+                TextWriter writer = new StreamWriter(SaveFile);
+                ser.Serialize(writer, box);
+                writer.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
-        private async void ReadBox()
+        private void ReadBox()
         {
             if (!File.Exists(SaveFile))
                 return;
 
-            XmlSerializer ser = new XmlSerializer(typeof(Pokedex));
-            FileStream fs = new FileStream(SaveFile, FileMode.Open);
-            Pokedex? box = (Pokedex?)ser.Deserialize(fs);
-
-            if (box != null)
+            try
             {
-                this.box = box;
-                await this.box.DownloadPokemon();
-                RefreshBox();
+                XmlSerializer ser = new XmlSerializer(typeof(SmartPokedex));
+                FileStream fs = new FileStream(SaveFile, FileMode.Open);
+                //SmartPokedex? box = (SmartPokedex?)ser.Deserialize(fs);
+
+                if (box != null)
+                {
+                    //this.box = box;
+                    //await this.box.DownloadPokemon();
+                    RefreshBox();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        private async void FillPokedex()
+        {
+            if (File.Exists(PokedexFile))
+            {
+                // TODO - saving pokedex to file for faster load
+            }
+            else
+            {
+                Pokedex? downloadedDex = await PokeApiHandler.GetNationalDex();
+                if (downloadedDex != null)
+                {
+                    pokedex.SetPokedex(downloadedDex);
+                }
             }
         }
 
         private void RemoveSelectedFromBox()
         {
-            var selectedItems = listBox.SelectedItems.Cast<PokedexEntry>().ToArray();
-            foreach (PokedexEntry entry in selectedItems)
+            var selectedItems = listBox.SelectedItems.Cast<SmartPokemonEntry>().ToArray();
+            foreach (SmartPokemonEntry entry in selectedItems)
             {
-                ((ObservableCollection<PokedexEntry>)listBox.ItemsSource).Remove(entry);
+                ((ObservableCollection<SmartPokemonEntry>)listBox.ItemsSource).Remove(entry);
                 //box.RemovePokemon(entry.Name);
             }
             RefreshBox();
@@ -200,7 +234,7 @@ namespace autoteambuilder
             labelWeighting.Content = weighting.ToString();
         }
 
-        private async void OnChangeTeam(object sender, SelectionChangedEventArgs e)
+        private void OnChangeTeam(object sender, SelectionChangedEventArgs e)
         {
             // only deal with comboboxes
             if (sender == null || sender.GetType() != typeof(ComboBox))
@@ -223,24 +257,15 @@ namespace autoteambuilder
             }
 
             // get the selected pokemon from the combobox
-            SmartPokemon? pokemon = null;
-            if (comboBox.SelectedItem != null)
-            {
-                pokemon = await PokeApiHandler.GetPokemonAsync(((PokedexEntry)comboBox.SelectedItem).Name);
-                team.SetPokemon(teamIdx, pokemon);
-            }
-            else
-            {
-                team.SetPokemon(teamIdx, null);
-            }
+            team.Pokemon[teamIdx] = (SmartPokemon)comboBox.SelectedItem;
 
             CalculateTeamWeighting();
 
             // update the grid header
             DataGridTextColumn col = (DataGridTextColumn)gridResults.Columns[teamIdx + 1];
-            if (pokemon != null)
+            if (team.Pokemon[teamIdx] != null)
             {
-                col.Header = pokemon;
+                col.Header = team.Pokemon[teamIdx];
             }
             else
             {
@@ -248,12 +273,12 @@ namespace autoteambuilder
             }
 
             // get the pokemon from the team once
-            SmartPokemon? pokemon1 = team.GetPokemon(0);
-            SmartPokemon? pokemon2 = team.GetPokemon(1);
-            SmartPokemon? pokemon3 = team.GetPokemon(2);
-            SmartPokemon? pokemon4 = team.GetPokemon(3);
-            SmartPokemon? pokemon5 = team.GetPokemon(4);
-            SmartPokemon? pokemon6 = team.GetPokemon(5);
+            SmartPokemon? pokemon1 = team.Pokemon[0];
+            SmartPokemon? pokemon2 = team.Pokemon[1];
+            SmartPokemon? pokemon3 = team.Pokemon[2];
+            SmartPokemon? pokemon4 = team.Pokemon[3];
+            SmartPokemon? pokemon5 = team.Pokemon[4];
+            SmartPokemon? pokemon6 = team.Pokemon[5];
 
             // update the grid rows
             foreach (TypeRow row in gridResults.Items) 
@@ -272,18 +297,64 @@ namespace autoteambuilder
             gridResults.Items.Refresh();
         }
 
-        private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void OnChangePokedexCombo(object sender, SelectionChangedEventArgs e)
         {
-            WriteBox();
+            if (comboPokedex.SelectedItem == null)
+                return;
+            List<NamedApiResource<Pokemon>> pokemonSpeciesVarieties = ((SmartPokemonEntry)comboPokedex.SelectedItem).GetAllVarieties();
+            comboPokemonVariety.ItemsSource = pokemonSpeciesVarieties;
+            comboPokemonVariety.SelectedItem = pokemonSpeciesVarieties[0];
+            if (pokemonSpeciesVarieties.Count > 1)
+            {                
+                comboPokemonVariety.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                comboPokemonVariety.Visibility = Visibility.Hidden;
+            }
+            comboPokemonVariety.Items.Refresh();
         }
 
         private async void OnClickAddToBox(object sender, RoutedEventArgs e)
         {
-            Random rand = new Random();
-            PokedexEntry randomPokemonName = pokedex[rand.Next(pokedex.Count)];
-            box.Add(randomPokemonName);
-            await box.DownloadPokemon();
-            RefreshBox();
+            // only deal with buttons
+            if (sender == null || sender.GetType() != typeof(Button))
+                return;
+
+            Button button = (Button)sender;
+
+            string tag = "none";
+
+            // we're using the tag to identify which team member this combobox relates to
+            if (button.Tag != null && button.Tag.GetType() == typeof(string))
+            {
+                tag = (string)button.Tag;                
+            }
+
+            NamedApiResource<Pokemon>? pokemonResource = null;
+            switch (tag)
+            {
+                case "none":
+                    pokemonResource = (NamedApiResource<Pokemon>)comboPokemonVariety.SelectedItem;
+                    break;
+
+                case "random":
+                    pokemonResource = pokedex.RandomPokemon().GetAllVarieties()[0];
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (pokemonResource != null)
+            {
+                SmartPokemon? pokemon = await PokeApiHandler.GetPokemonAsync(pokemonResource.Name);
+                if (pokemon != null)
+                {
+                    box.Add(pokemon);
+                    RefreshBox();
+                }                
+            }
         }
 
         private void OnClickBuildTeam(object sender, RoutedEventArgs e)
@@ -291,28 +362,28 @@ namespace autoteambuilder
             PokemonTeam? lockedMembers = new PokemonTeam();
 
             // setting locked members to the selected combobox controls
-            lockedMembers.SetPokemon(0, !comboPoke1.IsEnabled ? comboPoke1.SelectedItem != null ? ((PokedexEntry)comboPoke1.SelectedItem).Pokemon : null : null);
-            lockedMembers.SetPokemon(1, !comboPoke2.IsEnabled ? comboPoke2.SelectedItem != null ? ((PokedexEntry)comboPoke2.SelectedItem).Pokemon : null : null);
-            lockedMembers.SetPokemon(2, !comboPoke3.IsEnabled ? comboPoke3.SelectedItem != null ? ((PokedexEntry)comboPoke3.SelectedItem).Pokemon : null : null);
-            lockedMembers.SetPokemon(3, !comboPoke4.IsEnabled ? comboPoke4.SelectedItem != null ? ((PokedexEntry)comboPoke4.SelectedItem).Pokemon : null : null);
-            lockedMembers.SetPokemon(4, !comboPoke5.IsEnabled ? comboPoke5.SelectedItem != null ? ((PokedexEntry)comboPoke5.SelectedItem).Pokemon : null : null);
-            lockedMembers.SetPokemon(5, !comboPoke6.IsEnabled ? comboPoke6.SelectedItem != null ? ((PokedexEntry)comboPoke6.SelectedItem).Pokemon : null : null);
+            lockedMembers.Pokemon[0] = !comboPoke1.IsEnabled ? comboPoke1.SelectedItem != null ? (SmartPokemon)comboPoke1.SelectedItem : null : null;
+            lockedMembers.Pokemon[1] = !comboPoke2.IsEnabled ? comboPoke2.SelectedItem != null ? (SmartPokemon)comboPoke2.SelectedItem : null : null;
+            lockedMembers.Pokemon[2] = !comboPoke3.IsEnabled ? comboPoke3.SelectedItem != null ? (SmartPokemon)comboPoke3.SelectedItem : null : null;
+            lockedMembers.Pokemon[3] = !comboPoke4.IsEnabled ? comboPoke4.SelectedItem != null ? (SmartPokemon)comboPoke4.SelectedItem : null : null;
+            lockedMembers.Pokemon[4] = !comboPoke5.IsEnabled ? comboPoke5.SelectedItem != null ? (SmartPokemon)comboPoke5.SelectedItem : null : null;
+            lockedMembers.Pokemon[5] = !comboPoke6.IsEnabled ? comboPoke6.SelectedItem != null ? (SmartPokemon)comboPoke6.SelectedItem : null : null;
 
             PokemonTeam newTeam = TeamBuilder.BuildTeam(box, lockedMembers);
 
-            SmartPokemon? pokemon1 = newTeam.GetPokemon(0);
-            SmartPokemon? pokemon2 = newTeam.GetPokemon(1);
-            SmartPokemon? pokemon3 = newTeam.GetPokemon(2);
-            SmartPokemon? pokemon4 = newTeam.GetPokemon(3);
-            SmartPokemon? pokemon5 = newTeam.GetPokemon(4);
-            SmartPokemon? pokemon6 = newTeam.GetPokemon(5);
+            SmartPokemon? pokemon1 = newTeam.Pokemon[0];
+            SmartPokemon? pokemon2 = newTeam.Pokemon[1];
+            SmartPokemon? pokemon3 = newTeam.Pokemon[2];
+            SmartPokemon? pokemon4 = newTeam.Pokemon[3];
+            SmartPokemon? pokemon5 = newTeam.Pokemon[4];
+            SmartPokemon? pokemon6 = newTeam.Pokemon[5];
 
-            comboPoke1.SelectedItem = pokemon1 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon1.Name)) : null;
-            comboPoke2.SelectedItem = pokemon2 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon2.Name)) : null;
-            comboPoke3.SelectedItem = pokemon3 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon3.Name)) : null;
-            comboPoke4.SelectedItem = pokemon4 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon4.Name)) : null;
-            comboPoke5.SelectedItem = pokemon5 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon5.Name)) : null;
-            comboPoke6.SelectedItem = pokemon6 != null ? box.FindPokemon(LowercaseToNamecaseConverter.FirstCharToUpper(pokemon6.Name)) : null;
+            comboPoke1.SelectedItem = pokemon1;
+            comboPoke2.SelectedItem = pokemon2;
+            comboPoke3.SelectedItem = pokemon3;
+            comboPoke4.SelectedItem = pokemon4;
+            comboPoke5.SelectedItem = pokemon5;
+            comboPoke6.SelectedItem = pokemon6;
 
             RefreshBox();
         }
@@ -328,6 +399,11 @@ namespace autoteambuilder
                 default:
                     break;
             }
+        }
+
+        private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            WriteBox();
         }
     }
 

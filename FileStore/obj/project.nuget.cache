@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "LPXMlBFvrbnEOeju0BowjBZ8wbxca7J2XbKyHvLFC4F3i62QtMJRJ/681ezjDZIzrR6jDCCwVTOeu5rcMl0KWw==",
+  "dgSpecHash": "nwmhS7V9cXJvMq4hLsp/UBPuWvTJ1CU2TAuJoz+Tz7cagwnm61ACrGIIpEr6YfRbSmOs1rPuIv4p1NC7yyWyxA==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\FileStore.csproj",
+  "projectFilePath": "D:\\dev\\autoteambuilder\\FileStore\\FileStore.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }
