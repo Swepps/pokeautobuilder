@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Xml.Serialization;
 
 namespace autoteambuilder
 {
@@ -26,6 +27,10 @@ namespace autoteambuilder
     public class SmartPokemon : Pokemon
     {
         public Multipliers? Multipliers;
+
+        public SmartPokemon()
+        {
+        }
 
         public SmartPokemon(Pokemon pokemon)
         {

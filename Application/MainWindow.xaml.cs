@@ -36,6 +36,7 @@ namespace autoteambuilder
         private SmartPokedex pokedex;
         private ObservableCollection<SmartPokemon> box;
         private PokemonTeam team = new PokemonTeam();
+        public double AutoRowHeight { get; set; } = 20;
 
         public static List<Type> AllTypes = new List<Type>();
         public static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -72,10 +73,10 @@ namespace autoteambuilder
 
         // ----------------------------------- Private Methods -----------------------------------
 
-        private void Init()
+        private async void Init()
         {
             // need to attempt to read the saved box before setting the listBox.ItemsSource
-            ReadBox();
+            await ReadBox();
             FillPokedex();
 
             comboPoke1.ItemsSource = box;
@@ -155,6 +156,9 @@ namespace autoteambuilder
             {
                 gridResults.Items.Add(new TypeRow() { Type = t.Name, Weaknesses = 0, Resists = 0 });
             }
+
+            // making the rows a height that fills the grid space
+            AdjustRowHeight();            
         }
 
         private void WriteBox()
@@ -162,13 +166,21 @@ namespace autoteambuilder
             try
             {
                 // save the contents of the box when closing the app
-                XmlSerializer ser = new XmlSerializer(typeof(SmartPokedex));
+                XmlSerializer ser = new XmlSerializer(typeof(List<string>));
 
+                // we really only need a list of pokemon names and the reading back in will do the rest
+                // with loading all the pokemon back in from the API
+                List<string> pokemonNames = new List<string>();
+                foreach (SmartPokemon p in box)
+                {
+                    pokemonNames.Add(p.Name);
+                }
+                
                 if (!Directory.Exists(BaseDir + "/save/"))
                     Directory.CreateDirectory(BaseDir + "/save/");
 
                 TextWriter writer = new StreamWriter(SaveFile);
-                ser.Serialize(writer, box);
+                ser.Serialize(writer, pokemonNames);
                 writer.Close();
             }
             catch (Exception ex)
@@ -176,21 +188,27 @@ namespace autoteambuilder
                 Console.WriteLine(ex.Message);
             }
         }
-        private void ReadBox()
+        private async Task ReadBox()
         {
             if (!File.Exists(SaveFile))
                 return;
 
             try
             {
-                XmlSerializer ser = new XmlSerializer(typeof(SmartPokedex));
+                XmlSerializer ser = new XmlSerializer(typeof(List<string>));
                 FileStream fs = new FileStream(SaveFile, FileMode.Open);
-                //SmartPokedex? box = (SmartPokedex?)ser.Deserialize(fs);
+                List<string>? pokemonNames = (List<string>?)ser.Deserialize(fs);
 
-                if (box != null)
+                if (pokemonNames != null)
                 {
-                    //this.box = box;
-                    //await this.box.DownloadPokemon();
+                    var tasks = pokemonNames.Select(async name =>
+                    {
+                        SmartPokemon? pokemon = await PokeApiHandler.GetPokemonAsync(name);
+                        if (pokemon != null)
+                            box.Add(pokemon);
+                    });
+
+                    await Task.WhenAll(tasks);
                     RefreshBox();
                 }
             }
@@ -218,11 +236,10 @@ namespace autoteambuilder
 
         private void RemoveSelectedFromBox()
         {
-            var selectedItems = listBox.SelectedItems.Cast<SmartPokemonEntry>().ToArray();
-            foreach (SmartPokemonEntry entry in selectedItems)
+            var selectedItems = listBox.SelectedItems.Cast<SmartPokemon>().ToArray();
+            foreach (SmartPokemon entry in selectedItems)
             {
-                ((ObservableCollection<SmartPokemonEntry>)listBox.ItemsSource).Remove(entry);
-                //box.RemovePokemon(entry.Name);
+                ((ObservableCollection<SmartPokemon>)listBox.ItemsSource).Remove(entry);
             }
             RefreshBox();
         }
@@ -339,7 +356,13 @@ namespace autoteambuilder
                     break;
 
                 case "random":
-                    pokemonResource = pokedex.RandomPokemon().GetAllVarieties()[0];
+                    SmartPokemonEntry? entry = pokedex.RandomPokemon();
+                    if (entry != null)
+                    {
+                        Random rand = new Random();
+                        List<NamedApiResource<Pokemon>> varieties = entry.GetAllVarieties();
+                        pokemonResource = varieties[rand.Next(varieties.Count)];
+                    }
                     break;
 
                 default:
@@ -404,6 +427,17 @@ namespace autoteambuilder
         private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             WriteBox();
+        }
+
+        private void AdjustRowHeight()
+        {
+            // fit all the rows into the grid
+            double rowsAreaHeight = gridResults.ActualHeight - gridResults.ColumnHeaderHeight;
+            AutoRowHeight = rowsAreaHeight / gridResults.Items.Count;
+        }
+        private void OnWindowResize(object sender, SizeChangedEventArgs e)
+        {
+            AdjustRowHeight();
         }
     }
 

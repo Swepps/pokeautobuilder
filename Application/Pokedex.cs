@@ -18,8 +18,6 @@ namespace autoteambuilder
     // however there are some pokemon with multiple varieties (e.g. rotom) which is
     // not stored in the pokedex so we can use this class to get each variety
 
-    [Serializable]
-    [XmlRoot(ElementName = "Entry")]
     public class SmartPokemonEntry
     {
         public int Id { get; set; }
@@ -51,8 +49,6 @@ namespace autoteambuilder
 
     // an observable collection of SmartPokemonEntry objects which is used as a binding
     // for the pokedex combobox
-    [Serializable]
-    [XmlRoot(ElementName = "PokemonList")]
     public class SmartPokedex : ObservableCollection<SmartPokemonEntry>
     {
         public SmartPokedex() { }
