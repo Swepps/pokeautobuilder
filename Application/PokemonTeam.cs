@@ -11,7 +11,7 @@ namespace autoteambuilder
 {
     using Type = PokeApiNet.Type;
 
-    class PokemonTeam
+    public class PokemonTeam
     {
         public SmartPokemon?[] Pokemon = new SmartPokemon[6];
 

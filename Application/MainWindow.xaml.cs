@@ -35,8 +35,8 @@ namespace autoteambuilder
     {
         private SmartPokedex pokedex;
         private ObservableCollection<SmartPokemon> box;
-        private PokemonTeam team = new PokemonTeam();
-        public double AutoRowHeight { get; set; } = 20;
+
+        public PokemonTeam Team { get; set; } = new PokemonTeam();
 
         public static List<Type> AllTypes = new List<Type>();
         public static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
@@ -52,6 +52,8 @@ namespace autoteambuilder
             //StringReader reader = new StringReader(FileStore.Resource.pokedexAll);
             pokedex = new();
             box = new ObservableCollection<SmartPokemon>();
+
+            GridRows = new ObservableCollection<TypeRow>();
 
             Init();
         }
@@ -137,28 +139,37 @@ namespace autoteambuilder
             pokemon6Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
             gridResults.Columns.Add(pokemon6Col);
 
-            DataGridTextColumn weaknessesCol = new DataGridTextColumn();
-            weaknessesCol.Header = "Total\nWeak";
-            weaknessesCol.Binding = new Binding("Weaknesses");
-            weaknessesCol.Width = 50;
-            gridResults.Columns.Add(weaknessesCol);
+            DataGridTextColumn defWeaknessesCol = new DataGridTextColumn();
+            defWeaknessesCol.Header = "Defense\nWeaknesses";
+            defWeaknessesCol.Binding = new Binding("DefWeaknesses");
+            defWeaknessesCol.Width = 80;
+            gridResults.Columns.Add(defWeaknessesCol);
 
-            DataGridTextColumn resistsCol = new DataGridTextColumn();
-            resistsCol.Header = "Total\nResist";
-            resistsCol.Binding = new Binding("Resists");
-            resistsCol.Width = 50;
-            gridResults.Columns.Add(resistsCol);
+            DataGridTextColumn defResistsCol = new DataGridTextColumn();
+            defResistsCol.Header = "Defense\nStrengths";
+            defResistsCol.Binding = new Binding("DefResists");
+            defResistsCol.Width = 80;
+            gridResults.Columns.Add(defResistsCol);
+
+            DataGridTextColumn attResistsCol = new DataGridTextColumn();
+            attResistsCol.Header = "Coverage\nWeaknesses";
+            attResistsCol.Binding = new Binding("AttResists");
+            attResistsCol.Width = 80;
+            gridResults.Columns.Add(attResistsCol);
+
+            DataGridTextColumn attWeaknessesCol = new DataGridTextColumn();
+            attWeaknessesCol.Header = "Coverage\nStrengths";
+            attWeaknessesCol.Binding = new Binding("AttWeaknesses");
+            attWeaknessesCol.Width = 80;
+            gridResults.Columns.Add(attWeaknessesCol);
 
             AllTypes = await PokeApiHandler.GetAllTypesAsync();
 
             // filling grid with a row for each pokemon type
             foreach (Type t in AllTypes)
             {
-                gridResults.Items.Add(new TypeRow() { Type = t.Name, Weaknesses = 0, Resists = 0 });
+                GridRows.Add(new TypeRow() { Type = t.Name, DefWeaknesses = 0, DefResists = 0, AttWeaknesses = 0, AttResists = 0 });
             }
-
-            // making the rows a height that fills the grid space
-            AdjustRowHeight();            
         }
 
         private void WriteBox()
@@ -246,7 +257,7 @@ namespace autoteambuilder
 
         private void CalculateTeamWeighting()
         {
-            double weighting = TeamBuilder.CalculateWeighting(team);
+            double weighting = TeamBuilder.CalculateWeighting(Team);
 
             labelWeighting.Content = weighting.ToString();
         }
@@ -274,15 +285,15 @@ namespace autoteambuilder
             }
 
             // get the selected pokemon from the combobox
-            team.Pokemon[teamIdx] = (SmartPokemon)comboBox.SelectedItem;
+            Team.Pokemon[teamIdx] = (SmartPokemon)comboBox.SelectedItem;
 
             CalculateTeamWeighting();
 
             // update the grid header
             DataGridTextColumn col = (DataGridTextColumn)gridResults.Columns[teamIdx + 1];
-            if (team.Pokemon[teamIdx] != null)
+            if (Team.Pokemon[teamIdx] != null)
             {
-                col.Header = team.Pokemon[teamIdx];
+                col.Header = Team.Pokemon[teamIdx];
             }
             else
             {
@@ -290,12 +301,12 @@ namespace autoteambuilder
             }
 
             // get the pokemon from the team once
-            SmartPokemon? pokemon1 = team.Pokemon[0];
-            SmartPokemon? pokemon2 = team.Pokemon[1];
-            SmartPokemon? pokemon3 = team.Pokemon[2];
-            SmartPokemon? pokemon4 = team.Pokemon[3];
-            SmartPokemon? pokemon5 = team.Pokemon[4];
-            SmartPokemon? pokemon6 = team.Pokemon[5];
+            SmartPokemon? pokemon1 = Team.Pokemon[0];
+            SmartPokemon? pokemon2 = Team.Pokemon[1];
+            SmartPokemon? pokemon3 = Team.Pokemon[2];
+            SmartPokemon? pokemon4 = Team.Pokemon[3];
+            SmartPokemon? pokemon5 = Team.Pokemon[4];
+            SmartPokemon? pokemon6 = Team.Pokemon[5];
 
             // update the grid rows
             foreach (TypeRow row in gridResults.Items) 
@@ -306,8 +317,8 @@ namespace autoteambuilder
                 row.Pokemon4Eff = pokemon4 != null ? pokemon4.GetAttackEffectiveness(row.Type) : 0.0;
                 row.Pokemon5Eff = pokemon5 != null ? pokemon5.GetAttackEffectiveness(row.Type) : 0.0;
                 row.Pokemon6Eff = pokemon6 != null ? pokemon6.GetAttackEffectiveness(row.Type) : 0.0;
-                row.Weaknesses = team.CountWeaknesses(row.Type);
-                row.Resists = team.CountResistances(row.Type);
+                row.DefWeaknesses = Team.CountWeaknesses(row.Type);
+                row.DefResists = Team.CountResistances(row.Type);
             }
 
             // needs a refresh or the changes won't be reflected
@@ -411,6 +422,17 @@ namespace autoteambuilder
             RefreshBox();
         }
 
+        private void OnClickRemoveSelected(object sender, RoutedEventArgs e)
+        {
+            RemoveSelectedFromBox();
+        }
+
+        private void OnClickClearStorage(object sender, RoutedEventArgs e)
+        {
+            listBox.SelectAll();
+            RemoveSelectedFromBox();
+        }
+
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key) 
@@ -428,23 +450,12 @@ namespace autoteambuilder
         {
             WriteBox();
         }
-
-        private void AdjustRowHeight()
-        {
-            // fit all the rows into the grid
-            double rowsAreaHeight = gridResults.ActualHeight - gridResults.ColumnHeaderHeight;
-            AutoRowHeight = rowsAreaHeight / gridResults.Items.Count;
-        }
-        private void OnWindowResize(object sender, SizeChangedEventArgs e)
-        {
-            AdjustRowHeight();
-        }
     }
 
     // ----------------------------------- Helper classes -----------------------------------
 
     // each row of the results grid
-    internal class TypeRow
+    public class TypeRow
     {
         public string Type { get; set; }
         public double Pokemon1Eff { get; set; }
@@ -453,8 +464,10 @@ namespace autoteambuilder
         public double Pokemon4Eff { get; set; }
         public double Pokemon5Eff { get; set; }
         public double Pokemon6Eff { get; set; }
-        public int Weaknesses { get; set; }
-        public int Resists { get; set; }
+        public int DefWeaknesses { get; set; }
+        public int DefResists { get; set; }
+        public int AttWeaknesses { get; set; }
+        public int AttResists { get; set; }
 
         public TypeRow()
         {
