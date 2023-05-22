@@ -1,23 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\dev\\autoteambuilder\\FileStore\\FileStore.csproj": {}
+    "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\FileStore.csproj": {}
   },
   "projects": {
-    "D:\\dev\\autoteambuilder\\FileStore\\FileStore.csproj": {
+    "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\FileStore.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\dev\\autoteambuilder\\FileStore\\FileStore.csproj",
+        "projectUniqueName": "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\FileStore.csproj",
         "projectName": "FileStore",
-        "projectPath": "D:\\dev\\autoteambuilder\\FileStore\\FileStore.csproj",
-        "packagesPath": "C:\\Users\\georgeo\\.nuget\\packages\\",
-        "outputPath": "D:\\dev\\autoteambuilder\\FileStore\\obj\\",
+        "projectPath": "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\FileStore.csproj",
+        "packagesPath": "C:\\Users\\Gorg\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\georgeo\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Gorg\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
