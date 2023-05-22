@@ -1,8 +1,10 @@
-﻿using PokeApiNet;
+﻿using FileStore;
+using PokeApiNet;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -46,6 +48,7 @@ namespace autoteambuilder
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = this;
 
             // create the pokedex from the text file resource
             // TODO: use PokeApi to build the pokedex
@@ -53,7 +56,7 @@ namespace autoteambuilder
             pokedex = new();
             box = new ObservableCollection<SmartPokemon>();
 
-            GridRows = new ObservableCollection<TypeRow>();
+            //GridRows = new ObservableCollection<TypeRow>();
 
             Init();
         }
@@ -77,6 +80,8 @@ namespace autoteambuilder
 
         private async void Init()
         {
+            AllTypes = await PokeApiHandler.GetAllTypesAsync();
+
             // need to attempt to read the saved box before setting the listBox.ItemsSource
             await ReadBox();
             FillPokedex();
@@ -88,12 +93,11 @@ namespace autoteambuilder
             comboPoke5.ItemsSource = box;
             comboPoke6.ItemsSource = box;
 
-            listBox.ItemTemplate = (DataTemplate)Resources["boxPokemon"];
             listBox.ItemsSource = box;
 
             comboPokedex.ItemsSource = pokedex;
 
-            gridResults.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
+            //gridResults.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
 
             InitGrid();            
         }
@@ -101,75 +105,73 @@ namespace autoteambuilder
         private async void InitGrid()
         {
             // setting columns of grid
-            DataGridTextColumn typeCol = new DataGridTextColumn();
-            typeCol.Header = "Type";
-            typeCol.Binding = new Binding("Type");
-            typeCol.Width = DataGridLength.SizeToCells;
-            gridResults.Columns.Add(typeCol);
+            //DataGridTextColumn typeCol = new DataGridTextColumn();
+            //typeCol.Header = "Type";
+            //typeCol.Binding = new Binding("Type");
+            //typeCol.Width = DataGridLength.SizeToCells;
+            //gridResults.Columns.Add(typeCol);
 
-            // this is pretty repetitive, can it be put in a function?
-            DataGridTextColumn pokemon1Col = new DataGridTextColumn();
-            pokemon1Col.Header = "";
-            pokemon1Col.Binding = new Binding("Pokemon1Eff");
-            pokemon1Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
-            gridResults.Columns.Add(pokemon1Col);
-            DataGridTextColumn pokemon2Col = new DataGridTextColumn();
-            pokemon2Col.Header = "";
-            pokemon2Col.Binding = new Binding("Pokemon2Eff");
-            pokemon2Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
-            gridResults.Columns.Add(pokemon2Col);
-            DataGridTextColumn pokemon3Col = new DataGridTextColumn();
-            pokemon3Col.Header = "";
-            pokemon3Col.Binding = new Binding("Pokemon3Eff");
-            pokemon3Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
-            gridResults.Columns.Add(pokemon3Col);
-            DataGridTextColumn pokemon4Col = new DataGridTextColumn();
-            pokemon4Col.Header = "";
-            pokemon4Col.Binding = new Binding("Pokemon4Eff");
-            pokemon4Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
-            gridResults.Columns.Add(pokemon4Col);
-            DataGridTextColumn pokemon5Col = new DataGridTextColumn();
-            pokemon5Col.Header = "";
-            pokemon5Col.Binding = new Binding("Pokemon5Eff");
-            pokemon5Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
-            gridResults.Columns.Add(pokemon5Col);
-            DataGridTextColumn pokemon6Col = new DataGridTextColumn();
-            pokemon6Col.Header = "";
-            pokemon6Col.Binding = new Binding("Pokemon6Eff");
-            pokemon6Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
-            gridResults.Columns.Add(pokemon6Col);
+            //// this is pretty repetitive, can it be put in a function?
+            //DataGridTextColumn pokemon1Col = new DataGridTextColumn();
+            //pokemon1Col.Header = "";
+            //pokemon1Col.Binding = new Binding("Pokemon1Eff");
+            //pokemon1Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
+            //gridResults.Columns.Add(pokemon1Col);
+            //DataGridTextColumn pokemon2Col = new DataGridTextColumn();
+            //pokemon2Col.Header = "";
+            //pokemon2Col.Binding = new Binding("Pokemon2Eff");
+            //pokemon2Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
+            //gridResults.Columns.Add(pokemon2Col);
+            //DataGridTextColumn pokemon3Col = new DataGridTextColumn();
+            //pokemon3Col.Header = "";
+            //pokemon3Col.Binding = new Binding("Pokemon3Eff");
+            //pokemon3Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
+            //gridResults.Columns.Add(pokemon3Col);
+            //DataGridTextColumn pokemon4Col = new DataGridTextColumn();
+            //pokemon4Col.Header = "";
+            //pokemon4Col.Binding = new Binding("Pokemon4Eff");
+            //pokemon4Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
+            //gridResults.Columns.Add(pokemon4Col);
+            //DataGridTextColumn pokemon5Col = new DataGridTextColumn();
+            //pokemon5Col.Header = "";
+            //pokemon5Col.Binding = new Binding("Pokemon5Eff");
+            //pokemon5Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
+            //gridResults.Columns.Add(pokemon5Col);
+            //DataGridTextColumn pokemon6Col = new DataGridTextColumn();
+            //pokemon6Col.Header = "";
+            //pokemon6Col.Binding = new Binding("Pokemon6Eff");
+            //pokemon6Col.HeaderTemplate = (DataTemplate)Resources["headerPokemon"];
+            //gridResults.Columns.Add(pokemon6Col);
 
-            DataGridTextColumn defWeaknessesCol = new DataGridTextColumn();
-            defWeaknessesCol.Header = "Defense\nWeaknesses";
-            defWeaknessesCol.Binding = new Binding("DefWeaknesses");
-            defWeaknessesCol.Width = 80;
-            gridResults.Columns.Add(defWeaknessesCol);
+            //DataGridTextColumn defWeaknessesCol = new DataGridTextColumn();
+            //defWeaknessesCol.Header = "Defense\nWeaknesses";
+            //defWeaknessesCol.Binding = new Binding("DefWeaknesses");
+            //defWeaknessesCol.Width = 80;
+            //gridResults.Columns.Add(defWeaknessesCol);
 
-            DataGridTextColumn defResistsCol = new DataGridTextColumn();
-            defResistsCol.Header = "Defense\nStrengths";
-            defResistsCol.Binding = new Binding("DefResists");
-            defResistsCol.Width = 80;
-            gridResults.Columns.Add(defResistsCol);
+            //DataGridTextColumn defResistsCol = new DataGridTextColumn();
+            //defResistsCol.Header = "Defense\nStrengths";
+            //defResistsCol.Binding = new Binding("DefResists");
+            //defResistsCol.Width = 80;
+            //gridResults.Columns.Add(defResistsCol);
 
-            DataGridTextColumn attResistsCol = new DataGridTextColumn();
-            attResistsCol.Header = "Coverage\nWeaknesses";
-            attResistsCol.Binding = new Binding("AttResists");
-            attResistsCol.Width = 80;
-            gridResults.Columns.Add(attResistsCol);
+            //DataGridTextColumn attResistsCol = new DataGridTextColumn();
+            //attResistsCol.Header = "Coverage\nWeaknesses";
+            //attResistsCol.Binding = new Binding("AttResists");
+            //attResistsCol.Width = 80;
+            //gridResults.Columns.Add(attResistsCol);
 
-            DataGridTextColumn attWeaknessesCol = new DataGridTextColumn();
-            attWeaknessesCol.Header = "Coverage\nStrengths";
-            attWeaknessesCol.Binding = new Binding("AttWeaknesses");
-            attWeaknessesCol.Width = 80;
-            gridResults.Columns.Add(attWeaknessesCol);
+            //DataGridTextColumn attWeaknessesCol = new DataGridTextColumn();
+            //attWeaknessesCol.Header = "Coverage\nStrengths";
+            //attWeaknessesCol.Binding = new Binding("AttWeaknesses");
+            //attWeaknessesCol.Width = 80;
+            //gridResults.Columns.Add(attWeaknessesCol);
 
-            AllTypes = await PokeApiHandler.GetAllTypesAsync();
-
-            // filling grid with a row for each pokemon type
-            foreach (Type t in AllTypes)
-            {
-                GridRows.Add(new TypeRow() { Type = t.Name, DefWeaknesses = 0, DefResists = 0, AttWeaknesses = 0, AttResists = 0 });
-            }
+            //// filling grid with a row for each pokemon type
+            //foreach (Type t in AllTypes)
+            //{
+            //    GridRows.Add(new TypeRow() { Type = t.Name, DefWeaknesses = 0, DefResists = 0, AttWeaknesses = 0, AttResists = 0 });
+            //}
         }
 
         private void WriteBox()
@@ -285,44 +287,75 @@ namespace autoteambuilder
             }
 
             // get the selected pokemon from the combobox
-            Team.Pokemon[teamIdx] = (SmartPokemon)comboBox.SelectedItem;
+            Team[teamIdx] = (SmartPokemon)comboBox.SelectedItem;
 
             CalculateTeamWeighting();
 
             // update the grid header
-            DataGridTextColumn col = (DataGridTextColumn)gridResults.Columns[teamIdx + 1];
-            if (Team.Pokemon[teamIdx] != null)
-            {
-                col.Header = Team.Pokemon[teamIdx];
-            }
-            else
-            {
-                col.Header = "";
-            }
+            //DataGridTextColumn col = (DataGridTextColumn)gridResults.Columns[teamIdx + 1];
+            //if (Team.Pokemon[teamIdx] != null)
+            //{
+            //    col.Header = Team.Pokemon[teamIdx];
+            //}
+            //else
+            //{
+            //    col.Header = "";
+            //}
 
             // get the pokemon from the team once
-            SmartPokemon? pokemon1 = Team.Pokemon[0];
-            SmartPokemon? pokemon2 = Team.Pokemon[1];
-            SmartPokemon? pokemon3 = Team.Pokemon[2];
-            SmartPokemon? pokemon4 = Team.Pokemon[3];
-            SmartPokemon? pokemon5 = Team.Pokemon[4];
-            SmartPokemon? pokemon6 = Team.Pokemon[5];
+            SmartPokemon? pokemon1 = Team[0];
+            SmartPokemon? pokemon2 = Team[1];
+            SmartPokemon? pokemon3 = Team[2];
+            SmartPokemon? pokemon4 = Team[3];
+            SmartPokemon? pokemon5 = Team[4];
+            SmartPokemon? pokemon6 = Team[5];
 
-            // update the grid rows
-            foreach (TypeRow row in gridResults.Items) 
+            if (pokemon1 != null)
             {
-                row.Pokemon1Eff = pokemon1 != null ? pokemon1.GetAttackEffectiveness(row.Type) : 0.0;
-                row.Pokemon2Eff = pokemon2 != null ? pokemon2.GetAttackEffectiveness(row.Type) : 0.0;
-                row.Pokemon3Eff = pokemon3 != null ? pokemon3.GetAttackEffectiveness(row.Type) : 0.0;
-                row.Pokemon4Eff = pokemon4 != null ? pokemon4.GetAttackEffectiveness(row.Type) : 0.0;
-                row.Pokemon5Eff = pokemon5 != null ? pokemon5.GetAttackEffectiveness(row.Type) : 0.0;
-                row.Pokemon6Eff = pokemon6 != null ? pokemon6.GetAttackEffectiveness(row.Type) : 0.0;
-                row.DefWeaknesses = Team.CountWeaknesses(row.Type);
-                row.DefResists = Team.CountResistances(row.Type);
+                poke1DefMin.ItemsSource = pokemon1.GetDefenseWeakList();
+                poke1DefPlus.ItemsSource = pokemon1.GetDefenseResistList();
+            }
+            if (pokemon2 != null)
+            {
+                poke2DefMin.ItemsSource = pokemon2.GetDefenseWeakList();
+                poke2DefPlus.ItemsSource = pokemon2.GetDefenseResistList();
+            }
+            if (pokemon3 != null)
+            {
+                poke3DefMin.ItemsSource = pokemon3.GetDefenseWeakList();
+                poke3DefPlus.ItemsSource = pokemon3.GetDefenseResistList();
+            }
+            if (pokemon4 != null)
+            {
+                poke4DefMin.ItemsSource = pokemon4.GetDefenseWeakList();
+                poke4DefPlus.ItemsSource = pokemon4.GetDefenseResistList();
+            }
+            if (pokemon5 != null)
+            {
+                poke5DefMin.ItemsSource = pokemon5.GetDefenseWeakList();
+                poke5DefPlus.ItemsSource = pokemon5.GetDefenseResistList();
+            }
+            if (pokemon6 != null)
+            {
+                poke6DefMin.ItemsSource = pokemon6.GetDefenseWeakList();
+                poke6DefPlus.ItemsSource = pokemon6.GetDefenseResistList();
             }
 
-            // needs a refresh or the changes won't be reflected
-            gridResults.Items.Refresh();
+            //// update the grid rows
+            //foreach (TypeRow row in gridResults.Items) 
+            //{
+            //    row.Pokemon1Eff = pokemon1 != null ? pokemon1.GetAttackEffectiveness(row.Type) : 0.0;
+            //    row.Pokemon2Eff = pokemon2 != null ? pokemon2.GetAttackEffectiveness(row.Type) : 0.0;
+            //    row.Pokemon3Eff = pokemon3 != null ? pokemon3.GetAttackEffectiveness(row.Type) : 0.0;
+            //    row.Pokemon4Eff = pokemon4 != null ? pokemon4.GetAttackEffectiveness(row.Type) : 0.0;
+            //    row.Pokemon5Eff = pokemon5 != null ? pokemon5.GetAttackEffectiveness(row.Type) : 0.0;
+            //    row.Pokemon6Eff = pokemon6 != null ? pokemon6.GetAttackEffectiveness(row.Type) : 0.0;
+            //    row.DefWeaknesses = Team.CountWeaknesses(row.Type);
+            //    row.DefResists = Team.CountResistances(row.Type);
+            //}
+
+            //// needs a refresh or the changes won't be reflected
+            //gridResults.Items.Refresh();
         }
 
         private void OnChangePokedexCombo(object sender, SelectionChangedEventArgs e)
@@ -396,21 +429,21 @@ namespace autoteambuilder
             PokemonTeam? lockedMembers = new PokemonTeam();
 
             // setting locked members to the selected combobox controls
-            lockedMembers.Pokemon[0] = !comboPoke1.IsEnabled ? comboPoke1.SelectedItem != null ? (SmartPokemon)comboPoke1.SelectedItem : null : null;
-            lockedMembers.Pokemon[1] = !comboPoke2.IsEnabled ? comboPoke2.SelectedItem != null ? (SmartPokemon)comboPoke2.SelectedItem : null : null;
-            lockedMembers.Pokemon[2] = !comboPoke3.IsEnabled ? comboPoke3.SelectedItem != null ? (SmartPokemon)comboPoke3.SelectedItem : null : null;
-            lockedMembers.Pokemon[3] = !comboPoke4.IsEnabled ? comboPoke4.SelectedItem != null ? (SmartPokemon)comboPoke4.SelectedItem : null : null;
-            lockedMembers.Pokemon[4] = !comboPoke5.IsEnabled ? comboPoke5.SelectedItem != null ? (SmartPokemon)comboPoke5.SelectedItem : null : null;
-            lockedMembers.Pokemon[5] = !comboPoke6.IsEnabled ? comboPoke6.SelectedItem != null ? (SmartPokemon)comboPoke6.SelectedItem : null : null;
+            lockedMembers[0] = !comboPoke1.IsEnabled ? comboPoke1.SelectedItem != null ? (SmartPokemon)comboPoke1.SelectedItem : null : null;
+            lockedMembers[1] = !comboPoke2.IsEnabled ? comboPoke2.SelectedItem != null ? (SmartPokemon)comboPoke2.SelectedItem : null : null;
+            lockedMembers[2] = !comboPoke3.IsEnabled ? comboPoke3.SelectedItem != null ? (SmartPokemon)comboPoke3.SelectedItem : null : null;
+            lockedMembers[3] = !comboPoke4.IsEnabled ? comboPoke4.SelectedItem != null ? (SmartPokemon)comboPoke4.SelectedItem : null : null;
+            lockedMembers[4] = !comboPoke5.IsEnabled ? comboPoke5.SelectedItem != null ? (SmartPokemon)comboPoke5.SelectedItem : null : null;
+            lockedMembers[5] = !comboPoke6.IsEnabled ? comboPoke6.SelectedItem != null ? (SmartPokemon)comboPoke6.SelectedItem : null : null;
 
             PokemonTeam newTeam = TeamBuilder.BuildTeam(box, lockedMembers);
 
-            SmartPokemon? pokemon1 = newTeam.Pokemon[0];
-            SmartPokemon? pokemon2 = newTeam.Pokemon[1];
-            SmartPokemon? pokemon3 = newTeam.Pokemon[2];
-            SmartPokemon? pokemon4 = newTeam.Pokemon[3];
-            SmartPokemon? pokemon5 = newTeam.Pokemon[4];
-            SmartPokemon? pokemon6 = newTeam.Pokemon[5];
+            SmartPokemon? pokemon1 = newTeam[0];
+            SmartPokemon? pokemon2 = newTeam[1];
+            SmartPokemon? pokemon3 = newTeam[2];
+            SmartPokemon? pokemon4 = newTeam[3];
+            SmartPokemon? pokemon5 = newTeam[4];
+            SmartPokemon? pokemon6 = newTeam[5];
 
             comboPoke1.SelectedItem = pokemon1;
             comboPoke2.SelectedItem = pokemon2;
@@ -517,6 +550,62 @@ namespace autoteambuilder
                 throw new InvalidOperationException("The target must be a boolean");
 
             return !(bool)value;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    // function used for turning a type name into a type .png picture
+    public class TypeNameToPngConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is string @string)
+            {
+                switch (@string)
+                {
+                    case "normal":
+                        return FileStore.Resource.Type_Normal;
+                    case "fighting":
+                        return FileStore.Resource.Type_Fighting;
+                    case "flying":
+                        return FileStore.Resource.Type_Flying;
+                    case "poison":
+                        return FileStore.Resource.Type_Poison;
+                    case "ground":
+                        return FileStore.Resource.Type_Ground;
+                    case "rock":
+                        return FileStore.Resource.Type_Rock;
+                    case "bug":
+                        return FileStore.Resource.Type_Bug;
+                    case "ghost":
+                        return FileStore.Resource.Type_Ghost;
+                    case "steel":
+                        return FileStore.Resource.Type_Steel;
+                    case "fire":
+                        return FileStore.Resource.Type_Fire;
+                    case "water":
+                        return FileStore.Resource.Type_Water;
+                    case "grass":
+                        return FileStore.Resource.Type_Grass;
+                    case "electric":
+                        return FileStore.Resource.Type_Electric;
+                    case "psychic":
+                        return FileStore.Resource.Type_Psychic;
+                    case "ice":
+                        return FileStore.Resource.Type_Ice;
+                    case "dragon":
+                        return FileStore.Resource.Type_Dragon;
+                    case "dark":
+                        return FileStore.Resource.Type_Dark;
+                    case "fairy":
+                        return FileStore.Resource.Type_Fairy;
+                }
+            }
+            return value;
         }
 
         public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)

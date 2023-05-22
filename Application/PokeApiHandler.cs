@@ -118,7 +118,7 @@ namespace autoteambuilder
                 // immune types
                 foreach (var namedType in noDamageTo)
                 {
-                    multipliers.attack[namedType.Name] = 0;
+                    //multipliers.coverage[namedType.Name] = 0;
                 }
                 foreach (var namedType in noDamageFrom)
                 {
@@ -128,14 +128,14 @@ namespace autoteambuilder
                 // resistant types
                 foreach (var namedType in halfDamageTo)
                 {
-                    if (multipliers.attack.ContainsKey(namedType.Name))
-                    {
-                        multipliers.attack[namedType.Name] = multipliers.attack[namedType.Name] * 0.5;
-                    }
-                    else
-                    {
-                        multipliers.attack[namedType.Name] = 0.5;
-                    }
+                    //if (!multipliers.coverage.ContainsKey(namedType.Name))
+                    //{
+                    //    multipliers.coverage[namedType.Name] = multipliers.coverage[namedType.Name] * 0.5;
+                    //}
+                    //else
+                    //{
+                    //    multipliers.coverage[namedType.Name] = 0.5;
+                    //}
                 }
                 foreach (var namedType in halfDamageFrom)
                 {
@@ -152,14 +152,15 @@ namespace autoteambuilder
                 // super effective types
                 foreach (var namedType in doubleDamageTo)
                 {
-                    if (multipliers.attack.ContainsKey(namedType.Name))
-                    {
-                        multipliers.attack[namedType.Name] = multipliers.attack[namedType.Name] * 2.0;
-                    }
-                    else
-                    {
-                        multipliers.attack[namedType.Name] = 2.0;
-                    }
+                    //if (multipliers.coverage.ContainsKey(namedType.Name))
+                    //{
+                    //    multipliers.coverage[namedType.Name] = multipliers.coverage[namedType.Name] * 2.0;
+                    //}
+                    //else
+                    //{
+                    //    multipliers.coverage[namedType.Name] = 2.0;
+                    //}
+                    multipliers.coverage[namedType.Name] = true;
                 }
                 foreach (var namedType in doubleDamageFrom)
                 {

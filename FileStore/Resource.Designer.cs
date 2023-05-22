@@ -61,29 +61,218 @@ namespace FileStore {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to 001,Bulbasaur,,Grass,Poison
-        ///002,Ivysaur,,Grass,Poison
-        ///003,Venusaur,,Grass,Poison
-        ///003,Venusaur,Mega Venusaur,Grass,Poison
-        ///004,Charmander,,Fire,
-        ///005,Charmeleon,,Fire,
-        ///006,Charizard,,Fire,Flying
-        ///006,Charizard,Mega Charizard X,Fire,Dragon
-        ///006,Charizard,Mega Charizard Y,Fire,Flying
-        ///007,Squirtle,,Water,
-        ///008,Wartortle,,Water,
-        ///009,Blastoise,,Water,
-        ///009,Blastoise,Mega Blastoise,Water,
-        ///010,Caterpie,,Bug,
-        ///011,Metapod,,Bug,
-        ///012,Butterfree,,Bug,Flying
-        ///013,Weedle,,Bug,Poison
-        ///014,Kakuna,,Bug,Poison
-        ///015,B [rest of string was truncated]&quot;;.
+        ///   Looks up a localized string similar to 001,Bulbasaur,
+        ///002,Ivysaur,
+        ///003,Venusaur,
+        ///003,Venusaur,Mega Venusaur
+        ///004,Charmander,
+        ///005,Charmeleon,
+        ///006,Charizard,
+        ///006,Charizard,Mega Charizard X
+        ///006,Charizard,Mega Charizard Y
+        ///007,Squirtle,
+        ///008,Wartortle,
+        ///009,Blastoise,
+        ///009,Blastoise,Mega Blastoise
+        ///010,Caterpie,
+        ///011,Metapod,
+        ///012,Butterfree,
+        ///013,Weedle,
+        ///014,Kakuna,
+        ///015,Beedrill,
+        ///015,Beedrill,Mega Beedrill
+        ///016,Pidgey,
+        ///017,Pidgeotto,
+        ///018,Pidgeot,
+        ///018,Pidgeot,Mega Pidgeot
+        ///019,Rattata,
+        ///019,Rattata,Alolan Rattata
+        ///020,Raticate,
+        ///020,Rat [rest of string was truncated]&quot;;.
         /// </summary>
         public static string pokedexAll {
             get {
                 return ResourceManager.GetString("pokedexAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Bug {
+            get {
+                object obj = ResourceManager.GetObject("Type_Bug", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Dark {
+            get {
+                object obj = ResourceManager.GetObject("Type_Dark", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Dragon {
+            get {
+                object obj = ResourceManager.GetObject("Type_Dragon", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Electric {
+            get {
+                object obj = ResourceManager.GetObject("Type_Electric", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Fairy {
+            get {
+                object obj = ResourceManager.GetObject("Type_Fairy", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Fighting {
+            get {
+                object obj = ResourceManager.GetObject("Type_Fighting", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Fire {
+            get {
+                object obj = ResourceManager.GetObject("Type_Fire", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Flying {
+            get {
+                object obj = ResourceManager.GetObject("Type_Flying", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Ghost {
+            get {
+                object obj = ResourceManager.GetObject("Type_Ghost", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Grass {
+            get {
+                object obj = ResourceManager.GetObject("Type_Grass", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Ground {
+            get {
+                object obj = ResourceManager.GetObject("Type_Ground", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Ice {
+            get {
+                object obj = ResourceManager.GetObject("Type_Ice", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Normal {
+            get {
+                object obj = ResourceManager.GetObject("Type_Normal", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Poison {
+            get {
+                object obj = ResourceManager.GetObject("Type_Poison", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Psychic {
+            get {
+                object obj = ResourceManager.GetObject("Type_Psychic", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Rock {
+            get {
+                object obj = ResourceManager.GetObject("Type_Rock", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Steel {
+            get {
+                object obj = ResourceManager.GetObject("Type_Steel", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] Type_Water {
+            get {
+                object obj = ResourceManager.GetObject("Type_Water", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

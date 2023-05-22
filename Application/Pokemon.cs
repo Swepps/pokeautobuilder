@@ -15,12 +15,12 @@ namespace autoteambuilder
     public struct Multipliers
     {
         public Dictionary<string, double> defense;
-        public Dictionary<string, double> attack;
+        public Dictionary<string, bool> coverage;
 
         public Multipliers()
         {
             defense = new Dictionary<string, double>();
-            attack = new Dictionary<string, double>();
+            coverage = new Dictionary<string, bool>();
         }
     }
 
@@ -55,7 +55,7 @@ namespace autoteambuilder
             Types = pokemon.Types;
         }
 
-        public double GetAttackEffectiveness(string typeName)
+        public double GetEffectivenessTo(string typeName)
         {
             Multipliers multipliers = GetMultipliers();
             if (multipliers.defense.TryGetValue(typeName, out double attEff))
@@ -68,16 +68,16 @@ namespace autoteambuilder
             }
         }
 
-        public double GetDefenseffectiveness(string typeName)
+        public bool IsCoveredBySTAB(string typeName)
         {
             Multipliers multipliers = GetMultipliers();
-            if (multipliers.attack.TryGetValue(typeName, out double attEff))
+            if (multipliers.coverage.TryGetValue(typeName, out bool covered))
             {
-                return attEff;
+                return covered;
             }
             else
             {
-                return 1.0;
+                return false;
             }
         }
 
@@ -86,6 +86,42 @@ namespace autoteambuilder
             Multipliers ??= PokeApiHandler.GetPokemonMultipliersAsync(this).Result;
 
             return (Multipliers)Multipliers;
+        }
+
+        public List<string> GetDefenseResistList()
+        {
+            List<string> ret = new List<string>();
+            foreach (Type type in MainWindow.AllTypes)
+            {
+                if (GetEffectivenessTo(type.Name) < 1.0)
+                    ret.Add(type.Name);
+            }
+
+            return ret;
+        }
+
+        public List<string> GetDefenseWeakList()
+        {
+            List<string> ret = new List<string>();
+            foreach (Type type in MainWindow.AllTypes)
+            {
+                if (GetEffectivenessTo(type.Name) > 1.0)
+                    ret.Add(type.Name);
+            }
+
+            return ret;
+        }
+
+        public List<string> GetCoverageList()
+        {
+            List<string> ret = new List<string>();
+            foreach (Type type in MainWindow.AllTypes)
+            {
+                if (IsCoveredBySTAB(type.Name))
+                    ret.Add(type.Name);
+            }
+
+            return ret;
         }
 
         public override string ToString()

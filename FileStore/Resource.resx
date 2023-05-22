@@ -121,4 +121,58 @@
   <data name="pokedexAll" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>res\pokedexAll.txt;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;utf-8</value>
   </data>
+  <data name="Type_Bug" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Bug.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Dark" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Dark.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Dragon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Dragon.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Electric" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Electric.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Fairy" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Fairy.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Fighting" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Fighting.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Fire" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Fire.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Flying" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Flying.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Ghost" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Ghost.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Grass" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Grass.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Ground" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Ground.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Ice" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Ice.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Normal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Normal.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Poison" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Poison.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Psychic" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Psychic.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Rock" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Rock.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Steel" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Steel.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Type_Water" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>res\Type-Water.png;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
 </root>

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,15 +12,24 @@ namespace autoteambuilder
 {
     using Type = PokeApiNet.Type;
 
-    public class PokemonTeam
+    public class PokemonTeam : ObservableCollection<SmartPokemon?>
     {
-        public SmartPokemon?[] Pokemon = new SmartPokemon[6];
-
+        public static readonly int MaxTeamSize = 6;
+        
+        public PokemonTeam() 
+        {
+            // need 6 null pokemon in the team at the beginning
+            for (int i = 0; i < MaxTeamSize; i++)
+            {
+                Add(null);
+            }
+        }
         public int CountPokemon()
         {
             int count = 0;
-            foreach (SmartPokemon? p in Pokemon)
+            for (int i = 0; i < MaxTeamSize; i++)
             {
+                SmartPokemon? p = this[i];
                 if (p != null) count++;
             }
             return count;
@@ -29,8 +39,9 @@ namespace autoteambuilder
         public int CountWeaknesses(string typeName)
         {
             int weaknesses = 0;
-            foreach (SmartPokemon? p in Pokemon)
+            for (int i = 0; i < MaxTeamSize; i++)
             {
+                SmartPokemon? p = this[i];
                 if (p == null) continue;
 
                 Multipliers multipliers = p.GetMultipliers();
@@ -49,8 +60,9 @@ namespace autoteambuilder
         public int CountResistances(string typeName)
         {
             int resistances = 0;
-            foreach (SmartPokemon? p in Pokemon)
+            for (int i = 0; i < MaxTeamSize; i++)
             {
+                SmartPokemon? p = this[i];
                 if (p == null) continue;
 
                 Multipliers multipliers = p.GetMultipliers();
@@ -64,11 +76,6 @@ namespace autoteambuilder
             }
 
             return resistances;
-        }
-
-        public IEnumerator GetEnumerator() 
-        {
-            return Pokemon.GetEnumerator();
         }
     }
 }

@@ -126,7 +126,7 @@ namespace autoteambuilder
                 // this is inefficient but the lists will always be small so should be pretty quick
                 foreach (SmartPokemon entry in remainingTeamCombination)
                 {
-                    foreach (SmartPokemon pokemon in lockedMembers)
+                    foreach (SmartPokemon? pokemon in lockedMembers)
                     {
                         if (entry == pokemon)
                             continue;
@@ -138,13 +138,13 @@ namespace autoteambuilder
                 int combinIdx = 0;
                 for (int i = 0; i < 6; i++)
                 {
-                    if (lockedMembers.Pokemon[i] != null)
+                    if (lockedMembers[i] != null)
                     {
-                        newTeam.Pokemon[i] = lockedMembers.Pokemon[i];
+                        newTeam[i] = lockedMembers[i];
                     }
                     else if (combinIdx < remainingTeamCombination.Length)
                     {
-                        newTeam.Pokemon[i] = remainingTeamCombination[combinIdx];
+                        newTeam[i] = remainingTeamCombination[combinIdx];
                         combinIdx++;
                     }
                 }

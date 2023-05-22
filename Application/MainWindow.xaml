@@ -5,19 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:autoteambuilder"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1000" Width="1000" MinWidth="1000
-        " MinHeight="1000" ScrollViewer.VerticalScrollBarVisibility="Disabled" Closing="OnClosing" >
+        Title="Auto Team Builder" Height="1000" Width="1000" MinWidth="500
+        " MinHeight="800" ScrollViewer.VerticalScrollBarVisibility="Disabled" Closing="OnClosing" >
     <Window.Resources>
         <local:LowercaseToNamecaseConverter x:Key="LowercaseToNamecaseConverter" />
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <local:TypeNameToPngConverter x:Key="TypeNameToPngConverter" />
         <DataTemplate x:Key="boxPokemon">
             <StackPanel>
                 <Image Source="{Binding Path=Sprites.FrontDefault}" MaxHeight="35"/>
             </StackPanel>
         </DataTemplate>
+        <DataTemplate x:Key="typeItem">
+            <Image Source="{Binding Converter={StaticResource TypeNameToPngConverter}}" Width="20" ToolTip="{Binding}"/>
+        </DataTemplate>
     </Window.Resources>
     <Grid Background="#FF242424">
-        <Canvas HorizontalAlignment="Left" Height="215" VerticalAlignment="Top" Width="225" Margin="10,10,0,0">
+        <Canvas HorizontalAlignment="Left" Height="215" VerticalAlignment="Top" Width="225" Margin="10,252,0,0">
             <Label Content="Team" Foreground="#FFF3F3F3" Height="30" Width="225" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" Canvas.Top="0" VerticalAlignment="Center" HorizontalContentAlignment="Center"/>
             <ComboBox x:Name="comboPoke1" IsEnabled="{Binding IsChecked, Converter={StaticResource InverseBooleanConverter}, ElementName=checkLock1}" HorizontalAlignment="Center" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam" Tag="0" Canvas.Top="36"/>
             <ComboBox x:Name="comboPoke2" IsEnabled="{Binding IsChecked, Converter={StaticResource InverseBooleanConverter}, ElementName=checkLock2}" HorizontalAlignment="Center" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam" Tag="1" Canvas.Top="67"/>
@@ -32,20 +36,8 @@
             <CheckBox x:Name="checkLock5" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="167"/>
             <CheckBox x:Name="checkLock6" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="200"/>
         </Canvas>
-        <ComboBox x:Name="comboPokemonVariety" DisplayMemberPath="Name" HorizontalAlignment="Right" Width="200" IsEditable="True" Tag="5" Height="20" VerticalAlignment="Top" Margin="0,293,10,0"/>
-        <ComboBox x:Name="comboPokedex" HorizontalAlignment="Right" VerticalAlignment="Top" Width="200" IsEditable="True" Tag="5" SelectionChanged="OnChangePokedexCombo" Margin="0,266,10,0"/>
-        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,318,40,0">
-            <TextBlock Text="&#x1F878;" Foreground="#FFF3F3F3" />
-            <Button Content="Add" Width="140" Click="OnClickAddToBox" Margin="10,0,0,0"/>
-        </StackPanel>
-        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,343,40,0">
-            <TextBlock Text="&#x1F878;" Foreground="#FFF3F3F3" />
-            <Button Content="Add Random Pokemon" Width="140" Click="OnClickAddToBox" Margin="10,0,0,0" Tag="random"/>
-        </StackPanel>
-        <Button Content="Clear Storage" Click="OnClickClearStorage" Margin="0,393,40,0" HorizontalAlignment="Right" Width="140" Height="20" VerticalAlignment="Top"/>
-        <Button Content="Remove Selected" Click="OnClickRemoveSelected" Margin="0,368,40,0" HorizontalAlignment="Right" Width="140" Height="20" VerticalAlignment="Top"/>
-        <Button Content="Build Team" HorizontalAlignment="Left" Margin="513,127,0,0" VerticalAlignment="Top" Click="OnClickBuildTeam" Width="75" Height="20"/>
-        <ListView x:Name="listBox" Margin="10,265,215,515" Background="#FF3F3F3F" HorizontalContentAlignment="Center" ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyDown="OnKeyDown">
+        <Button Content="Build Team" HorizontalAlignment="Left" Margin="-274,164,0,0" VerticalAlignment="Top" Click="OnClickBuildTeam" Width="75" Height="20"/>
+        <ListView x:Name="listBox" ItemTemplate="{StaticResource boxPokemon}" Background="#FF3F3F3F" HorizontalContentAlignment="Center" ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyDown="OnKeyDown" Margin="10,43,215,0" VerticalAlignment="Top" Height="200">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel />
@@ -63,9 +55,319 @@
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
+        <Label Content="Pokemon Storage" Foreground="#FFF3F3F3" Height="30" Width="225" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0"/>
+        <Canvas Margin="0,8,10,0" HorizontalAlignment="Right" Width="200" Height="183" VerticalAlignment="Top">
+            <ComboBox x:Name="comboPokemonVariety" DisplayMemberPath="Name" Width="200" IsEditable="True" Tag="5" Height="20" HorizontalAlignment="Right" Canvas.Top="63" VerticalAlignment="Top"/>
+            <ComboBox x:Name="comboPokedex" Width="200" IsEditable="True" Tag="5" SelectionChanged="OnChangePokedexCombo" HorizontalAlignment="Right" Canvas.Top="36" VerticalAlignment="Top"/>
+            <TextBlock Text="🡸" Foreground="#FFF3F3F3" Height="20" Canvas.Left="7" Canvas.Top="88" Width="13" />
+            <Button Content="Add" Click="OnClickAddToBox" Height="20" Canvas.Left="30" Canvas.Top="88" Width="140"/>
+            <TextBlock Text="🡸" Foreground="#FFF3F3F3" Height="20" Canvas.Left="7" Canvas.Top="113" Width="13" />
+            <Button Content="Add Random Pokemon" Click="OnClickAddToBox" Tag="random" Height="20" Canvas.Left="30" Canvas.Top="113" Width="140"/>
+            <Button Content="Clear Storage" Click="OnClickClearStorage" Width="140" Height="20" HorizontalAlignment="Right" Canvas.Left="30" Canvas.Top="163" VerticalAlignment="Top"/>
+            <Button Content="Remove Selected" Click="OnClickRemoveSelected" Width="140" Height="20" HorizontalAlignment="Right" Canvas.Left="30" Canvas.Top="138" VerticalAlignment="Top"/>
+            <Label Content="National Pokedex" Foreground="#FFF3F3F3" Height="30" Width="200" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+        </Canvas>
         <Label x:Name="labelWeighting" Content="" HorizontalAlignment="Left" Margin="613,8,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3" Height="26" Width="10"/>
-        <Label Content="Score:" HorizontalAlignment="Left" Margin="618,100,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3" Height="26" Width="42"/>
-        <Label Content="Pokemon Storage" Foreground="#FFF3F3F3" Height="30" Width="225" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,230,0,0"/>
-        <Label Content="National Pokedex" Foreground="#FFF3F3F3" Height="30" Width="200" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="790,230,10,0"/>
+        <Label Content="Score:" HorizontalAlignment="Left" Margin="-169,137,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3" Height="26" Width="42"/>
+        
+        
+        <Grid x:Name="teamGrid" Margin="10,482,10,7">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="200"/>
+                <RowDefinition Height="60*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100*"/>
+                <ColumnDefinition Width="100*"/>
+                <ColumnDefinition Width="100*"/>
+                <ColumnDefinition Width="100*"/>
+                <ColumnDefinition Width="100*"/>
+                <ColumnDefinition Width="100*"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel Grid.Column="0" Background="#FF3F3F3F">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Margin="10,10,10,10">
+                    <Label Content="{Binding Team[0].Name, Converter={StaticResource LowercaseToNamecaseConverter}, ElementName=MainWindow1}" FontWeight="Bold" Foreground="#FFF3F3F3" HorizontalContentAlignment="Center" FontSize="14"  />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Image Source="{Binding Path=Team[0].Types[0].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[0].Types[0].Type.Name, ElementName=MainWindow1}" />
+                        <Image Source="{Binding Path=Team[0].Types[1].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[0].Types[1].Type.Name, ElementName=MainWindow1}" />
+                    </StackPanel>
+                </StackPanel>
+                <Image Source="{Binding Path=Team[0].Sprites.Other.OfficialArtwork.FrontDefault, ElementName=MainWindow1}" DockPanel.Dock="Top" VerticalAlignment="Top" />
+            </DockPanel>
+            <DockPanel Grid.Column="1" Background="#FF3F3F3F">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Margin="10,10,10,10">
+                    <Label Content="{Binding Team[1].Name, Converter={StaticResource LowercaseToNamecaseConverter}, ElementName=MainWindow1}" FontWeight="Bold" Foreground="#FFF3F3F3" HorizontalContentAlignment="Center" FontSize="14"  />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Image Source="{Binding Path=Team[1].Types[0].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[1].Types[0].Type.Name, ElementName=MainWindow1}" />
+                        <Image Source="{Binding Path=Team[1].Types[1].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[1].Types[1].Type.Name, ElementName=MainWindow1}" />
+                    </StackPanel>
+                </StackPanel>
+                <Image Source="{Binding Path=Team[1].Sprites.Other.OfficialArtwork.FrontDefault, ElementName=MainWindow1}" DockPanel.Dock="Top" VerticalAlignment="Top" />
+            </DockPanel>
+            <DockPanel Grid.Column="2" Background="#FF3F3F3F">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Margin="10,10,10,10">
+                    <Label Content="{Binding Team[2].Name, Converter={StaticResource LowercaseToNamecaseConverter}, ElementName=MainWindow1}" FontWeight="Bold" Foreground="#FFF3F3F3" HorizontalContentAlignment="Center" FontSize="14"  />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Image Source="{Binding Path=Team[2].Types[0].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[2].Types[0].Type.Name, ElementName=MainWindow1}" />
+                        <Image Source="{Binding Path=Team[2].Types[1].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[2].Types[1].Type.Name, ElementName=MainWindow1}" />
+                    </StackPanel>
+                </StackPanel>
+                <Image Source="{Binding Path=Team[2].Sprites.Other.OfficialArtwork.FrontDefault, ElementName=MainWindow1}" DockPanel.Dock="Top" VerticalAlignment="Top" />
+            </DockPanel>
+            <DockPanel Grid.Column="3" Background="#FF3F3F3F">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Margin="10,10,10,10">
+                    <Label Content="{Binding Team[3].Name, Converter={StaticResource LowercaseToNamecaseConverter}, ElementName=MainWindow1}" FontWeight="Bold" Foreground="#FFF3F3F3" HorizontalContentAlignment="Center" FontSize="14"  />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Image Source="{Binding Path=Team[3].Types[0].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[3].Types[0].Type.Name, ElementName=MainWindow1}" />
+                        <Image Source="{Binding Path=Team[3].Types[1].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[3].Types[1].Type.Name, ElementName=MainWindow1}" />
+                    </StackPanel>
+                </StackPanel>
+                <Image Source="{Binding Path=Team[3].Sprites.Other.OfficialArtwork.FrontDefault, ElementName=MainWindow1}" DockPanel.Dock="Top" VerticalAlignment="Top" />
+            </DockPanel>
+            <DockPanel Grid.Column="4" Background="#FF3F3F3F">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Margin="10,10,10,10">
+                    <Label Content="{Binding Team[4].Name, Converter={StaticResource LowercaseToNamecaseConverter}, ElementName=MainWindow1}" FontWeight="Bold" Foreground="#FFF3F3F3" HorizontalContentAlignment="Center" FontSize="14"  />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Image Source="{Binding Path=Team[4].Types[0].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[4].Types[0].Type.Name, ElementName=MainWindow1}" />
+                        <Image Source="{Binding Path=Team[4].Types[1].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[4].Types[1].Type.Name, ElementName=MainWindow1}" />
+                    </StackPanel>
+                </StackPanel>
+                <Image Source="{Binding Path=Team[4].Sprites.Other.OfficialArtwork.FrontDefault, ElementName=MainWindow1}" DockPanel.Dock="Top" VerticalAlignment="Top" />
+            </DockPanel>
+            <DockPanel Grid.Column="5" Background="#FF3F3F3F">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Margin="10,10,10,10">
+                    <Label Content="{Binding Team[5].Name, Converter={StaticResource LowercaseToNamecaseConverter}, ElementName=MainWindow1}" FontWeight="Bold" Foreground="#FFF3F3F3" HorizontalContentAlignment="Center" FontSize="14"  />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Image Source="{Binding Path=Team[5].Types[0].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[5].Types[0].Type.Name, ElementName=MainWindow1}" />
+                        <Image Source="{Binding Path=Team[5].Types[1].Type.Name, Converter={StaticResource TypeNameToPngConverter}, ElementName=MainWindow1}" MaxHeight="40" ToolTip="{Binding Path=Team[5].Types[1].Type.Name, ElementName=MainWindow1}" />
+                    </StackPanel>
+                </StackPanel>
+                <Image Source="{Binding Path=Team[5].Sprites.Other.OfficialArtwork.FrontDefault, ElementName=MainWindow1}" DockPanel.Dock="Top" VerticalAlignment="Top" />
+            </DockPanel>
+            
+            
+            <Grid Grid.Column="0" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="50*"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="10,10,10,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Defense" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke1DefPlus" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    <ListView x:Name="poke1DefMin" ItemTemplate="{StaticResource typeItem}"  Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Column="1" />
+                </Grid>
+                <Grid Margin="10,10,10,10" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke1Coverage" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                </Grid>
+            </Grid>
+            <Grid Grid.Column="1" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="50*"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="10,10,10,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Defense" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke2DefPlus" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    <ListView x:Name="poke2DefMin" ItemTemplate="{StaticResource typeItem}"  Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Column="1" />
+                </Grid>
+                <Grid Margin="10,10,10,10" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke2Coverage" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                </Grid>
+            </Grid>
+            <Grid Grid.Column="2" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="50*"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="10,10,10,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Defense" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke3DefPlus" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    <ListView x:Name="poke3DefMin" ItemTemplate="{StaticResource typeItem}"  Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Column="1" />
+                </Grid>
+                <Grid Margin="10,10,10,10" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke3Coverage" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                </Grid>
+            </Grid>
+            <Grid Grid.Column="3" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="50*"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="10,10,10,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Defense" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke4DefPlus" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    <ListView x:Name="poke4DefMin" ItemTemplate="{StaticResource typeItem}"  Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Column="1" />
+                </Grid>
+                <Grid Margin="10,10,10,10" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke4Coverage" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                </Grid>
+            </Grid>
+            <Grid Grid.Column="4" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="50*"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="10,10,10,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Defense" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke5DefPlus" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    <ListView x:Name="poke5DefMin" ItemTemplate="{StaticResource typeItem}"  Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Column="1" />
+                </Grid>
+                <Grid Margin="10,10,10,10" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke5Coverage" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                </Grid>
+            </Grid>
+            <Grid Grid.Column="5" Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="50*"/>
+                    <RowDefinition Height="50*"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="10,10,10,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Defense" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke6DefPlus" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    <ListView x:Name="poke6DefMin" ItemTemplate="{StaticResource typeItem}"  Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Grid.Column="1" />
+                </Grid>
+                <Grid Margin="10,10,10,10" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="18"/>
+                        <RowDefinition Height="85*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50*"/>
+                        <ColumnDefinition Width="50*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.ColumnSpan="2" Padding="0,0,0,0" />
+                    <Label Content="+" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" />
+                    <Label Content="-" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Padding="0,0,0,0" Grid.Column="1" />
+                    <ListView x:Name="poke6Coverage" ItemTemplate="{StaticResource typeItem}" Grid.Row="2" Background="{x:Null}" BorderBrush="{x:Null}" Foreground="{x:Null}" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                </Grid>
+            </Grid>
+        </Grid>
     </Grid>
 </Window>
