@@ -12,6 +12,44 @@ namespace autoteambuilder
 
     internal class TeamBuilder
     {
+        public static double DefenseWeighting = 1.0;
+        public static double CoverageWeighting = 1.0;
+        public static double BaseStatsWeighting = 1.0;
+
+        // The main juice of the team building. this is what decides how good a team is
+        public static double CalculateWeighting(PokemonTeam team)
+        {
+            // gather some information about the types in the team
+            List<Type> typeArray = MainWindow.AllTypes;
+            Dictionary<Type, int> weaknesses = new Dictionary<Type, int>();
+            Dictionary<Type, int> resistances = new Dictionary<Type, int>();
+            Dictionary<Type, int> coverage = new Dictionary<Type, int>();
+
+            double totalWeaknesses = 0;
+            double totalResistances = 0;
+            foreach (Type t in typeArray)
+            {
+                totalWeaknesses += weaknesses[t] = team.CountWeaknesses(t.Name);
+                totalResistances += resistances[t] = team.CountResistances(t.Name);
+                coverage[t] = team.CountCoverage(t.Name);
+            }
+
+            // defense score
+            double weaknessesSD = CalculateStandardDeviation(weaknesses);
+            double resistancesSD = CalculateStandardDeviation(resistances);
+
+            double defenseScore = 10 - (weaknessesSD + (2 * resistancesSD));
+            defenseScore *= DefenseWeighting;
+
+            // coverage score
+            double coverageScore = CalculateCoverageScore(coverage);
+            coverageScore *= CoverageWeighting;
+
+            double weighting = defenseScore + coverageScore;
+
+            return weighting;
+        }
+
         // clever piece of combinations code I stole from the internet!
 
         // Enumerate all possible m-size combinations of [0, 1, ..., n-1] array
@@ -75,32 +113,23 @@ namespace autoteambuilder
             return Math.Sqrt(variance);
         }
 
-        public static double CalculateWeighting(PokemonTeam team)
+        private static double CalculateCoverageScore(Dictionary<Type, int> typeDictionary)
         {
-            double weighting = 0;
-
             List<Type> typeArray = MainWindow.AllTypes;
-            Dictionary<Type, int> weaknesses = new Dictionary<Type, int>();
-            Dictionary<Type, int> resistances = new Dictionary<Type, int>();
+            double score = 10.0;
+            double scoreForType = score / typeArray.Count;
 
-            double totalWeaknesses = 0;
-            double totalResistances = 0;
-            foreach (Type t in typeArray)
+            // give up to 10 points for having at least 1 coverage of each type
+            foreach (Type type in typeArray)
             {
-                totalWeaknesses += weaknesses[t] = team.CountWeaknesses(t.Name);
-                totalResistances += resistances[t] = team.CountResistances(t.Name);
+                if (!typeDictionary.ContainsKey(type))
+                    score -= scoreForType;
             }
 
-            double weaknessesSD = CalculateStandardDeviation(weaknesses);
-            double resistancesSD = CalculateStandardDeviation(resistances);
+            // deduct points for having a spread of coverage with high variance
+            score -= CalculateStandardDeviation(typeDictionary);
 
-            weighting += 3 - weaknessesSD;
-            weighting += 3 - resistancesSD;
-            weighting *= (team.CountPokemon() / 6.0);
-
-            // for now we're just saying that a balanced spread of resistances and weakness is best
-
-            return weighting;
+            return score;
         }
 
         public static PokemonTeam BuildTeam(ObservableCollection<SmartPokemon> availablePokemon, PokemonTeam? lockedMembers = null)

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace autoteambuilder
     public class PokemonTeam : ObservableCollection<SmartPokemon?>
     {
         public static readonly int MaxTeamSize = 6;
-        
+
         public PokemonTeam() 
         {
             // need 6 null pokemon in the team at the beginning
@@ -76,6 +77,27 @@ namespace autoteambuilder
             }
 
             return resistances;
+        }
+
+        public int CountCoverage(string typeName)
+        {
+            int coverage = 0;
+            for (int i = 0; i < MaxTeamSize; i++)
+            {
+                SmartPokemon? p = this[i];
+                if (p == null) continue;
+
+                Multipliers multipliers = p.GetMultipliers();
+
+                if (multipliers.coverage.TryGetValue(typeName, out bool value)
+                    &&
+                    value)
+                {
+                    coverage++;
+                }
+            }
+
+            return coverage;
         }
     }
 }

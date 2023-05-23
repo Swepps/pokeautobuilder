@@ -1,20 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\FileStore.csproj": {}
+    "D:\\dev\\autoteambuilder\\FileStore\\FileStore.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\FileStore.csproj": {
+    "D:\\dev\\autoteambuilder\\FileStore\\FileStore.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\FileStore.csproj",
+        "projectUniqueName": "D:\\dev\\autoteambuilder\\FileStore\\FileStore.csproj",
         "projectName": "FileStore",
-        "projectPath": "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\FileStore.csproj",
-        "packagesPath": "C:\\Users\\Gorg\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Gorg\\source\\repos\\pokemonautoteambuilder\\FileStore\\obj\\",
+        "projectPath": "D:\\dev\\autoteambuilder\\FileStore\\FileStore.csproj",
+        "packagesPath": "C:\\Users\\georgeo\\.nuget\\packages\\",
+        "outputPath": "D:\\dev\\autoteambuilder\\FileStore\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
         "configFilePaths": [
-          "C:\\Users\\Gorg\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\georgeo\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -55,7 +58,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.302\\RuntimeIdentifierGraph.json"
         }
       }
     }

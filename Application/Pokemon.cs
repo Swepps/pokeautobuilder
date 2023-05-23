@@ -2,6 +2,7 @@
 using System;
 using System.CodeDom;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,9 +29,9 @@ namespace autoteambuilder
     {
         public Multipliers? Multipliers;
 
-        public SmartPokemon()
-        {
-        }
+        public ObservableCollection<string> Resistances { get; set; }
+        public ObservableCollection<string> Weaknesses { get; set; }
+        public ObservableCollection<string> Coverage { get; set; }
 
         public SmartPokemon(Pokemon pokemon)
         {
@@ -53,6 +54,10 @@ namespace autoteambuilder
             Species = pokemon.Species;
             Stats = pokemon.Stats;
             Types = pokemon.Types;
+
+            Resistances = GetDefenseResistList();
+            Weaknesses = GetDefenseWeakList();
+            Coverage = GetCoverageList();
         }
 
         public double GetEffectivenessTo(string typeName)
@@ -88,9 +93,9 @@ namespace autoteambuilder
             return (Multipliers)Multipliers;
         }
 
-        public List<string> GetDefenseResistList()
+        private ObservableCollection<string> GetDefenseResistList()
         {
-            List<string> ret = new List<string>();
+            ObservableCollection<string> ret = new ObservableCollection<string>();
             foreach (Type type in MainWindow.AllTypes)
             {
                 if (GetEffectivenessTo(type.Name) < 1.0)
@@ -100,9 +105,9 @@ namespace autoteambuilder
             return ret;
         }
 
-        public List<string> GetDefenseWeakList()
+        private ObservableCollection<string> GetDefenseWeakList()
         {
-            List<string> ret = new List<string>();
+            ObservableCollection<string> ret = new ObservableCollection<string>();
             foreach (Type type in MainWindow.AllTypes)
             {
                 if (GetEffectivenessTo(type.Name) > 1.0)
@@ -112,9 +117,9 @@ namespace autoteambuilder
             return ret;
         }
 
-        public List<string> GetCoverageList()
+        private ObservableCollection<string> GetCoverageList()
         {
-            List<string> ret = new List<string>();
+            ObservableCollection<string> ret = new ObservableCollection<string>();
             foreach (Type type in MainWindow.AllTypes)
             {
                 if (IsCoveredBySTAB(type.Name))
