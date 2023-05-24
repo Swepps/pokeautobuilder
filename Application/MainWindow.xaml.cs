@@ -43,12 +43,17 @@ namespace autoteambuilder
         public static PokemonTeam Team { get; set; } = new PokemonTeam();
 
         public static List<Type> AllTypes = new List<Type>();
+
         public static ObservableCollection<ContentControl> ResistanceBars = new ObservableCollection<ContentControl>();
         public static ObservableCollection<ContentControl> WeaknessBars = new ObservableCollection<ContentControl>();
         public static ObservableCollection<ContentControl> CoverageBars = new ObservableCollection<ContentControl>();
+        public static int ListBoxItemHeight { get; set; } = 30;
+        public static long TeamCombinations { get; set; } = 0;
+
         public static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
         public static readonly string SaveFile = BaseDir + "/save/box.xml";
         public static readonly string PokedexFile = BaseDir + "/save/pokedex.xml";
+
         public static double TypeDefenseWeighting { get; set; } = 1.0;
         public static double TypeCoverageWeighting { get; set; } = 1.0;
         public static double HpWeighting { get; set; } = 1.0;
@@ -203,6 +208,7 @@ namespace autoteambuilder
 
                     await Task.WhenAll(tasks);
                     RefreshBox();
+                    CalculateTeamCombinations();
                 }
             }
             catch (Exception ex)
@@ -252,7 +258,27 @@ namespace autoteambuilder
         {
             double weighting = TeamBuilder.CalculateScore(Team, TypeDefenseWeighting, TypeCoverageWeighting, GetBaseStatsWeighting());
 
-            labelWeighting.Content = weighting.ToString();
+            if (labelScore != null)
+            {
+                labelScore.Content = weighting.ToString();
+            }
+        }
+
+        private void CalculateTeamCombinations()
+        {
+            PokemonTeam? lockedMembers = new PokemonTeam();
+
+            // setting locked members to the selected combobox controls
+            lockedMembers[0] = (bool)checkLock1.IsChecked? comboPoke1.SelectedItem != null ? (SmartPokemon)comboPoke1.SelectedItem : null : null;
+            lockedMembers[1] = (bool)checkLock2.IsChecked? comboPoke2.SelectedItem != null ? (SmartPokemon)comboPoke2.SelectedItem : null : null;
+            lockedMembers[2] = (bool)checkLock3.IsChecked? comboPoke3.SelectedItem != null ? (SmartPokemon)comboPoke3.SelectedItem : null : null;
+            lockedMembers[3] = (bool)checkLock4.IsChecked? comboPoke4.SelectedItem != null ? (SmartPokemon)comboPoke4.SelectedItem : null : null;
+            lockedMembers[4] = (bool)checkLock5.IsChecked? comboPoke5.SelectedItem != null ? (SmartPokemon)comboPoke5.SelectedItem : null : null;
+            lockedMembers[5] = (bool)checkLock6.IsChecked? comboPoke6.SelectedItem != null ? (SmartPokemon)comboPoke6.SelectedItem : null : null;
+
+            int countLockedMembers = lockedMembers.CountPokemon();
+            TeamCombinations = PermutationsAndCombinations.nCr(box.Count, 6 - countLockedMembers);
+            labelCombinations.Content = TeamCombinations;
         }
 
         private void OnChangeTeam(object sender, SelectionChangedEventArgs e)
@@ -428,6 +454,26 @@ namespace autoteambuilder
         private void OnWeightingChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             CalculateTeamWeighting();
+        }
+
+        private void OnScrollStorage(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Delta > 0)
+            {
+                if (ListBoxItemHeight < 50)
+                    ListBoxItemHeight++;
+            }
+            else if (e.Delta < 0)
+            {
+                if (ListBoxItemHeight > 5)
+                    ListBoxItemHeight--;
+            }
+            listBox.Items.Refresh();
+        }
+
+        private void OnTeamLockChanged(object sender, RoutedEventArgs e)
+        {
+            CalculateTeamCombinations();
         }
     }
 
@@ -615,6 +661,36 @@ namespace autoteambuilder
 
                 element.BeginAnimation(FrameworkElement.HeightProperty, animation);
             }
+        }
+    }
+
+    public static class PermutationsAndCombinations
+    {
+        public static long nCr(int n, int r)
+        {
+            // naive: return Factorial(n) / (Factorial(r) * Factorial(n - r));
+            return nPr(n, r) / Factorial(r);
+        }
+
+        public static long nPr(int n, int r)
+        {
+            // naive: return Factorial(n) / Factorial(n - r);
+            return FactorialDivision(n, n - r);
+        }
+
+        private static long FactorialDivision(int topFactorial, int divisorFactorial)
+        {
+            long result = 1;
+            for (int i = topFactorial; i > divisorFactorial; i--)
+                result *= i;
+            return result;
+        }
+
+        private static long Factorial(int i)
+        {
+            if (i <= 1)
+                return 1;
+            return i * Factorial(i - 1);
         }
     }
 }

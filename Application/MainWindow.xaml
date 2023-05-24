@@ -15,7 +15,7 @@
 
         <DataTemplate x:Key="boxPokemon">
             <StackPanel>
-                <Image Source="{Binding Path=Sprites.FrontDefault}" MaxHeight="35"/>
+                <Image Source="{Binding Path=Sprites.FrontDefault}" MaxHeight="{Binding ListBoxItemHeight, ElementName=MainWindow1}"/>
             </StackPanel>
         </DataTemplate>
 
@@ -137,18 +137,17 @@
             <ComboBox x:Name="comboPoke4" IsEnabled="{Binding IsChecked, Converter={StaticResource InverseBooleanConverter}, ElementName=checkLock4}" HorizontalAlignment="Center" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam" Tag="3" Canvas.Top="130"/>
             <ComboBox x:Name="comboPoke5" IsEnabled="{Binding IsChecked, Converter={StaticResource InverseBooleanConverter}, ElementName=checkLock5}" HorizontalAlignment="Center" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam" Tag="4" Canvas.Top="162"/>
             <ComboBox x:Name="comboPoke6" IsEnabled="{Binding IsChecked, Converter={StaticResource InverseBooleanConverter}, ElementName=checkLock6}" HorizontalAlignment="Center" VerticalAlignment="Top" Width="200" IsEditable="True" SelectionChanged="OnChangeTeam" Tag="5" Canvas.Top="194"/>
-            <CheckBox x:Name="checkLock1" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="39"/>
-            <CheckBox x:Name="checkLock2" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="71"/>
-            <CheckBox x:Name="checkLock3" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="102"/>
-            <CheckBox x:Name="checkLock4" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="134"/>
-            <CheckBox x:Name="checkLock5" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="167"/>
-            <CheckBox x:Name="checkLock6" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="200"/>
+            <CheckBox x:Name="checkLock1" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="39"  Checked="OnTeamLockChanged" Unchecked="OnTeamLockChanged"/>
+            <CheckBox x:Name="checkLock2" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="71"  Checked="OnTeamLockChanged" Unchecked="OnTeamLockChanged"/>
+            <CheckBox x:Name="checkLock3" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="102" Checked="OnTeamLockChanged" Unchecked="OnTeamLockChanged"/>
+            <CheckBox x:Name="checkLock4" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="134" Checked="OnTeamLockChanged" Unchecked="OnTeamLockChanged"/>
+            <CheckBox x:Name="checkLock5" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="167" Checked="OnTeamLockChanged" Unchecked="OnTeamLockChanged"/>
+            <CheckBox x:Name="checkLock6" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="200" Checked="OnTeamLockChanged" Unchecked="OnTeamLockChanged"/>
         </Canvas>
-        <Button Content="Build Team" HorizontalAlignment="Left" Margin="764,294,0,0" VerticalAlignment="Top" Click="OnClickBuildTeam" Width="75" Height="20"/>
-        <ListView x:Name="listBox" ItemTemplate="{StaticResource boxPokemon}" Background="#FF3F3F3F" HorizontalContentAlignment="Center" ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyDown="OnKeyDown" Margin="10,43,215,0" VerticalAlignment="Top" Height="200">
+        <ListView x:Name="listBox" ItemTemplate="{StaticResource boxPokemon}" Background="#FF3F3F3F" HorizontalContentAlignment="Center" ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyDown="OnKeyDown" Margin="10,43,215,0" VerticalAlignment="Top" Height="200" PreviewMouseWheel="OnScrollStorage">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel />
+                    <WrapPanel PreviewMouseWheel="OnScrollStorage" />
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemContainerStyle>
@@ -160,6 +159,8 @@
                             </StackPanel>
                         </Setter.Value>
                     </Setter>
+                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
@@ -174,11 +175,6 @@
             <Button Content="Clear Storage" Click="OnClickClearStorage" Width="140" Height="20" HorizontalAlignment="Right" Canvas.Left="30" Canvas.Top="163" VerticalAlignment="Top"/>
             <Button Content="Remove Selected" Click="OnClickRemoveSelected" Width="140" Height="20" HorizontalAlignment="Right" Canvas.Left="30" Canvas.Top="138" VerticalAlignment="Top"/>
             <Label Content="National Pokedex" Foreground="#FFF3F3F3" Height="30" Width="200" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-        </Canvas>
-        <Canvas HorizontalAlignment="Left" Margin="861,289,0,0" VerticalAlignment="Top" Width="97" Height="30">
-            <Label x:Name="labelWeighting" Content="" Foreground="#FFF3F3F3" Height="26" Width="50" HorizontalAlignment="Left" Canvas.Left="47" VerticalAlignment="Top"/>
-            <Label Content="Score:" Foreground="#FFF3F3F3" Height="26" Width="42" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-
         </Canvas>
 
         <Grid x:Name="teamGrid" Margin="0,482,10,10">
@@ -236,23 +232,44 @@
             <Label Content="Weaknesses" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="2" />
             <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="3" />
         </Grid>
-        <Label Content="Weightings" Foreground="#FFF3F3F3" Height="36" Width="225" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="270,252,0,0"/>
-        <Slider HorizontalAlignment="Left" Margin="357,290,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding TypeDefenseWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
-        <Label Content="Type Defense:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,286,0,0" />
-        <Slider HorizontalAlignment="Left" Margin="357,321,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding TypeCoverageWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
-        <Label Content="Type Coverage:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,317,0,0" />
-        <Slider HorizontalAlignment="Left" Margin="357,385,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding HpWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
-        <Label Content="HP Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,381,0,0" />
-        <Slider HorizontalAlignment="Left" Margin="357,416,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding AttWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
-        <Label Content="Attack Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,412,0,0" />
-        <Slider HorizontalAlignment="Left" Margin="357,447,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding SpAttWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
-        <Label Content="Sp. Attack Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,443,0,0" />
-        <Slider HorizontalAlignment="Left" Margin="690,385,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding DefWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
-        <Label Content="Defense Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="584,381,0,0" />
-        <Slider HorizontalAlignment="Left" Margin="690,416,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding SpDefWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
-        <Label Content="Sp. Defense Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="580,412,0,0" />
-        <Slider HorizontalAlignment="Left" Margin="690,447,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding SpeWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
-        <Label Content="Speed Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="584,443,0,0" />
+
+        <Grid Height="217" Margin="256,252,110,0" VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="200*"/>
+                <ColumnDefinition Width="100"/>
+                <ColumnDefinition Width="200*"/>
+            </Grid.ColumnDefinitions>
+            <Label Content="Weightings" Foreground="#FFF3F3F3" Height="36" Width="189" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,78,0" Grid.ColumnSpan="2"/>
+            <Slider Margin="4,38,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding TypeDefenseWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="1" Width="NaN"/>
+            <Label Content="Type Defense:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,34,0,0" />
+            <Slider Margin="4,69,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding TypeCoverageWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="1" Width="NaN"/>
+            <Label Content="Type Coverage:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,65,0,0" />
+            <Slider Margin="4,133,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding HpWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="1"/>
+            <Label Content="HP Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,129,0,0" />
+            <Slider Margin="4,164,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding AttWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="1"/>
+            <Label Content="Attack Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,160,0,0" />
+            <Slider Margin="4,195,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding SpAttWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="1"/>
+            <Label Content="Sp. Attack Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,191,0,0" />
+            <Slider Margin="7,133,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding DefWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="3" Width="NaN"/>
+            <Label Content="Defense Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,129,0,0" Grid.Column="2" />
+            <Slider Margin="7,164,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding SpDefWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="3" Width="NaN"/>
+            <Label Content="Sp. Defense Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,160,0,0" Grid.Column="1" Grid.ColumnSpan="2" Width="108" />
+            <Slider Margin="7,195,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding SpeWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="3" Width="NaN"/>
+            <Label Content="Speed Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="13,191,0,0" Grid.Column="2" />
+            <Label Content="Stat Weightings" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" Margin="0,0,44,0" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" Width="100" />
+            <Button Content="Build Team" VerticalAlignment="Top" Click="OnClickBuildTeam" Height="20" Width="74" HorizontalAlignment="Center" Grid.Column="3"/>
+            <Canvas HorizontalAlignment="Center" Margin="0,61,0,0" VerticalAlignment="Top" Width="98" Height="30" Grid.Column="3">
+                <Label x:Name="labelScore" Content="" Foreground="#FFF3F3F3" Height="26" Width="50" HorizontalAlignment="Left" Canvas.Left="47" VerticalAlignment="Top"/>
+                <Label Content="Score:" Foreground="#FFF3F3F3" Height="26" Width="42" HorizontalAlignment="Center" VerticalAlignment="Top" />
+
+            </Canvas>
+            <Canvas HorizontalAlignment="Center" Margin="0,26,0,0" VerticalAlignment="Top" Width="246" Height="30" Grid.Column="3">
+                <Label x:Name="labelCombinations" Content="{Binding TeamCombinations, ElementName=MainWindow1}" Foreground="#FFF3F3F3" Height="26" Grid.Column="3" Canvas.Left="123" Width="83" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Label Content="Team Combinations:" Foreground="#FFF3F3F3" Height="26" Width="138" HorizontalAlignment="Left" VerticalAlignment="Center" />
+
+            </Canvas>
+        </Grid>
 
     </Grid>
 </Window>
