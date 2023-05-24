@@ -93,6 +93,15 @@ namespace autoteambuilder
             return (Multipliers)Multipliers;
         }
 
+        public int GetBaseStat(string statName)
+        {
+            PokemonStat? stat = Stats.Find(x => x.Stat.Name == statName);
+            if (stat == null)
+                return -1;
+
+            return stat.BaseStat;
+        }
+
         private ObservableCollection<string> GetDefenseResistList()
         {
             ObservableCollection<string> ret = new ObservableCollection<string>();

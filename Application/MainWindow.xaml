@@ -11,6 +11,7 @@
         <local:LowercaseToNamecaseConverter x:Key="LowercaseToNamecaseConverter" />
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         <local:TypeNameToPngConverter x:Key="TypeNameToPngConverter" />
+        <local:CalculateBarHeight x:Key="CalculateBarHeight" />
 
         <DataTemplate x:Key="boxPokemon">
             <StackPanel>
@@ -22,11 +23,11 @@
             <Image Source="{Binding Converter={StaticResource TypeNameToPngConverter}}" Width="20" ToolTip="{Binding}" Margin="0"/>
         </DataTemplate>
 
-        <DataTemplate x:Key="typeItemGridHeader">
+        <ControlTemplate x:Key="typeItemGridHeader">
             <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
                 <Image Source="{Binding Converter={StaticResource TypeNameToPngConverter}}" Width="25" ToolTip="{Binding}" Margin="5" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </StackPanel>
-        </DataTemplate>
+        </ControlTemplate>
 
         <ControlTemplate x:Key="typeList">
             <ListView ItemsSource="{Binding}" ItemTemplate="{StaticResource typeItem}" Background="#FF3F3F3F" BorderBrush="{x:Null}" Foreground="{x:Null}" Padding="5" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
@@ -77,14 +78,14 @@
 
         <ControlTemplate x:Key="pokemonCard">
             <DockPanel Background="#FF3F3F3F" Margin="5" d:DataContext="{d:DesignInstance Type=local:SmartPokemon}">
-                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Margin="10,10,10,10">
+                <StackPanel Orientation="Vertical" DockPanel.Dock="Bottom" Margin="10">
                     <Label Content="{Binding Path=Name, Converter={StaticResource LowercaseToNamecaseConverter}}" FontWeight="Bold" Foreground="#FFF3F3F3" HorizontalContentAlignment="Center" FontSize="14"  />
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Image Source="{Binding Path=Types[0].Type.Name, Converter={StaticResource TypeNameToPngConverter}}" MaxHeight="40" ToolTip="{Binding Path=Types[0].Type.Name}" />
-                        <Image Source="{Binding Path=Types[1].Type.Name, Converter={StaticResource TypeNameToPngConverter}}" MaxHeight="40" ToolTip="{Binding Path=Types[1].Type.Name}" />
+                        <Image Source="{Binding Path=Types[0].Type.Name, Converter={StaticResource TypeNameToPngConverter}}" MaxHeight="40" ToolTip="{Binding Path=Types[0].Type.Name}" Margin="2" />
+                        <Image Source="{Binding Path=Types[1].Type.Name, Converter={StaticResource TypeNameToPngConverter}}" MaxHeight="40" ToolTip="{Binding Path=Types[1].Type.Name}" Margin="2" />
                     </StackPanel>
                 </StackPanel>
-                <Image Source="{Binding Path=Sprites.Other.OfficialArtwork.FrontDefault}" DockPanel.Dock="Top" VerticalAlignment="Top" />
+                <Image Source="{Binding Path=Sprites.Other.OfficialArtwork.FrontDefault}" DockPanel.Dock="Top" VerticalAlignment="Top" Margin="0,10,0,0"/>
             </DockPanel>
         </ControlTemplate>
 
@@ -92,11 +93,32 @@
             <Border BorderBrush="#FF3F3F3F" BorderThickness="1">
                 <Grid d:DataContext="{d:DesignInstance Type=local:SmartPokemon}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="200"/>
+                        <RowDefinition Height="180"/>
                         <RowDefinition Height="60*"/>
                     </Grid.RowDefinitions>
                     <ContentControl Template="{StaticResource pokemonCard}" DataContext="{Binding}"/>
                     <ContentControl Template="{StaticResource pokemonEffGrid}" DataContext="{Binding}" Grid.Row="1" />
+                </Grid>
+            </Border>
+        </ControlTemplate>
+
+        <ControlTemplate x:Key="totalBar">
+            <Border BorderBrush="#FF3F3F3F" BorderThickness="0,1,0,1">
+                <Grid ToolTip="{Binding}">
+                    <Rectangle HorizontalAlignment="Center" Height="49" Margin="0,0,0,0" VerticalAlignment="Bottom" Width="30">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="#FF3AA03B"/>
+                                <GradientStop Color="#FFCE4B18" Offset="1"/>
+                                <GradientStop Color="#FFBBFF00" Offset="0.8"/>
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <Rectangle HorizontalAlignment="Center" Height="50" Margin="0,0,0,0" VerticalAlignment="Top" Width="50" local:Animated.Height="{Binding Converter={StaticResource CalculateBarHeight}, Mode=OneWay}">
+                        <Rectangle.Fill>
+                            <SolidColorBrush Color="#FF242424" />
+                        </Rectangle.Fill>
+                    </Rectangle>
                 </Grid>
             </Border>
         </ControlTemplate>
@@ -122,7 +144,7 @@
             <CheckBox x:Name="checkLock5" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="167"/>
             <CheckBox x:Name="checkLock6" Content="" HorizontalAlignment="Center" VerticalAlignment="Top" Canvas.Left="205" Canvas.Top="200"/>
         </Canvas>
-        <Button Content="Build Team" HorizontalAlignment="Left" Margin="374,369,0,0" VerticalAlignment="Top" Click="OnClickBuildTeam" Width="75" Height="20"/>
+        <Button Content="Build Team" HorizontalAlignment="Left" Margin="764,294,0,0" VerticalAlignment="Top" Click="OnClickBuildTeam" Width="75" Height="20"/>
         <ListView x:Name="listBox" ItemTemplate="{StaticResource boxPokemon}" Background="#FF3F3F3F" HorizontalContentAlignment="Center" ScrollViewer.HorizontalScrollBarVisibility="Disabled" KeyDown="OnKeyDown" Margin="10,43,215,0" VerticalAlignment="Top" Height="200">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -153,8 +175,11 @@
             <Button Content="Remove Selected" Click="OnClickRemoveSelected" Width="140" Height="20" HorizontalAlignment="Right" Canvas.Left="30" Canvas.Top="138" VerticalAlignment="Top"/>
             <Label Content="National Pokedex" Foreground="#FFF3F3F3" Height="30" Width="200" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top"/>
         </Canvas>
-        <Label x:Name="labelWeighting" Content="" HorizontalAlignment="Left" Margin="526,342,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3" Height="26" Width="50"/>
-        <Label Content="Score:" HorizontalAlignment="Center" Margin="0,342,0,0" VerticalAlignment="Top" Foreground="#FFF3F3F3" Height="26" Width="42"/>
+        <Canvas HorizontalAlignment="Left" Margin="861,289,0,0" VerticalAlignment="Top" Width="97" Height="30">
+            <Label x:Name="labelWeighting" Content="" Foreground="#FFF3F3F3" Height="26" Width="50" HorizontalAlignment="Left" Canvas.Left="47" VerticalAlignment="Top"/>
+            <Label Content="Score:" Foreground="#FFF3F3F3" Height="26" Width="42" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+
+        </Canvas>
 
         <Grid x:Name="teamGrid" Margin="0,482,10,10">
             <Grid.Resources>
@@ -173,7 +198,7 @@
 
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="200"/>
+                    <RowDefinition Height="180"/>
                     <RowDefinition Height="65*"/>
                     <RowDefinition Height="35*"/>
                 </Grid.RowDefinitions>
@@ -197,30 +222,37 @@
             <ContentControl Grid.Column="6" Template="{StaticResource pokemonTeamMember}" DataContext="{Binding Team[5], ElementName=MainWindow1}"/>
         </Grid>
 
-        <DataGrid x:Name="teamTotalsGrid" ItemsSource="{Binding}" Grid.Row="1" ColumnWidth="*" AutoGenerateColumns="True" Margin="10,10,10,10" CanUserResizeColumns="False" CanUserSortColumns="False" ScrollViewer.HorizontalScrollBarVisibility="Disabled" IsHitTestVisible="False" EnableRowVirtualization="False" HorizontalContentAlignment="Stretch" Foreground="#FFF3F3F3" BorderBrush="#FF242424" Background="#FF3F3F3F" CanUserAddRows="False" CanUserDeleteRows="False" CanUserResizeRows="False" HeadersVisibility="Column" RowBackground="#FF3F3F3F">
-            <DataGrid.Resources>
-                <Style TargetType="{x:Type Button}" x:Key="{ComponentResourceKey ResourceId=DataGridSelectAllButtonStyle, TypeInTargetAssembly={x:Type DataGrid}}">
-                    <Setter Property="Background" Value="#FF242424" />
-                </Style>
-            </DataGrid.Resources>
-            <DataGrid.ColumnHeaderStyle>
-                <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="#FF242424" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate>
-                                <Image Source="{Binding Converter={StaticResource TypeNameToPngConverter}}" MaxWidth="25" Margin="5"/>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </DataGrid.ColumnHeaderStyle>
-            <DataGrid.CellStyle>
-                <Style TargetType="DataGridCell">
-                    <Setter Property="HorizontalContentAlignment" Value="Center" />
-                </Style>
-            </DataGrid.CellStyle>
-        </DataGrid>
+        <Grid x:Name="teamTotalsGrid" Grid.Row="1" Margin="10" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20*" />
+                <RowDefinition Height="25*" />
+                <RowDefinition Height="25*" />
+                <RowDefinition Height="25*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+            </Grid.ColumnDefinitions>
+            <Label Content="Resistances" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="1" />
+            <Label Content="Weaknesses" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="2" />
+            <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="3" />
+        </Grid>
+        <Label Content="Weightings" Foreground="#FFF3F3F3" Height="36" Width="225" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="270,252,0,0"/>
+        <Slider HorizontalAlignment="Left" Margin="357,290,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding TypeDefenseWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
+        <Label Content="Type Defense:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,286,0,0" />
+        <Slider HorizontalAlignment="Left" Margin="357,321,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding TypeCoverageWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
+        <Label Content="Type Coverage:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,317,0,0" />
+        <Slider HorizontalAlignment="Left" Margin="357,385,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding HpWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
+        <Label Content="HP Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,381,0,0" />
+        <Slider HorizontalAlignment="Left" Margin="357,416,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding AttWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
+        <Label Content="Attack Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,412,0,0" />
+        <Slider HorizontalAlignment="Left" Margin="357,447,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding SpAttWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
+        <Label Content="Sp. Attack Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="256,443,0,0" />
+        <Slider HorizontalAlignment="Left" Margin="690,385,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding DefWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
+        <Label Content="Defense Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="584,381,0,0" />
+        <Slider HorizontalAlignment="Left" Margin="690,416,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding SpDefWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
+        <Label Content="Sp. Defense Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="580,412,0,0" />
+        <Slider HorizontalAlignment="Left" Margin="690,447,0,0" VerticalAlignment="Top" Width="200" Maximum="1" Value="{Binding SpeWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged"/>
+        <Label Content="Speed Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="584,443,0,0" />
 
     </Grid>
 </Window>

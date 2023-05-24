@@ -20,6 +20,7 @@ using System.Windows.Documents;
 using System.Windows.Documents.Serialization;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -39,13 +40,23 @@ namespace autoteambuilder
         private SmartPokedex pokedex;
         private ObservableCollection<SmartPokemon> box;
 
-        public PokemonTeam Team { get; set; } = new PokemonTeam();
-        public DataTable TeamTotalsData { get; set; } = new DataTable();
+        public static PokemonTeam Team { get; set; } = new PokemonTeam();
 
         public static List<Type> AllTypes = new List<Type>();
+        public static ObservableCollection<ContentControl> ResistanceBars = new ObservableCollection<ContentControl>();
+        public static ObservableCollection<ContentControl> WeaknessBars = new ObservableCollection<ContentControl>();
+        public static ObservableCollection<ContentControl> CoverageBars = new ObservableCollection<ContentControl>();
         public static readonly string BaseDir = AppDomain.CurrentDomain.BaseDirectory;
         public static readonly string SaveFile = BaseDir + "/save/box.xml";
         public static readonly string PokedexFile = BaseDir + "/save/pokedex.xml";
+        public static double TypeDefenseWeighting { get; set; } = 1.0;
+        public static double TypeCoverageWeighting { get; set; } = 1.0;
+        public static double HpWeighting { get; set; } = 1.0;
+        public static double AttWeighting { get; set; } = 1.0;
+        public static double SpAttWeighting { get; set; } = 1.0;
+        public static double DefWeighting { get; set; } = 1.0;
+        public static double SpDefWeighting { get; set; } = 1.0;
+        public static double SpeWeighting { get; set; } = 1.0;
 
         public MainWindow()
         {
@@ -99,50 +110,48 @@ namespace autoteambuilder
 
             comboPokedex.ItemsSource = pokedex;
 
-            InitGrid();            
-            teamTotalsGrid.DataContext = TeamTotalsData.DefaultView;
+            InitGrid();
         }
 
         private void InitGrid()
         {
-            DataColumn column;
-            column = new DataColumn();
-            column.DataType = System.Type.GetType("System.String");
-            column.ColumnName = "type";
-            column.ReadOnly = true;
-            TeamTotalsData.Columns.Add(column);
-
-            foreach (Type type in AllTypes)
+            for (int i = 0; i < AllTypes.Count; i++) 
             {
-                column = new DataColumn();
-                column.DataType = System.Type.GetType("System.Int32");
-                column.ColumnName = type.Name;
-                TeamTotalsData.Columns.Add(column);
-            }
+                Type type = AllTypes[i];
 
-            DataRow row = TeamTotalsData.NewRow();
-            row["type"] = "Resistances";
-            foreach (Type type in AllTypes)
-            {
-                row[type.Name] = 0;
-            }
-            TeamTotalsData.Rows.Add(row);
+                teamTotalsGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(10, GridUnitType.Star) });
 
-            row = TeamTotalsData.NewRow();
-            row["type"] = "Weaknesses";
-            foreach (Type type in AllTypes)
-            {
-                row[type.Name] = 0;
-            }
-            TeamTotalsData.Rows.Add(row);
+                ContentControl headerItem = new ContentControl();
+                headerItem.DataContext = type.Name;
+                headerItem.Template = (ControlTemplate)FindResource("typeItemGridHeader");
+                Grid.SetRow(headerItem, 0);
+                Grid.SetColumn(headerItem, i + 1);
+                teamTotalsGrid.Children.Add(headerItem);
 
-            row = TeamTotalsData.NewRow();
-            row["type"] = "Coverage";
-            foreach (Type type in AllTypes)
-            {
-                row[type.Name] = 0;
+                ContentControl valueBar = new ContentControl();
+                valueBar.DataContext = 0;
+                valueBar.Template = (ControlTemplate)FindResource("totalBar");
+                Grid.SetRow(valueBar, 1);
+                Grid.SetColumn(valueBar, i + 1);
+                teamTotalsGrid.Children.Add(valueBar);
+                ResistanceBars.Add(valueBar);
+
+                valueBar = new ContentControl();
+                valueBar.DataContext = 0;
+                valueBar.Template = (ControlTemplate)FindResource("totalBar");
+                Grid.SetRow(valueBar, 2);
+                Grid.SetColumn(valueBar, i + 1);
+                teamTotalsGrid.Children.Add(valueBar);
+                WeaknessBars.Add(valueBar);
+
+                valueBar = new ContentControl();
+                valueBar.DataContext = 0;
+                valueBar.Template = (ControlTemplate)FindResource("totalBar");
+                Grid.SetRow(valueBar, 3);
+                Grid.SetColumn(valueBar, i + 1);
+                teamTotalsGrid.Children.Add(valueBar);
+                CoverageBars.Add(valueBar);
             }
-            TeamTotalsData.Rows.Add(row);
         }
 
         private void WriteBox()
@@ -228,9 +237,20 @@ namespace autoteambuilder
             RefreshBox();
         }
 
+        private Dictionary<string, double> GetBaseStatsWeighting()
+        {
+            return new Dictionary<string, double>
+            {   { "hp", HpWeighting },
+                { "attack", AttWeighting },
+                { "special-attack", SpAttWeighting },
+                { "defense", DefWeighting },
+                { "special-defense", SpDefWeighting },
+                { "speed", SpeWeighting } };
+        }
+
         private void CalculateTeamWeighting()
         {
-            double weighting = TeamBuilder.CalculateWeighting(Team);
+            double weighting = TeamBuilder.CalculateScore(Team, TypeDefenseWeighting, TypeCoverageWeighting, GetBaseStatsWeighting());
 
             labelWeighting.Content = weighting.ToString();
         }
@@ -262,17 +282,6 @@ namespace autoteambuilder
 
             CalculateTeamWeighting();
 
-            // update the grid header
-            //DataGridTextColumn col = (DataGridTextColumn)gridResults.Columns[teamIdx + 1];
-            //if (Team.Pokemon[teamIdx] != null)
-            //{
-            //    col.Header = Team.Pokemon[teamIdx];
-            //}
-            //else
-            //{
-            //    col.Header = "";
-            //}
-
             // get the pokemon from the team once
             SmartPokemon? pokemon1 = Team[0];
             SmartPokemon? pokemon2 = Team[1];
@@ -281,29 +290,13 @@ namespace autoteambuilder
             SmartPokemon? pokemon5 = Team[4];
             SmartPokemon? pokemon6 = Team[5];
 
-            foreach (Type type in AllTypes)
+            for (int i = 0; i < AllTypes.Count; i++)
             {
-                foreach (DataRow row in TeamTotalsData.Rows)
-                {
-                    string rowType = (string)row["type"];
-                    switch (rowType)
-                    {
-                        case "Resistances":
-                            row[type.Name] = Team.CountResistances(type.Name);
-                            break;
-
-                        case "Weaknesses":
-                            row[type.Name] = Team.CountWeaknesses(type.Name);
-                            break;
-
-                        case "Coverage":
-                            row[type.Name] = Team.CountCoverage(type.Name);
-                            break;
-                    }
-                }
+                Type type = AllTypes[i];
+                ResistanceBars[i].DataContext = Team.CountResistances(type.Name);
+                WeaknessBars[i].DataContext = Team.CountWeaknesses(type.Name);
+                CoverageBars[i].DataContext = Team.CountCoverage(type.Name);
             }
-
-            teamTotalsGrid.Items.Refresh();
         }
 
         private void OnChangePokedexCombo(object sender, SelectionChangedEventArgs e)
@@ -384,7 +377,7 @@ namespace autoteambuilder
             lockedMembers[4] = !comboPoke5.IsEnabled ? comboPoke5.SelectedItem != null ? (SmartPokemon)comboPoke5.SelectedItem : null : null;
             lockedMembers[5] = !comboPoke6.IsEnabled ? comboPoke6.SelectedItem != null ? (SmartPokemon)comboPoke6.SelectedItem : null : null;
 
-            PokemonTeam newTeam = TeamBuilder.BuildTeam(box, lockedMembers);
+            PokemonTeam newTeam = TeamBuilder.BuildTeam(box, lockedMembers, TypeDefenseWeighting, TypeCoverageWeighting, GetBaseStatsWeighting());
 
             SmartPokemon? pokemon1 = newTeam[0];
             SmartPokemon? pokemon2 = newTeam[1];
@@ -430,6 +423,11 @@ namespace autoteambuilder
         private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             WriteBox();
+        }
+
+        private void OnWeightingChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            CalculateTeamWeighting();
         }
     }
 
@@ -561,6 +559,62 @@ namespace autoteambuilder
         public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
+        }
+    }
+
+    // function used for calculating bar height from row and column stored in datacontext in the team totals grid
+    public class CalculateBarHeight : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int @count)
+            {
+                return 50 - (@count * 8);
+            }
+
+            return value;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    // animated class for automatically setting the height of the bars in the totals grid
+    public static class Animated
+    {
+        private static Duration duration = TimeSpan.FromSeconds(1);
+
+        public static readonly DependencyProperty HeightProperty =
+            DependencyProperty.RegisterAttached(
+                "Height", typeof(double), typeof(Animated),
+                new PropertyMetadata(HeightPropertyChanged));
+
+        public static double GetHeight(DependencyObject obj)
+        {
+            return (double)obj.GetValue(HeightProperty);
+        }
+
+        public static void SetHeight(DependencyObject obj, double value)
+        {
+            obj.SetValue(HeightProperty, value);
+        }
+
+        private static void HeightPropertyChanged(
+            DependencyObject obj, DependencyPropertyChangedEventArgs e)
+        {
+            var element = obj as FrameworkElement;
+
+            if (element != null)
+            {
+                var to = (double)e.NewValue;
+                var animation = double.IsNaN(element.Height)
+                    ? new DoubleAnimation(0, to, duration)
+                    : new DoubleAnimation(to, duration);
+
+                element.BeginAnimation(FrameworkElement.HeightProperty, animation);
+            }
         }
     }
 }
