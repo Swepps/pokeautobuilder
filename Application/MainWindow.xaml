@@ -14,9 +14,7 @@
         <local:CalculateBarHeight x:Key="CalculateBarHeight" />
 
         <DataTemplate x:Key="boxPokemon">
-            <StackPanel>
-                <Image Source="{Binding Path=Sprites.FrontDefault}" MaxHeight="{Binding ListBoxItemHeight, ElementName=MainWindow1}"/>
-            </StackPanel>
+            <Image Source="{Binding Path=Sprites.FrontDefault}" MaxHeight="{Binding ListBoxItemHeight, ElementName=MainWindow1}"/>
         </DataTemplate>
 
         <DataTemplate x:Key="typeItem">
@@ -124,7 +122,7 @@
         </ControlTemplate>
 
     </Window.Resources>
-    <Grid Background="#FF242424">
+    <Grid Background="#FF242424" x:Name="gridMain" IsEnabled="False">
         <Grid.RowDefinitions>
             <RowDefinition Height="991*"/>
             <RowDefinition Height="220"/>
@@ -159,13 +157,14 @@
                             </StackPanel>
                         </Setter.Value>
                     </Setter>
-                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Center"/>
                     <Setter Property="VerticalContentAlignment" Value="Center"/>
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
         <Label Content="Pokemon Storage" Foreground="#FFF3F3F3" Height="30" Width="225" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0"/>
-        <Canvas Margin="0,8,10,0" HorizontalAlignment="Right" Width="200" Height="183" VerticalAlignment="Top">
+        <Canvas Margin="0,8,10,0" HorizontalAlignment="Right" Width="200" Height="235" VerticalAlignment="Top">
+            <Label Content="National Pokedex" Foreground="#FFF3F3F3" Height="30" Width="200" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top"/>
             <ComboBox x:Name="comboPokemonVariety" DisplayMemberPath="Name" Width="200" IsEditable="True" Tag="5" Height="20" HorizontalAlignment="Right" Canvas.Top="63" VerticalAlignment="Top"/>
             <ComboBox x:Name="comboPokedex" Width="200" IsEditable="True" Tag="5" SelectionChanged="OnChangePokedexCombo" HorizontalAlignment="Right" Canvas.Top="36" VerticalAlignment="Top"/>
             <TextBlock Text="🡸" Foreground="#FFF3F3F3" Height="20" Canvas.Left="7" Canvas.Top="88" Width="13" />
@@ -174,7 +173,7 @@
             <Button Content="Add Random Pokemon" Click="OnClickAddToBox" Tag="random" Height="20" Canvas.Left="30" Canvas.Top="113" Width="140"/>
             <Button Content="Clear Storage" Click="OnClickClearStorage" Width="140" Height="20" HorizontalAlignment="Right" Canvas.Left="30" Canvas.Top="163" VerticalAlignment="Top"/>
             <Button Content="Remove Selected" Click="OnClickRemoveSelected" Width="140" Height="20" HorizontalAlignment="Right" Canvas.Left="30" Canvas.Top="138" VerticalAlignment="Top"/>
-            <Label Content="National Pokedex" Foreground="#FFF3F3F3" Height="30" Width="200" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+            <Button Content="Evolve All Pokemon" Click="OnClickEvolveAll" Width="140" Height="20" Canvas.Left="30" Canvas.Top="188" HorizontalAlignment="Center" VerticalAlignment="Top"/>
         </Canvas>
 
         <Grid x:Name="teamGrid" Margin="0,482,10,10">
@@ -258,7 +257,6 @@
             <Slider Margin="7,195,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding SpeWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="3" Width="NaN"/>
             <Label Content="Speed Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="13,191,0,0" Grid.Column="2" />
             <Label Content="Stat Weightings" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" Margin="0,0,44,0" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" Width="100" />
-            <Button Content="Build Team" VerticalAlignment="Top" Click="OnClickBuildTeam" Height="20" Width="74" HorizontalAlignment="Center" Grid.Column="3"/>
             <Canvas HorizontalAlignment="Center" Margin="0,61,0,0" VerticalAlignment="Top" Width="98" Height="30" Grid.Column="3">
                 <Label x:Name="labelScore" Content="" Foreground="#FFF3F3F3" Height="26" Width="50" HorizontalAlignment="Left" Canvas.Left="47" VerticalAlignment="Top"/>
                 <Label Content="Score:" Foreground="#FFF3F3F3" Height="26" Width="42" HorizontalAlignment="Center" VerticalAlignment="Top" />
@@ -269,7 +267,10 @@
                 <Label Content="Team Combinations:" Foreground="#FFF3F3F3" Height="26" Width="138" HorizontalAlignment="Left" VerticalAlignment="Center" />
 
             </Canvas>
+            <Button Content="Build Team" VerticalAlignment="Top" Click="OnClickBuildTeam" Height="20" Width="74" HorizontalAlignment="Left" Grid.Column="3"/>
+            <Button Content="Build Team (Genetic)" VerticalAlignment="Top" Click="OnClickBuildTeamGenetic" Height="20" Width="127" HorizontalAlignment="Right" Grid.Column="3"/>
         </Grid>
 
+        <Grid x:Name="gridDim" Grid.RowSpan="2" Background="#CC232323" Visibility="Hidden" />
     </Grid>
 </Window>

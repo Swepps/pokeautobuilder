@@ -1,7 +1,9 @@
-﻿using PokeApiNet;
+﻿using Accord.Genetic;
+using PokeApiNet;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,8 +17,11 @@ namespace autoteambuilder
     {
 
         // The main juice of the team building. this is what decides how good a team is
-        public static double CalculateScore(PokemonTeam team, double typeDefenseWeighting, double typeCoverageWeighting, Dictionary<string, double> baseStatsWeighting)
+        public static double CalculateScore(PokemonTeam team)
         {
+            if (team.CountPokemon() == 0)
+                return 0;
+
             // gather some information about the types in the team
             List<Type> typeArray = MainWindow.AllTypes;
             Dictionary<Type, int> weaknesses = new Dictionary<Type, int>();
@@ -35,71 +40,29 @@ namespace autoteambuilder
 
             // defense score
             double defenseScore = 0;
-            if (typeDefenseWeighting > 0)
+            if (MainWindow.TypeDefenseWeighting > 0)
             {
                 double weaknessesSD = CalculateStandardDeviation(weaknesses);
                 double resistancesSD = CalculateStandardDeviation(resistances);
 
                 defenseScore = 10 - (weaknessesSD + (2 * resistancesSD) + (totalWeaknesses / totalResistances));
-                defenseScore *= typeDefenseWeighting;
+                defenseScore *= MainWindow.TypeDefenseWeighting;
             }
 
             // coverage score
             double coverageScore = 0;
-            if (typeCoverageWeighting > 0)
+            if (MainWindow.TypeCoverageWeighting > 0)
             {
                 coverageScore = CalculateCoverageScore(coverage, totalCoverage);
-                coverageScore *= typeCoverageWeighting;
+                coverageScore *= MainWindow.TypeCoverageWeighting;
             }
 
-            double statsScore = CalculateStatsScore(team, baseStatsWeighting);
+            double statsScore = CalculateStatsScore(team, MainWindow.BaseStatsWeighting);
 
             double score = defenseScore + coverageScore + statsScore;
             score *= team.CountPokemon() / 6.0;
 
             return score;
-        }
-
-        // clever piece of combinations code I stole from the internet!
-
-        // Enumerate all possible m-size combinations of [0, 1, ..., n-1] array
-        // in lexicographic order (first [0, 1, 2, ..., m-1]).
-        private static IEnumerable<int[]> Combinations(int m, int n)
-        {
-            int[] result = new int[m];
-            Stack<int> stack = new Stack<int>(m);
-            stack.Push(0);
-            while (stack.Count > 0)
-            {
-                int index = stack.Count - 1;
-                int value = stack.Pop();
-                while (value < n)
-                {
-                    result[index++] = value++;
-                    stack.Push(value);
-                    if (index != m) continue;
-                    yield return (int[])result.Clone(); // thanks to @xanatos
-                                                        //yield return result;
-                    break;
-                }
-            }
-        }
-
-        public static IEnumerable<T[]> Combinations<T>(T[] array, int m)
-        {
-            if (array.Length < m)
-                throw new ArgumentException("Array length can't be less than number of selected elements");
-            if (m < 1)
-                throw new ArgumentException("Number of selected elements can't be less than 1");
-            T[] result = new T[m];
-            foreach (int[] j in Combinations(m, array.Length))
-            {
-                for (int i = 0; i < m; i++)
-                {
-                    result[i] = array[j[i]];
-                }
-                yield return result;
-            }
         }
 
         // Aah GCSE maths... this seems much easier than I thought it was when I was 15
@@ -153,7 +116,7 @@ namespace autoteambuilder
                 if (pokemon == null)
                     continue;
 
-                foreach (PokemonStat stat in  pokemon.Stats)
+                foreach (PokemonStat stat in pokemon.Stats)
                 {
                     if (statTotals.ContainsKey(stat.Stat.Name))
                         statTotals[stat.Stat.Name] += stat.BaseStat;
@@ -167,10 +130,31 @@ namespace autoteambuilder
                 score += (kvp.Value / 300.0) * statWeightings[kvp.Key];
             }
 
+            // --- commented this out because it didn't work very well and was unnecessary computation time
+            // try to balance the att and def values according to their weightings
+            //double attDiffScore = 0;
+            //double defDiffScore = 0;
+            
+            //if (statWeightings["attack"] > 0 && statWeightings["special-attack"] > 0)
+            //    attDiffScore = Math.Abs((statTotals["attack"] / statWeightings["attack"]) - (statTotals["special-attack"] / statWeightings["special-attack"]));
+
+            //if (statWeightings["defense"] > 0 && statWeightings["special-defense"] > 0)
+            //    defDiffScore = Math.Abs((statTotals["defense"] / statWeightings["defense"]) - (statTotals["special-defense"] / statWeightings["special-defense"]));
+
+            //attDiffScore /= 100;
+            //attDiffScore = Math.Sqrt(attDiffScore);
+
+            //defDiffScore /= 100;
+            //defDiffScore = Math.Sqrt(defDiffScore);
+
+            //score -= attDiffScore + defDiffScore;
+
             return score;
         }
 
-        public static PokemonTeam BuildTeam(ObservableCollection<SmartPokemon> availablePokemon, PokemonTeam? lockedMembers, double defenseWeighting, double coverageWeighting, Dictionary<string, double> baseStatsWeighting)
+
+
+        public static PokemonTeam BuildTeam(PokemonStorage availablePokemon, PokemonTeam? lockedMembers)
         {
             if (lockedMembers == null)
             {
@@ -217,7 +201,7 @@ namespace autoteambuilder
                 }
 
                 // check to see if new team is better
-                double newTeamScore = CalculateScore(newTeam, defenseWeighting, coverageWeighting, baseStatsWeighting);
+                double newTeamScore = CalculateScore(newTeam);
                 if (newTeamScore > bestTeamScore)
                 {
                     bestTeam = newTeam;
@@ -226,6 +210,165 @@ namespace autoteambuilder
             }
 
             return bestTeam;
+        }
+
+        // clever piece of combinations code I stole from the internet!
+
+        // Enumerate all possible m-size combinations of [0, 1, ..., n-1] array
+        // in lexicographic order (first [0, 1, 2, ..., m-1]).
+        private static IEnumerable<int[]> Combinations(int m, int n)
+        {
+            int[] result = new int[m];
+            Stack<int> stack = new Stack<int>(m);
+            stack.Push(0);
+            while (stack.Count > 0)
+            {
+                int index = stack.Count - 1;
+                int value = stack.Pop();
+                while (value < n)
+                {
+                    result[index++] = value++;
+                    stack.Push(value);
+                    if (index != m) continue;
+                    yield return (int[])result.Clone(); // thanks to @xanatos
+                                                        //yield return result;
+                    break;
+                }
+            }
+        }
+
+        public static IEnumerable<T[]> Combinations<T>(T[] array, int m)
+        {
+            if (array.Length < m)
+                throw new ArgumentException("Array length can't be less than number of selected elements");
+            if (m < 1)
+                throw new ArgumentException("Number of selected elements can't be less than 1");
+            T[] result = new T[m];
+            foreach (int[] j in Combinations(m, array.Length))
+            {
+                for (int i = 0; i < m; i++)
+                {
+                    result[i] = array[j[i]];
+                }
+                yield return result;
+            }
+        }
+
+
+
+        public static PokemonTeam BuildTeamGenetic(PokemonStorage availablePokemon, PokemonTeam? lockedMembers)
+        {
+            if (lockedMembers == null)
+            {
+                lockedMembers = new PokemonTeam();
+            }
+            else if (lockedMembers.CountPokemon() >= 6 || availablePokemon.Count < 6)
+            {
+                // they're all locked!
+                return lockedMembers;
+            }
+
+            Population population = new Population(500, new PokemonTeamChromosome(availablePokemon, lockedMembers), new PokemonTeamChromosome.FitnessFunction(), new EliteSelection());
+
+            for (int i = 0; i < 100; i++)
+            {
+                population.RunEpoch();
+                //Trace.WriteLine(population.FitnessMax);
+            }
+
+            return ((PokemonTeamChromosome)population.BestChromosome).Team;
+        }
+    }
+
+    internal class PokemonTeamChromosome : ChromosomeBase
+    {
+        static Random Random = new Random();
+
+        private readonly PokemonStorage _storage;
+        private readonly PokemonTeam _lockedMembers;
+
+        public PokemonTeam Team;
+
+        public PokemonTeamChromosome(PokemonStorage storage, PokemonTeam lockedMembers)
+        {
+            _storage = storage;
+            _lockedMembers = lockedMembers;
+            Team = new PokemonTeam();
+            Generate();
+        }
+
+        public PokemonTeamChromosome(PokemonTeam team, PokemonStorage storage, PokemonTeam lockedMembers)
+        {
+            _storage = storage;
+            _lockedMembers = lockedMembers;
+            Team = new PokemonTeam();
+            for (int i = 0; i < 6; i++)
+            {
+                Team[i] = team[i];
+            }
+        }
+
+        public override IChromosome Clone()
+        {
+            return new PokemonTeamChromosome(Team, _storage, _lockedMembers);
+        }
+
+        public override IChromosome CreateNew()
+        {
+            PokemonTeamChromosome chrom = new PokemonTeamChromosome(_storage, _lockedMembers);
+            chrom.Generate();
+            return chrom;
+        }
+
+        public override void Crossover(IChromosome pair)
+        {
+            PokemonTeamChromosome? otherChrom = pair as PokemonTeamChromosome;
+            if (otherChrom == null)
+                return;
+
+            int randIdx = Random.Next(6);
+            for (; randIdx < 6; randIdx++)
+            {
+                if (!Team.Contains(otherChrom.Team[randIdx]))
+                    Team[randIdx] = otherChrom.Team[randIdx];
+            }
+        }
+
+        public override void Generate()
+        {
+            Team = _storage.GetRandomTeam(_lockedMembers);
+        }
+
+        public override void Mutate()
+        {
+            // can't mutate if the data set is less than team size
+            if (_storage.Count <= 6 || _lockedMembers.CountPokemon() >= 6)
+                return;
+
+            // make sure we don't swap out any locked members
+            int randIdx = Random.Next(6);
+            while (_lockedMembers[randIdx] != null)
+                randIdx = Random.Next(6);
+
+            // now mutate
+            SmartPokemon randPokemon = _storage.GetRandomPokemon();
+            while (Team.Contains(randPokemon))
+            {
+                randPokemon = _storage.GetRandomPokemon();
+            }
+            Team[randIdx] = randPokemon;
+        }
+
+        public class FitnessFunction : IFitnessFunction
+        {
+            public double Evaluate(IChromosome chromosome)
+            {
+                PokemonTeamChromosome? pokeChrom = chromosome as PokemonTeamChromosome;
+                if (pokeChrom == null)
+                    return 0;
+
+                return TeamBuilder.CalculateScore(pokeChrom.Team);
+            }
         }
     }
 }

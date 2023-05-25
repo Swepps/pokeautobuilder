@@ -177,5 +177,37 @@ namespace autoteambuilder
 
             return multipliers;
         }
+
+        public static async Task<SmartPokemon?> GetFinalEvolution(SmartPokemon pokemon)
+        {
+            try
+            {
+                PokemonSpecies species = await ApiClient.GetResourceAsync(pokemon.Species);
+                EvolutionChain chain = await ApiClient.GetResourceAsync(species.EvolutionChain);
+
+                // already fully evolved
+                if (chain.Chain.EvolvesTo.Count == 0)
+                    return pokemon;
+
+                ChainLink link = chain.Chain.EvolvesTo[0];
+                NamedApiResource<PokemonSpecies> linkSpecies = link.Species;
+                while (link.EvolvesTo.Count > 0)
+                {
+                    link = link.EvolvesTo[0];
+                    linkSpecies = link.Species;
+                }
+
+                // it's already the final evolution
+                if (species.Name == linkSpecies.Name)
+                    return pokemon;
+
+                return await GetPokemonAsync(linkSpecies.Name);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
     }
 }

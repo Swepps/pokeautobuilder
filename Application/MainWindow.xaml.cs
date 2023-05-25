@@ -1,4 +1,5 @@
-﻿using FileStore;
+﻿using Accord.Math;
+using FileStore;
 using PokeApiNet;
 using System;
 using System.Collections;
@@ -11,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -38,7 +40,7 @@ namespace autoteambuilder
     public partial class MainWindow : Window
     {
         private SmartPokedex pokedex;
-        private ObservableCollection<SmartPokemon> box;
+        private PokemonStorage box;
 
         public static PokemonTeam Team { get; set; } = new PokemonTeam();
 
@@ -62,19 +64,16 @@ namespace autoteambuilder
         public static double DefWeighting { get; set; } = 1.0;
         public static double SpDefWeighting { get; set; } = 1.0;
         public static double SpeWeighting { get; set; } = 1.0;
+        public static Dictionary<string, double> BaseStatsWeighting = new Dictionary<string, double>();
 
         public MainWindow()
         {
             InitializeComponent();
+            PauseUI(true);
             DataContext = this;
 
-            // create the pokedex from the text file resource
-            // TODO: use PokeApi to build the pokedex
-            //StringReader reader = new StringReader(FileStore.Resource.pokedexAll);
             pokedex = new();
-            box = new ObservableCollection<SmartPokemon>();
-
-            //GridRows = new ObservableCollection<TypeRow>();
+            box = new PokemonStorage();
 
             Init();
         }
@@ -98,11 +97,12 @@ namespace autoteambuilder
 
         private async void Init()
         {
+            FillPokedex();
             AllTypes = await PokeApiHandler.GetAllTypesAsync();
+            InitGrid();
 
             // need to attempt to read the saved box before setting the listBox.ItemsSource
-            await ReadBox();
-            FillPokedex();
+            await ReadBox();            
 
             comboPoke1.ItemsSource = box;
             comboPoke2.ItemsSource = box;
@@ -115,7 +115,7 @@ namespace autoteambuilder
 
             comboPokedex.ItemsSource = pokedex;
 
-            InitGrid();
+            PauseUI(false);
         }
 
         private void InitGrid()
@@ -161,6 +161,10 @@ namespace autoteambuilder
 
         private void WriteBox()
         {
+            // if the count is 0 then don't bother trying
+            if (box.Count == 0)
+                return;
+
             try
             {
                 // save the contents of the box when closing the app
@@ -241,6 +245,7 @@ namespace autoteambuilder
                 ((ObservableCollection<SmartPokemon>)listBox.ItemsSource).Remove(entry);
             }
             RefreshBox();
+            CalculateTeamCombinations();
         }
 
         private Dictionary<string, double> GetBaseStatsWeighting()
@@ -254,9 +259,38 @@ namespace autoteambuilder
                 { "speed", SpeWeighting } };
         }
 
+        // return a pokemon team containing only the locked members in the team selections
+        private PokemonTeam GetLockedMembers()
+        {
+            PokemonTeam lockedMembers = new PokemonTeam();
+
+            // setting locked members to the selected combobox controls
+#pragma warning disable CS8629 // Nullable value type may be null.
+            lockedMembers[0] = (bool)checkLock1.IsChecked ? comboPoke1.SelectedItem != null ? (SmartPokemon)comboPoke1.SelectedItem : null : null;
+            lockedMembers[1] = (bool)checkLock2.IsChecked ? comboPoke2.SelectedItem != null ? (SmartPokemon)comboPoke2.SelectedItem : null : null;
+            lockedMembers[2] = (bool)checkLock3.IsChecked ? comboPoke3.SelectedItem != null ? (SmartPokemon)comboPoke3.SelectedItem : null : null;
+            lockedMembers[3] = (bool)checkLock4.IsChecked ? comboPoke4.SelectedItem != null ? (SmartPokemon)comboPoke4.SelectedItem : null : null;
+            lockedMembers[4] = (bool)checkLock5.IsChecked ? comboPoke5.SelectedItem != null ? (SmartPokemon)comboPoke5.SelectedItem : null : null;
+            lockedMembers[5] = (bool)checkLock6.IsChecked ? comboPoke6.SelectedItem != null ? (SmartPokemon)comboPoke6.SelectedItem : null : null;
+#pragma warning restore CS8629 // Nullable value type may be null.
+
+            return lockedMembers;
+        }
+
+        private void SetTeam(PokemonTeam team)
+        {
+            comboPoke1.SelectedItem = team[0];
+            comboPoke2.SelectedItem = team[1];
+            comboPoke3.SelectedItem = team[2];
+            comboPoke4.SelectedItem = team[3];
+            comboPoke5.SelectedItem = team[4];
+            comboPoke6.SelectedItem = team[5];
+        }
+
         private void CalculateTeamWeighting()
         {
-            double weighting = TeamBuilder.CalculateScore(Team, TypeDefenseWeighting, TypeCoverageWeighting, GetBaseStatsWeighting());
+            BaseStatsWeighting = GetBaseStatsWeighting();
+            double weighting = TeamBuilder.CalculateScore(Team);
 
             if (labelScore != null)
             {
@@ -266,19 +300,27 @@ namespace autoteambuilder
 
         private void CalculateTeamCombinations()
         {
-            PokemonTeam? lockedMembers = new PokemonTeam();
-
-            // setting locked members to the selected combobox controls
-            lockedMembers[0] = (bool)checkLock1.IsChecked? comboPoke1.SelectedItem != null ? (SmartPokemon)comboPoke1.SelectedItem : null : null;
-            lockedMembers[1] = (bool)checkLock2.IsChecked? comboPoke2.SelectedItem != null ? (SmartPokemon)comboPoke2.SelectedItem : null : null;
-            lockedMembers[2] = (bool)checkLock3.IsChecked? comboPoke3.SelectedItem != null ? (SmartPokemon)comboPoke3.SelectedItem : null : null;
-            lockedMembers[3] = (bool)checkLock4.IsChecked? comboPoke4.SelectedItem != null ? (SmartPokemon)comboPoke4.SelectedItem : null : null;
-            lockedMembers[4] = (bool)checkLock5.IsChecked? comboPoke5.SelectedItem != null ? (SmartPokemon)comboPoke5.SelectedItem : null : null;
-            lockedMembers[5] = (bool)checkLock6.IsChecked? comboPoke6.SelectedItem != null ? (SmartPokemon)comboPoke6.SelectedItem : null : null;
+            PokemonTeam lockedMembers = GetLockedMembers();
 
             int countLockedMembers = lockedMembers.CountPokemon();
             TeamCombinations = PermutationsAndCombinations.nCr(box.Count, 6 - countLockedMembers);
             labelCombinations.Content = TeamCombinations;
+        }
+
+        private void PauseUI(bool paused)
+        {
+            if (paused)
+            {
+                gridMain.IsEnabled = false;
+                gridDim.Visibility = Visibility.Visible;
+                Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            }
+            else
+            {
+                gridMain.IsEnabled = true;
+                gridDim.Visibility = Visibility.Hidden;
+                Mouse.OverrideCursor = System.Windows.Input.Cursors.Arrow;
+            }
         }
 
         private void OnChangeTeam(object sender, SelectionChangedEventArgs e)
@@ -387,39 +429,42 @@ namespace autoteambuilder
                 {
                     box.Add(pokemon);
                     RefreshBox();
+                    CalculateTeamCombinations();
                 }                
             }
         }
 
         private void OnClickBuildTeam(object sender, RoutedEventArgs e)
         {
-            PokemonTeam? lockedMembers = new PokemonTeam();
+            // warn the user this may take a while
+            if (TeamCombinations > 100000)
+            {
+                if (MessageBox.Show("There are " + TeamCombinations.ToString() +
+                    " possible permutations of unlocked team members from the Pokemon Storage box.\nConsider using the genetic algorithm team builder as a much faster alternative.\n\nContinue?",
+                    "Warning!",
+                    MessageBoxButton.OKCancel) == MessageBoxResult.Cancel)
+                    return;
+            }
+            PauseUI(true);
 
-            // setting locked members to the selected combobox controls
-            lockedMembers[0] = !comboPoke1.IsEnabled ? comboPoke1.SelectedItem != null ? (SmartPokemon)comboPoke1.SelectedItem : null : null;
-            lockedMembers[1] = !comboPoke2.IsEnabled ? comboPoke2.SelectedItem != null ? (SmartPokemon)comboPoke2.SelectedItem : null : null;
-            lockedMembers[2] = !comboPoke3.IsEnabled ? comboPoke3.SelectedItem != null ? (SmartPokemon)comboPoke3.SelectedItem : null : null;
-            lockedMembers[3] = !comboPoke4.IsEnabled ? comboPoke4.SelectedItem != null ? (SmartPokemon)comboPoke4.SelectedItem : null : null;
-            lockedMembers[4] = !comboPoke5.IsEnabled ? comboPoke5.SelectedItem != null ? (SmartPokemon)comboPoke5.SelectedItem : null : null;
-            lockedMembers[5] = !comboPoke6.IsEnabled ? comboPoke6.SelectedItem != null ? (SmartPokemon)comboPoke6.SelectedItem : null : null;
+            BaseStatsWeighting = GetBaseStatsWeighting();
+            PokemonTeam lockedMembers = GetLockedMembers();
+            PokemonTeam newTeam = TeamBuilder.BuildTeam(box, lockedMembers);
+            SetTeam(newTeam);
 
-            PokemonTeam newTeam = TeamBuilder.BuildTeam(box, lockedMembers, TypeDefenseWeighting, TypeCoverageWeighting, GetBaseStatsWeighting());
+            PauseUI(false);
+        }
 
-            SmartPokemon? pokemon1 = newTeam[0];
-            SmartPokemon? pokemon2 = newTeam[1];
-            SmartPokemon? pokemon3 = newTeam[2];
-            SmartPokemon? pokemon4 = newTeam[3];
-            SmartPokemon? pokemon5 = newTeam[4];
-            SmartPokemon? pokemon6 = newTeam[5];
+        private void OnClickBuildTeamGenetic(object sender, RoutedEventArgs e)
+        {
+            PauseUI(true);
 
-            comboPoke1.SelectedItem = pokemon1;
-            comboPoke2.SelectedItem = pokemon2;
-            comboPoke3.SelectedItem = pokemon3;
-            comboPoke4.SelectedItem = pokemon4;
-            comboPoke5.SelectedItem = pokemon5;
-            comboPoke6.SelectedItem = pokemon6;
+            BaseStatsWeighting = GetBaseStatsWeighting();
+            PokemonTeam lockedMembers = GetLockedMembers();
+            PokemonTeam newTeam = TeamBuilder.BuildTeamGenetic(box, lockedMembers);
+            SetTeam(newTeam);
 
-            RefreshBox();
+            PauseUI(false);
         }
 
         private void OnClickRemoveSelected(object sender, RoutedEventArgs e)
@@ -446,6 +491,35 @@ namespace autoteambuilder
             }
         }
 
+        private async void OnClickEvolveAll(object sender, RoutedEventArgs e)
+        {
+            PauseUI(true);
+
+            List<SmartPokemon> newBox = new List<SmartPokemon>();
+            var tasks = box.Select(async pokemon =>
+            {
+                SmartPokemon? evolvedP = await PokeApiHandler.GetFinalEvolution(pokemon);
+                if (evolvedP != null && evolvedP.Name != pokemon.Name)
+                {
+                    newBox.Add(evolvedP);
+                }
+                else
+                {
+                    newBox.Add(pokemon);
+                }
+            });
+            await Task.WhenAll(tasks);
+
+            // replace box with newbox
+            box.Clear();
+            foreach (SmartPokemon p in newBox)
+                box.Add(p);
+
+            RefreshBox();
+
+            PauseUI(false);
+        }
+
         private void OnClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             WriteBox();
@@ -460,13 +534,13 @@ namespace autoteambuilder
         {
             if (e.Delta > 0)
             {
-                if (ListBoxItemHeight < 50)
-                    ListBoxItemHeight++;
+                if (ListBoxItemHeight < 100)
+                    ListBoxItemHeight += 5;
             }
             else if (e.Delta < 0)
             {
                 if (ListBoxItemHeight > 5)
-                    ListBoxItemHeight--;
+                    ListBoxItemHeight -= 5;
             }
             listBox.Items.Refresh();
         }
@@ -474,29 +548,6 @@ namespace autoteambuilder
         private void OnTeamLockChanged(object sender, RoutedEventArgs e)
         {
             CalculateTeamCombinations();
-        }
-    }
-
-    // ----------------------------------- Helper classes -----------------------------------
-
-    // each row of the results grid
-    public class TypeRow
-    {
-        public string Type { get; set; }
-        public double Pokemon1Eff { get; set; }
-        public double Pokemon2Eff { get; set; }
-        public double Pokemon3Eff { get; set; }
-        public double Pokemon4Eff { get; set; }
-        public double Pokemon5Eff { get; set; }
-        public double Pokemon6Eff { get; set; }
-        public int DefWeaknesses { get; set; }
-        public int DefResists { get; set; }
-        public int AttWeaknesses { get; set; }
-        public int AttResists { get; set; }
-
-        public TypeRow()
-        {
-            Type = "";
         }
     }
 

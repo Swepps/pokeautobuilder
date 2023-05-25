@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Accord.Genetic" Version="3.8.0" />
     <PackageReference Include="PokeApiNet" Version="3.0.10" />
   </ItemGroup>
 
