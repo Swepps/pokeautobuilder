@@ -43,8 +43,10 @@ namespace autoteambuilder
         private PokemonStorage box;
 
         public static PokemonTeam Team { get; set; } = new PokemonTeam();
+        public static ObservableCollection<PokemonStat> TeamStats { get; set; } = new ObservableCollection<PokemonStat>();
 
         public static List<Type> AllTypes = new List<Type>();
+
 
         public static ObservableCollection<ContentControl> ResistanceBars = new ObservableCollection<ContentControl>();
         public static ObservableCollection<ContentControl> WeaknessBars = new ObservableCollection<ContentControl>();
@@ -130,14 +132,14 @@ namespace autoteambuilder
                 headerItem.DataContext = type.Name;
                 headerItem.Template = (ControlTemplate)FindResource("typeItemGridHeader");
                 Grid.SetRow(headerItem, 0);
-                Grid.SetColumn(headerItem, i + 1);
+                Grid.SetColumn(headerItem, i + 2);
                 teamTotalsGrid.Children.Add(headerItem);
 
                 ContentControl valueBar = new ContentControl();
                 valueBar.DataContext = 0;
                 valueBar.Template = (ControlTemplate)FindResource("totalBar");
                 Grid.SetRow(valueBar, 1);
-                Grid.SetColumn(valueBar, i + 1);
+                Grid.SetColumn(valueBar, i + 2);
                 teamTotalsGrid.Children.Add(valueBar);
                 ResistanceBars.Add(valueBar);
 
@@ -145,7 +147,7 @@ namespace autoteambuilder
                 valueBar.DataContext = 0;
                 valueBar.Template = (ControlTemplate)FindResource("totalBar");
                 Grid.SetRow(valueBar, 2);
-                Grid.SetColumn(valueBar, i + 1);
+                Grid.SetColumn(valueBar, i + 2);
                 teamTotalsGrid.Children.Add(valueBar);
                 WeaknessBars.Add(valueBar);
 
@@ -153,7 +155,7 @@ namespace autoteambuilder
                 valueBar.DataContext = 0;
                 valueBar.Template = (ControlTemplate)FindResource("totalBar");
                 Grid.SetRow(valueBar, 3);
-                Grid.SetColumn(valueBar, i + 1);
+                Grid.SetColumn(valueBar, i + 2);
                 teamTotalsGrid.Children.Add(valueBar);
                 CoverageBars.Add(valueBar);
             }
@@ -294,7 +296,7 @@ namespace autoteambuilder
 
             if (labelScore != null)
             {
-                labelScore.Content = weighting.ToString();
+                labelScore.Text = weighting.ToString();
             }
         }
 
@@ -357,6 +359,24 @@ namespace autoteambuilder
             SmartPokemon? pokemon4 = Team[3];
             SmartPokemon? pokemon5 = Team[4];
             SmartPokemon? pokemon6 = Team[5];
+
+            TeamStats.Clear();
+            foreach (SmartPokemon? p in Team)
+            {
+                if (p == null) continue;
+
+                for (int i = 0; i < p.Stats.Count; i++)
+                {
+                    if (i < TeamStats.Count && TeamStats[i] != null)
+                    {
+                        TeamStats[i].BaseStat += p.Stats[i].BaseStat;
+                    }
+                    else
+                    {
+                        TeamStats.Add(new PokemonStat() { BaseStat = p.Stats[i].BaseStat, Stat = new NamedApiResource<Stat> { Name = p.Stats[i].Stat.Name } });
+                    }
+                }
+            }
 
             for (int i = 0; i < AllTypes.Count; i++)
             {
@@ -601,6 +621,30 @@ namespace autoteambuilder
         }
     }
 
+    // function used for checking if we want to show team stats
+    public class TeamStatsBindingConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is PokemonTeam @team)
+            {
+                if (team.IsEmpty)
+                    return Binding.DoNothing;
+
+                else
+                    return value;
+            }
+
+            return Binding.DoNothing;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+
     // function used for turning a type name into a type .png picture
     public class TypeNameToPngConverter : IValueConverter
     {
@@ -666,10 +710,294 @@ namespace autoteambuilder
         {
             if (value is int @count)
             {
-                return 50 - (@count * 8);
+                return (@count * 8);
             }
 
             return value;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+    
+    // function used for calculating bar colour from the height
+    public class CalculateBarColour : IValueConverter
+    {
+        private static CalculateBarHeight converter = new CalculateBarHeight();
+        private static Color red = (Color)ColorConverter.ConvertFromString("#FFCE4B18");
+        private static Color green = (Color)ColorConverter.ConvertFromString("#FF3AA03B");
+
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int height)
+            {
+                double scale = (int)converter.Convert(height, targetType, parameter, culture) / 50.0;
+                byte newR = (byte)((green.R * scale) + (red.R * (1.0 - scale)));
+                byte newG = (byte)((green.G * scale) + (red.G * (1.0 - scale)));
+                byte newB = (byte)((green.B * scale) + (red.B * (1.0 - scale)));
+                return Color.FromRgb(newR, newG, newB);
+            }
+
+            return value;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    // function used for checking if a binding is not null
+    public class HasBindingConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value != null)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    // function used for getting stat value
+    public class StatConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (parameter is not string)
+                return 0;
+
+            if (value is not List<PokemonStat>)
+                return 0;
+
+            string statName = (string)parameter;
+            List<PokemonStat> stats = (List<PokemonStat>)value;
+
+           foreach (PokemonStat stat in stats)
+            {
+                if (stat.Stat.Name == statName)
+                    return stat.BaseStat;
+            }
+
+            return 0;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    // function used for getting stat value
+    public class StatTotalConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is not ObservableCollection<PokemonStat>)
+                return 0;
+
+            ObservableCollection<PokemonStat> stats = (ObservableCollection<PokemonStat>)value;
+
+            int statTotal = 0;
+            foreach (PokemonStat stat in stats)
+            {
+                statTotal += stat.BaseStat;
+            }
+
+            return "Base Stat Total: " + statTotal.ToString();
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    // function used for getting stat start angle
+    public class StatStartAngleConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (parameter is not string)
+                return 0;
+
+            if (value is not ObservableCollection<PokemonStat>)
+                return 0;
+
+            string statName = (string)parameter;
+            ObservableCollection<PokemonStat> stats = (ObservableCollection<PokemonStat>)value;
+
+            // collect all the stat data
+            int hp = 0;       
+            int attack = 0;       
+            int specialAttack = 0;       
+            int defense = 0;       
+            int specialDefense = 0;       
+            int speed = 0;
+
+            int statTotal = 0;
+            
+            foreach (PokemonStat stat in stats)
+            {
+                statTotal += stat.BaseStat;
+
+                switch (stat.Stat.Name)
+                {
+                    case "hp":
+                        hp = stat.BaseStat;
+                        break;
+
+                    case "attack":
+                        attack = stat.BaseStat;
+                        break;
+
+                    case "special-attack":
+                        specialAttack = stat.BaseStat;
+                        break;
+
+                    case "defense":
+                        defense = stat.BaseStat;
+                        break;
+
+                    case "special-defense":
+                        specialDefense = stat.BaseStat;
+                        break;
+
+                    case "speed":
+                        speed = stat.BaseStat;
+                        break;
+                }
+            }
+
+            if (statTotal < 1)
+            {
+                return 0;
+            }
+
+            // now get the angle
+            switch (statName)
+            {
+                case "hp":
+                    return 0;
+
+                case "attack":
+                    return 360.0 * ((hp) / (double)statTotal);
+
+                case "special-attack":
+                    return 360.0 * ((hp + attack) / (double)statTotal);
+
+                case "defense":
+                    return 360.0 * ((hp + attack + specialAttack) / (double)statTotal);
+
+                case "special-defense":
+                    return 360.0 * ((hp + attack + specialAttack + defense) / (double)statTotal);
+
+                case "speed":
+                    return 360.0 * ((hp + attack + specialAttack + defense + specialDefense) / (double)statTotal);
+            }
+
+            return 0;
+        }
+
+        public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    // function used for getting stat end angle
+    public class StatEndAngleConverter : IValueConverter
+    {
+        public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
+        {
+            if (parameter is not string)
+                return 0;
+
+            if (value is not ObservableCollection<PokemonStat>)
+                return 0;
+
+            string statName = (string)parameter;
+            ObservableCollection<PokemonStat> stats = (ObservableCollection<PokemonStat>)value;
+
+            // collect all the stat data
+            int hp = 0;
+            int attack = 0;
+            int specialAttack = 0;
+            int defense = 0;
+            int specialDefense = 0;
+            int speed = 0;
+
+            int statTotal = 0;
+
+            foreach (PokemonStat stat in stats)
+            {
+                statTotal += stat.BaseStat;
+
+                switch (stat.Stat.Name)
+                {
+                    case "hp":
+                        hp = stat.BaseStat;
+                        break;
+
+                    case "attack":
+                        attack = stat.BaseStat;
+                        break;
+
+                    case "special-attack":
+                        specialAttack = stat.BaseStat;
+                        break;
+
+                    case "defense":
+                        defense = stat.BaseStat;
+                        break;
+
+                    case "special-defense":
+                        specialDefense = stat.BaseStat;
+                        break;
+
+                    case "speed":
+                        speed = stat.BaseStat;
+                        break;
+                }
+            }
+
+            if (statTotal < 1)
+            {
+                return 0;
+            }
+
+            // now get the angle
+            switch (statName)
+            {
+                case "hp":
+                    return 360.0 * ((hp) / (double)statTotal);
+
+                case "attack":
+                    return 360.0 * ((hp + attack) / (double)statTotal);
+
+                case "special-attack":
+                    return 360.0 * ((hp + attack + specialAttack) / (double)statTotal);
+
+                case "defense":
+                    return 360.0 * ((hp + attack + specialAttack + defense) / (double)statTotal);
+
+                case "special-defense":
+                    return 360.0 * ((hp + attack + specialAttack + defense + specialDefense) / (double)statTotal);
+
+                case "speed":
+                    return 360.0 * ((hp + attack + specialAttack + defense + specialDefense + speed) / (double)statTotal);
+            }
+
+            return 0;
         }
 
         public object ConvertBack(object value, System.Type targetType, object parameter, CultureInfo culture)

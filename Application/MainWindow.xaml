@@ -4,14 +4,22 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:et="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:autoteambuilder"
         mc:Ignorable="d"
         Title="Auto Team Builder" Height="1200" Width="1000" MinWidth="700" MinHeight="1000" ScrollViewer.VerticalScrollBarVisibility="Disabled" Closing="OnClosing" >
     <Window.Resources>
         <local:LowercaseToNamecaseConverter x:Key="LowercaseToNamecaseConverter" />
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        <local:TeamStatsBindingConverter x:Key="TeamStatsBindingConverter" />
         <local:TypeNameToPngConverter x:Key="TypeNameToPngConverter" />
         <local:CalculateBarHeight x:Key="CalculateBarHeight" />
+        <local:CalculateBarColour x:Key="CalculateBarColour" />
+        <local:HasBindingConverter x:Key="HasBindingConverter" />
+        <local:StatConverter x:Key="StatConverter" />
+        <local:StatTotalConverter x:Key="StatTotalConverter" />
+        <local:StatStartAngleConverter x:Key="StatStartAngleConverter" />
+        <local:StatEndAngleConverter x:Key="StatEndAngleConverter" />
 
         <DataTemplate x:Key="boxPokemon">
             <Image Source="{Binding Path=Sprites.FrontDefault}" MaxHeight="{Binding ListBoxItemHeight, ElementName=MainWindow1}"/>
@@ -20,6 +28,64 @@
         <DataTemplate x:Key="typeItem">
             <Image Source="{Binding Converter={StaticResource TypeNameToPngConverter}}" Width="20" ToolTip="{Binding}" Margin="0"/>
         </DataTemplate>
+
+        <ControlTemplate x:Key="statsToolTip">
+            <Grid Width="220" Height="180" d:DataContext="{d:DesignInstance Type=local:SmartPokemon}" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="120" />
+                    <RowDefinition Height="30" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Base Stat Distribution" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="10" Grid.ColumnSpan="2"/>
+                <Label Content="{Binding Path=Stats, Converter={StaticResource StatTotalConverter}}" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="10" Grid.Row="2" Grid.ColumnSpan="2"/>
+                <Canvas Margin="10" Grid.Row="1">
+                    <et:Pie Fill="#FFB71515" Height="100" Width="100" ToolTip="{Binding Path=Stats, Converter={StaticResource StatConverter}, ConverterParameter=hp}"               Stroke="#FFD4D4D4" StartAngle="{Binding Path=Stats, Converter={StaticResource StatStartAngleConverter}, ConverterParameter=hp}" EndAngle="{Binding Path=Stats, Converter={StaticResource StatEndAngleConverter}, ConverterParameter=hp}"  StrokeThickness="1" />
+                    <et:Pie Fill="#FFB78815" Height="100" Width="100" ToolTip="{Binding Path=Stats, Converter={StaticResource StatConverter}, ConverterParameter=attack}"           Stroke="#FFD4D4D4" StartAngle="{Binding Path=Stats, Converter={StaticResource StatStartAngleConverter}, ConverterParameter=attack}" EndAngle="{Binding Path=Stats, Converter={StaticResource StatEndAngleConverter}, ConverterParameter=attack}"  StrokeThickness="1" />
+                    <et:Pie Fill="#FF6EB715" Height="100" Width="100" ToolTip="{Binding Path=Stats, Converter={StaticResource StatConverter}, ConverterParameter=special-attack}"   Stroke="#FFD4D4D4" StartAngle="{Binding Path=Stats, Converter={StaticResource StatStartAngleConverter}, ConverterParameter=special-attack}" EndAngle="{Binding Path=Stats, Converter={StaticResource StatEndAngleConverter}, ConverterParameter=special-attack}"  StrokeThickness="1" />
+                    <et:Pie Fill="#FF15B7AD" Height="100" Width="100" ToolTip="{Binding Path=Stats, Converter={StaticResource StatConverter}, ConverterParameter=defense}"          Stroke="#FFD4D4D4" StartAngle="{Binding Path=Stats, Converter={StaticResource StatStartAngleConverter}, ConverterParameter=defense}" EndAngle="{Binding Path=Stats, Converter={StaticResource StatEndAngleConverter}, ConverterParameter=defense}"  StrokeThickness="1" />
+                    <et:Pie Fill="#FF4A15B7" Height="100" Width="100" ToolTip="{Binding Path=Stats, Converter={StaticResource StatConverter}, ConverterParameter=special-defense}"  Stroke="#FFD4D4D4" StartAngle="{Binding Path=Stats, Converter={StaticResource StatStartAngleConverter}, ConverterParameter=special-defense}" EndAngle="{Binding Path=Stats, Converter={StaticResource StatEndAngleConverter}, ConverterParameter=special-defense}"  StrokeThickness="1" />
+                    <et:Pie Fill="#FFB715A1" Height="100" Width="100" ToolTip="{Binding Path=Stats, Converter={StaticResource StatConverter}, ConverterParameter=speed}"            Stroke="#FFD4D4D4" StartAngle="{Binding Path=Stats, Converter={StaticResource StatStartAngleConverter}, ConverterParameter=speed}" EndAngle="{Binding Path=Stats, Converter={StaticResource StatEndAngleConverter}, ConverterParameter=speed}"  StrokeThickness="1" />
+                </Canvas>
+                <Grid Grid.Column="1" Grid.Row="1" Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0">
+                        <Rectangle Fill="#FFB71515" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="HP" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0">
+                        <Rectangle Fill="#FFB78815" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Attack" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0">
+                        <Rectangle Fill="#FF6EB715" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Sp. Attack" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="0">
+                        <Rectangle Fill="#FF15B7AD" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Defense" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="0">
+                        <Rectangle Fill="#FF4A15B7" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Sp. Defense" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="5" Margin="0">
+                        <Rectangle Fill="#FFB715A1" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Speed" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </ControlTemplate>
 
         <ControlTemplate x:Key="typeItemGridHeader">
             <StackPanel HorizontalAlignment="Center" Orientation="Vertical">
@@ -82,8 +148,13 @@
                         <Image Source="{Binding Path=Types[0].Type.Name, Converter={StaticResource TypeNameToPngConverter}}" MaxHeight="40" ToolTip="{Binding Path=Types[0].Type.Name}" Margin="2" />
                         <Image Source="{Binding Path=Types[1].Type.Name, Converter={StaticResource TypeNameToPngConverter}}" MaxHeight="40" ToolTip="{Binding Path=Types[1].Type.Name}" Margin="2" />
                     </StackPanel>
+                    <et:DropDownButton Content="Stats" IsEnabled="{Binding Converter={StaticResource HasBindingConverter}}" DropDownContentBackground="#FF3F3F3F" Margin="5,10,5,5" >
+                        <et:DropDownButton.DropDownContent>
+                            <ContentControl Template="{StaticResource statsToolTip}" />
+                        </et:DropDownButton.DropDownContent>
+                    </et:DropDownButton>
                 </StackPanel>
-                <Image Source="{Binding Path=Sprites.Other.OfficialArtwork.FrontDefault}" DockPanel.Dock="Top" VerticalAlignment="Top" Margin="0,10,0,0"/>
+                <Image Source="{Binding Path=Sprites.Other.OfficialArtwork.FrontDefault}" DockPanel.Dock="Top" VerticalAlignment="Top" Margin="0,10,0,0" />
             </DockPanel>
         </ControlTemplate>
 
@@ -91,7 +162,7 @@
             <Border BorderBrush="#FF3F3F3F" BorderThickness="1">
                 <Grid d:DataContext="{d:DesignInstance Type=local:SmartPokemon}">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="180"/>
+                        <RowDefinition Height="220"/>
                         <RowDefinition Height="60*"/>
                     </Grid.RowDefinitions>
                     <ContentControl Template="{StaticResource pokemonCard}" DataContext="{Binding}"/>
@@ -103,26 +174,22 @@
         <ControlTemplate x:Key="totalBar">
             <Border BorderBrush="#FF3F3F3F" BorderThickness="0,1,0,1">
                 <Grid ToolTip="{Binding}">
-                    <Rectangle HorizontalAlignment="Center" Height="49" Margin="0,0,0,0" VerticalAlignment="Bottom" Width="30">
+                    <Rectangle HorizontalAlignment="Center" Height="0" Margin="0,0,0,0" VerticalAlignment="Bottom" Width="30" local:Animated.Height="{Binding Converter={StaticResource CalculateBarHeight}, Mode=OneWay}">
                         <Rectangle.Fill>
-                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                                <GradientStop Color="#FF3AA03B"/>
-                                <GradientStop Color="#FFCE4B18" Offset="1"/>
-                                <GradientStop Color="#FFBBFF00" Offset="0.8"/>
-                            </LinearGradientBrush>
+                            <SolidColorBrush Color="{Binding Converter={StaticResource CalculateBarColour}}" />
                         </Rectangle.Fill>
                     </Rectangle>
-                    <Rectangle HorizontalAlignment="Center" Height="50" Margin="0,0,0,0" VerticalAlignment="Top" Width="50" local:Animated.Height="{Binding Converter={StaticResource CalculateBarHeight}, Mode=OneWay}">
+                    <!--<Rectangle HorizontalAlignment="Center" Height="50" Margin="0,0,0,0" VerticalAlignment="Top" Width="50" local:Animated.Height="{Binding Converter={StaticResource CalculateBarHeight}, Mode=OneWay}">
                         <Rectangle.Fill>
                             <SolidColorBrush Color="#FF242424" />
                         </Rectangle.Fill>
-                    </Rectangle>
+                    </Rectangle>-->
                 </Grid>
             </Border>
         </ControlTemplate>
 
     </Window.Resources>
-    <Grid Background="#FF242424" x:Name="gridMain" IsEnabled="False">
+    <Grid Background="#FF242424" x:Name="gridMain" IsEnabled="True">
         <Grid.RowDefinitions>
             <RowDefinition Height="991*"/>
             <RowDefinition Height="220"/>
@@ -193,7 +260,7 @@
 
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="180"/>
+                    <RowDefinition Height="220"/>
                     <RowDefinition Height="65*"/>
                     <RowDefinition Height="35*"/>
                 </Grid.RowDefinitions>
@@ -225,21 +292,81 @@
                 <RowDefinition Height="25*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
                 <ColumnDefinition Width="100" />
             </Grid.ColumnDefinitions>
-            <Label Content="Resistances" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="1" />
-            <Label Content="Weaknesses" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="2" />
-            <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="3" />
+            <StackPanel Margin="0,6,0,6" Orientation="Horizontal" Grid.Column="1">
+                <Label Content="Score:" FontWeight="Bold" Foreground="#FFF3F3F3" Height="26" Width="45" VerticalAlignment="Bottom" />
+                <TextBlock x:Name="labelScore" Text="" TextTrimming="CharacterEllipsis" Foreground="#FFF3F3F3" Height="20" MaxWidth="40" VerticalAlignment="Bottom" Margin="0,0,10,0" HorizontalAlignment="Right"/>
+            </StackPanel>
+            <Label Content="Resistances" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" />
+            <Label Content="Weaknesses" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" />
+            <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" />
+            <Grid Width="220" Height="180" DataContext="{Binding TeamStats, ElementName=MainWindow1}" Grid.Row="0" Grid.RowSpan="4" Margin="10" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="120" />
+                    <RowDefinition Height="30" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="100"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Team Base Stat Totals" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.ColumnSpan="2" />
+                <Label Content="{Binding Converter={StaticResource StatTotalConverter}}" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="10" Grid.Row="2" Grid.ColumnSpan="2"/>
+                <Canvas Margin="10" Grid.Row="1">
+                    <et:Pie Fill="#FFB71515" Height="100" Width="100" ToolTip="{Binding Converter={StaticResource StatConverter}, ConverterParameter=hp}"               Stroke="#FFD4D4D4" StartAngle="{Binding Converter={StaticResource StatStartAngleConverter}, ConverterParameter=hp, Mode=OneWay}"                EndAngle="{Binding Converter={StaticResource StatEndAngleConverter}, ConverterParameter=hp, Mode=OneWay}"               StrokeThickness="1" />
+                    <et:Pie Fill="#FFB78815" Height="100" Width="100" ToolTip="{Binding Converter={StaticResource StatConverter}, ConverterParameter=attack}"           Stroke="#FFD4D4D4" StartAngle="{Binding Converter={StaticResource StatStartAngleConverter}, ConverterParameter=attack, Mode=OneWay}"            EndAngle="{Binding Converter={StaticResource StatEndAngleConverter}, ConverterParameter=attack, Mode=OneWay}"           StrokeThickness="1" />
+                    <et:Pie Fill="#FF6EB715" Height="100" Width="100" ToolTip="{Binding Converter={StaticResource StatConverter}, ConverterParameter=special-attack}"   Stroke="#FFD4D4D4" StartAngle="{Binding Converter={StaticResource StatStartAngleConverter}, ConverterParameter=special-attack, Mode=OneWay}"    EndAngle="{Binding Converter={StaticResource StatEndAngleConverter}, ConverterParameter=special-attack, Mode=OneWay}"   StrokeThickness="1" />
+                    <et:Pie Fill="#FF15B7AD" Height="100" Width="100" ToolTip="{Binding Converter={StaticResource StatConverter}, ConverterParameter=defense}"          Stroke="#FFD4D4D4" StartAngle="{Binding Converter={StaticResource StatStartAngleConverter}, ConverterParameter=defense, Mode=OneWay}"           EndAngle="{Binding Converter={StaticResource StatEndAngleConverter}, ConverterParameter=defense, Mode=OneWay}"          StrokeThickness="1" />
+                    <et:Pie Fill="#FF4A15B7" Height="100" Width="100" ToolTip="{Binding Converter={StaticResource StatConverter}, ConverterParameter=special-defense}"  Stroke="#FFD4D4D4" StartAngle="{Binding Converter={StaticResource StatStartAngleConverter}, ConverterParameter=special-defense, Mode=OneWay}"   EndAngle="{Binding Converter={StaticResource StatEndAngleConverter}, ConverterParameter=special-defense, Mode=OneWay}"  StrokeThickness="1" />
+                    <et:Pie Fill="#FFB715A1" Height="100" Width="100" ToolTip="{Binding Converter={StaticResource StatConverter}, ConverterParameter=speed}"            Stroke="#FFD4D4D4" StartAngle="{Binding Converter={StaticResource StatStartAngleConverter}, ConverterParameter=speed, Mode=OneWay}"             EndAngle="{Binding Converter={StaticResource StatEndAngleConverter}, ConverterParameter=speed, Mode=OneWay}"            StrokeThickness="1" />
+                </Canvas>
+                <Grid Grid.Column="1" Grid.Row="1" Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                        <RowDefinition Height="10*" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0">
+                        <Rectangle Fill="#FFB71515" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="HP" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0">
+                        <Rectangle Fill="#FFB78815" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Attack" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0">
+                        <Rectangle Fill="#FF6EB715" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Sp. Attack" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="0">
+                        <Rectangle Fill="#FF15B7AD" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Defense" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="0">
+                        <Rectangle Fill="#FF4A15B7" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Sp. Defense" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="5" Margin="0">
+                        <Rectangle Fill="#FFB715A1" Stroke="#FFD4D4D4" Width="7" Height="7" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <TextBlock Text="Speed" FontWeight="Bold" Foreground="#FFF3F3F3" VerticalAlignment="Center" HorizontalAlignment="Left" FontSize="10" Margin="5,0,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
         </Grid>
 
-        <Grid Height="217" Margin="256,252,110,0" VerticalAlignment="Top">
+        <Grid Height="217" Margin="256,252,215,0" VerticalAlignment="Top">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100"/>
                 <ColumnDefinition Width="200*"/>
                 <ColumnDefinition Width="100"/>
                 <ColumnDefinition Width="200*"/>
             </Grid.ColumnDefinitions>
-            <Label Content="Weightings" Foreground="#FFF3F3F3" Height="36" Width="189" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,78,0" Grid.ColumnSpan="2"/>
+            <Label Content="Weightings" Foreground="#FFF3F3F3" Height="36" Width="189" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.ColumnSpan="4"/>
             <Slider Margin="4,38,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding TypeDefenseWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="1" Width="NaN"/>
             <Label Content="Type Defense:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,34,0,0" />
             <Slider Margin="4,69,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding TypeCoverageWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="1" Width="NaN"/>
@@ -257,20 +384,16 @@
             <Slider Margin="7,195,20,0" VerticalAlignment="Top" Maximum="1" Value="{Binding SpeWeighting, ElementName=MainWindow1}" ValueChanged="OnWeightingChanged" Grid.Column="3" Width="NaN"/>
             <Label Content="Speed Stat:" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="13,191,0,0" Grid.Column="2" />
             <Label Content="Stat Weightings" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" Margin="0,0,44,0" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Right" Width="100" />
-            <Canvas HorizontalAlignment="Center" Margin="0,61,0,0" VerticalAlignment="Top" Width="98" Height="30" Grid.Column="3">
-                <Label x:Name="labelScore" Content="" Foreground="#FFF3F3F3" Height="26" Width="50" HorizontalAlignment="Left" Canvas.Left="47" VerticalAlignment="Top"/>
-                <Label Content="Score:" Foreground="#FFF3F3F3" Height="26" Width="42" HorizontalAlignment="Center" VerticalAlignment="Top" />
-
-            </Canvas>
-            <Canvas HorizontalAlignment="Center" Margin="0,26,0,0" VerticalAlignment="Top" Width="246" Height="30" Grid.Column="3">
+            <Canvas Visibility="Hidden" HorizontalAlignment="Center" Margin="0,26,0,0" VerticalAlignment="Top" Width="246" Height="30" Grid.Column="3">
                 <Label x:Name="labelCombinations" Content="{Binding TeamCombinations, ElementName=MainWindow1}" Foreground="#FFF3F3F3" Height="26" Grid.Column="3" Canvas.Left="123" Width="83" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <Label Content="Team Combinations:" Foreground="#FFF3F3F3" Height="26" Width="138" HorizontalAlignment="Left" VerticalAlignment="Center" />
 
             </Canvas>
-            <Button Content="Build Team" VerticalAlignment="Top" Click="OnClickBuildTeam" Height="20" Width="74" HorizontalAlignment="Left" Grid.Column="3"/>
-            <Button Content="Build Team (Genetic)" VerticalAlignment="Top" Click="OnClickBuildTeamGenetic" Height="20" Width="127" HorizontalAlignment="Right" Grid.Column="3"/>
         </Grid>
 
         <Grid x:Name="gridDim" Grid.RowSpan="2" Background="#CC232323" Visibility="Hidden" />
+        <Button Content="Build Team" VerticalAlignment="Top" Click="OnClickBuildTeam" Height="20" Margin="0,291,40,0" HorizontalAlignment="Right" Width="140"/>
+        <Button Content="Build Team (Genetic)" VerticalAlignment="Top" Click="OnClickBuildTeamGenetic" Height="20" Margin="0,315,40,0" HorizontalAlignment="Right" Width="140"/>
+        <Label Content="Team Generation" Foreground="#FFF3F3F3" Height="36" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" VerticalAlignment="Top" Margin="0,252,16,0" HorizontalAlignment="Right" Width="188"/>
     </Grid>
 </Window>

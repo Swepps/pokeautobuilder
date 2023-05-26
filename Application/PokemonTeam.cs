@@ -1,4 +1,5 @@
 ﻿using autoteambuilder;
+using PokeApiNet;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +17,20 @@ namespace autoteambuilder
     public class PokemonTeam : ObservableCollection<SmartPokemon?>
     {
         public static readonly int MaxTeamSize = 6;
+
+        public bool IsEmpty
+        {
+            get
+            {
+                foreach (SmartPokemon? p in this)
+                {
+                    if (p != null)
+                        return true;
+                }
+                return false;
+            }
+            private set => IsEmpty = value;
+        }
 
         public PokemonTeam() 
         {
