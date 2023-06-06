@@ -1,0 +1,22 @@
+﻿@using PokeApiNet
+@using blazorServerApp.Data
+
+@if (pokemon == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <img src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" />
+}
+
+@code {
+    [Parameter]
+    public string PokemonName { get; set; } = "pikachu";
+    private SmartPokemon? pokemon;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pokemon = await PokeApiHandler.GetPokemonAsync(PokemonName);
+    }
+}
