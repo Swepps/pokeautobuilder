@@ -1,0 +1,19 @@
+﻿body {
+}
+
+div{
+    border: 1px solid red;
+}
+
+.team-grid-container {
+    display: grid;
+    grid-template-columns: auto auto auto auto auto auto;
+    column-gap: 10px;
+
+    width: 100%;
+    padding: 10px;
+}
+
+.card-grid-item{
+    width: 100%;
+}

@@ -48,6 +48,7 @@ namespace blazorServerApp.Data
 
         public async void SetPokedex(Pokedex pokedex)
         {
+            this.Clear();
             var tasks = pokedex.PokemonEntries.Select(async entry =>
             {
                 PokemonSpecies? species = await PokeApiHandler.GetPokemonSpeciesAsync(entry);
@@ -68,6 +69,12 @@ namespace blazorServerApp.Data
         public SmartPokemonEntry? FindPokemon(string pokemonName)
         {
             return this.Where(entry => entry.Species.Name.Equals(pokemonName)).FirstOrDefault();
+        }
+
+        public List<SmartPokemonEntry> SearchPokedex(string searchTerm)
+        {
+            List<SmartPokemonEntry> results = this.Where(entry => entry.Species.Name.Contains(searchTerm)).OrderBy(e => e.Species.Name).ToList();
+            return results;
         }
 
         public SmartPokemonEntry? RandomPokemon()

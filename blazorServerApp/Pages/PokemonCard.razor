@@ -1,14 +1,46 @@
 ﻿@using PokeApiNet
 @using blazorServerApp.Data
 
-@if (pokemon == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <img src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" />
-}
+<div class="card">
+    <form >
+        <div class="autocomplete">
+            <input @bind=selectedPokemonName placeholder="Pokemon" @oninput="@HandleInput" class="form-control filter" />
+            @if (entryResults is not null)
+            {
+                <ul class="options">
+                    @if (entryResults.Any())
+                    {
+                        @if (entryResults[0].Species.Name == filter)
+                        {
+                            SelectPokemon(entryResults[0].Species.Name);
+                        }
+                        else
+                        {
+                            @foreach (var entry in entryResults)
+                            {
+                                <li class="option" @onclick=@(_ => SelectPokemon(entry.Species.Name))>
+                                    <span class="option-text">@entry.Species.Name</span>
+                                </li>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <li class="disabled option">No results</li>
+                    }
+                </ul>
+            }
+        </div>
+    </form>
+    @if (pokemon == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <img src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" />
+    }
+</div>
 
 @code {
     [Parameter]
@@ -18,5 +50,32 @@ else
     protected override async Task OnInitializedAsync()
     {
         pokemon = await PokeApiHandler.GetPokemonAsync(PokemonName);
+    }
+
+    // autocomplete functionality
+    List<SmartPokemonEntry>? entryResults;
+    string? filter;
+    string? selectedPokemonName;
+
+    public void HandleInput(ChangeEventArgs e)
+    {
+        filter = e.Value?.ToString();
+        if (filter?.Length > 2)
+        {
+            entryResults = Globals.Pokedex.SearchPokedex(filter);
+        }
+        else
+        {
+            entryResults = null;
+            selectedPokemonName = null;
+        }
+    }
+
+    public async void SelectPokemon(string name)
+    {
+        selectedPokemonName = name;
+        entryResults = null;
+
+        pokemon = await PokeApiHandler.GetPokemonAsync(selectedPokemonName);
     }
 }
