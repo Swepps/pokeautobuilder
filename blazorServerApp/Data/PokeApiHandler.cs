@@ -7,15 +7,15 @@ namespace blazorServerApp.Data
     {
         private static PokeApiClient ApiClient = new PokeApiClient();
 
-        public static async Task<List<PokemonType>> GetAllTypesAsync()
+        public static async Task<List<SmartType>> GetAllTypesAsync()
         {
-            List<PokemonType> pokemonTypes = new List<PokemonType>();
+            List<SmartType> pokemonTypes = new List<SmartType>();
 
             NamedApiResourceList<Type> allTypesPage = await ApiClient.GetNamedResourcePageAsync<Type>();
             foreach (NamedApiResource<Type> res in allTypesPage.Results)
             {
                 Type type = await ApiClient.GetResourceAsync(res);
-                PokemonType pokeType = new PokemonType(type);
+                SmartType pokeType = new SmartType(type);
 
                 // there are some weird types in the API with Ids of over 1000 that aren't real types
                 if (type == null || type.Id > 18)
@@ -60,6 +60,20 @@ namespace blazorServerApp.Data
             }
         }
 
+        public static async Task<PokemonSpecies?> GetPokemonSpeciesAsync(SmartPokemon pokemon)
+        {
+            try
+            {
+                PokemonSpecies species = await ApiClient.GetResourceAsync(pokemon.Species);
+                return species;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+
         public static async Task<SmartPokemon?> GetPokemonAsync(string pokemonName)
         {
             pokemonName = pokemonName.ToLower();
@@ -85,6 +99,21 @@ namespace blazorServerApp.Data
                 SmartPokemon smartPokemon = new SmartPokemon(pokemon);
 
                 return smartPokemon;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+
+        public static async Task<Generation?> GetGenerationAsync(PokemonSpecies species)
+        {
+            try
+            {
+                Generation generation = await ApiClient.GetResourceAsync(species.Generation);
+
+                return generation;
             }
             catch (Exception ex)
             {

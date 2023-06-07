@@ -6,9 +6,9 @@ namespace blazorServerApp.Data
 
     // currently there's no difference between PokemonType and Type baseclass, but I might need
     // to add some more functions here in the future
-    public class PokemonType : Type
+    public class SmartType : Type
     {
-        public PokemonType(Type type)
+        public SmartType(Type type)
         {
             Id = type.Id;
             Name = type.Name;

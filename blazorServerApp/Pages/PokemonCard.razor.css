@@ -10,6 +10,8 @@ img{
     width: 100%;
 }
 
+/* search bar related CSS */
+
 .autocomplete {
     position: relative;
 }
@@ -20,11 +22,16 @@ img{
     left: 0;
     background: white;
     width: 100%;
+    min-width: 10em;
+    max-height: 30em;
     padding: 0;
     z-index: 10;
     border: 1px solid #ced4da;
     border-radius: 0.5rem;
     box-shadow: 0 30px 25px 8px rgba(0, 0, 0, 0.1);
+    text-overflow: clip;
+    overflow: hidden;
+    overflow-y: scroll;
 }
 
 .autocomplete .option {
@@ -49,4 +56,25 @@ img{
 .autocomplete .option.disabled:hover {
     background: lightgrey;
     color: var(--bs-body);
+}
+
+/* type images */
+
+.types {
+    text-align: center;
+}
+
+.types img {
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    max-width: 70px;
+    padding: 5px;
+}
+
+/* generation */
+
+.generation {
+    text-align: center;
 }

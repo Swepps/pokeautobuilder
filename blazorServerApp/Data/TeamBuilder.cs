@@ -26,7 +26,7 @@ namespace blazorServerApp.Data
                 return 0;
 
             // gather some information about the types in the team
-            List<PokemonType> typeArray = Globals.AllTypes;
+            List<SmartType> typeArray = Globals.AllTypes;
             Dictionary<Type, int> weaknesses = new Dictionary<Type, int>();
             Dictionary<Type, int> resistances = new Dictionary<Type, int>();
             Dictionary<Type, int> coverage = new Dictionary<Type, int>();
@@ -71,7 +71,7 @@ namespace blazorServerApp.Data
         // Aah GCSE maths... this seems much easier than I thought it was when I was 15
         private static double CalculateStandardDeviation(Dictionary<Type, int> typeDictionary)
         {
-            List<PokemonType> typeArray = Globals.AllTypes;
+            List<SmartType> typeArray = Globals.AllTypes;
             double mean = 0;
             foreach (Type type in typeArray)
             {
@@ -91,7 +91,7 @@ namespace blazorServerApp.Data
 
         private static double CalculateCoverageScore(Dictionary<Type, int> typeDictionary, double totalCoverage)
         {
-            List<PokemonType> typeArray = Globals.AllTypes;
+            List<SmartType> typeArray = Globals.AllTypes;
             double score = 5.0 + Math.Sqrt(totalCoverage);
             double scoreForType = score / typeArray.Count;
 
