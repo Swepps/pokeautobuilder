@@ -1,0 +1,39 @@
+﻿@page "/"
+@using blazorServerApp.Data
+@using PokeApiNet
+
+<PageTitle>Index</PageTitle>
+
+@if (initialised == false)
+{
+    <p><em>Initialising...</em></p>
+}
+else
+{
+    <body>
+        <div class="team-grid-container">
+            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="swampert" />  </div>            
+            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="garchomp" />  </div>
+            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="rayquaza" />  </div>
+            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="skarmory" />  </div>
+            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="linoone" />   </div>
+            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="gardevoir" /> </div>
+        </div>
+    </body>
+}
+
+@code {
+    private bool initialised = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // initialising global variables used across the app
+        Globals.AllTypes = await PokeApiHandler.GetAllTypesAsync();
+        Pokedex? downloadedDex = await PokeApiHandler.GetNationalDex();
+        if (downloadedDex != null)
+        {
+            Globals.Pokedex.SetPokedex(downloadedDex);
+        }
+        initialised = true;
+    }
+}

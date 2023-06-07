@@ -1,0 +1,144 @@
+﻿@using PokeApiNet
+@using blazorServerApp.Data
+@using Type = PokeApiNet.Type
+
+<div class="card">
+    <form >
+        <div class="autocomplete">
+            <input @bind=PokemonSpeciesName placeholder="Pokemon" @oninput="@HandleInput" class="form-control filter" />
+            @if (entryResults is not null)
+            {
+                <ul class="options">
+                    @if (entryResults.Any())
+                    {
+                        @if (entryResults[0].Species.Name == filter)
+                        {
+                            SelectPokemon(entryResults[0]);
+                        }
+                        else
+                        {
+                            @foreach (var entry in entryResults)
+                            {
+                                <li class="option" @onclick=@(_ => SelectPokemon(entry))>
+                                    <span class="option-text">@entry</span>
+                                </li>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <li class="disabled option">No results</li>
+                    }
+                </ul>
+            }
+        </div>
+    </form>
+    @if (error)
+    {
+        <p>Error while fetching @PokemonSpeciesName</p>
+    }
+    else if (pokemon == null || species == null || generation == null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <img src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@pokemon.Name" title="@pokemon.Name"/>
+        <div class="types">
+            @foreach (PokemonType t in pokemon.Types)
+            {
+                <img src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" title="@t.Type.Name" />
+            }
+        </div>
+        <div class="generation">
+            <p>@generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</p>
+        </div>
+        @if (species.Varieties.Count > 1)
+        {
+            <div class="forms">
+                <ul class="options">
+                    @foreach (PokemonSpeciesVariety v in species.Varieties)
+                    {
+                        <li class="option" @onclick=@(_ => SelectForm(v.Pokemon.Name))>
+                            <span class="option-text">@v.Pokemon.Name</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? PokemonSpeciesName { get; set; } = "pikachu";
+
+    private SmartPokemon? pokemon;
+    private PokemonSpecies? species;
+    private Generation? generation;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetDefaultPokemon();
+    }
+
+    public async void SetDefaultPokemon()
+    {
+        if (PokemonSpeciesName is null)
+            return;
+
+        species = await PokeApiHandler.GetPokemonSpeciesAsync(PokemonSpeciesName);
+        if (species is not null)
+        {
+            // simultaneously get the default pokemon and generation from this species
+            var getPokemonTask = PokeApiHandler.GetPokemonAsync(species.Varieties[0].Pokemon.Name);
+            var getGenerationTask = PokeApiHandler.GetGenerationAsync(species);
+            await Task.WhenAll(getPokemonTask, getGenerationTask);
+            pokemon = getPokemonTask.Result;
+            generation = getGenerationTask.Result;
+        }
+
+        StateHasChanged();
+    }
+
+    public async void SetForm(string formName)
+    {
+        pokemon = await PokeApiHandler.GetPokemonAsync(formName);
+        StateHasChanged();
+    }
+
+    // pokemon search functionality
+    List<SmartPokemonEntry>? entryResults;
+    string? filter;
+    bool error = false;
+
+    public void HandleInput(ChangeEventArgs e)
+    {
+        error = false;
+        filter = e.Value?.ToString();
+        if (filter?.Length > 1)
+        {
+            filter = filter.ToLower();
+            entryResults = Globals.Pokedex.SearchPokedex(filter);
+        }
+        else
+        {
+            entryResults = null;
+            pokemon = null;
+            species = null;
+        }
+    }
+
+    public void SelectPokemon(SmartPokemonEntry entry)
+    {
+        PokemonSpeciesName = entry.Species.Name;
+        entryResults = null;
+
+        SetDefaultPokemon();
+    }
+
+    public void SelectForm(string formName)
+    {
+        SetForm(formName);
+    }
+}

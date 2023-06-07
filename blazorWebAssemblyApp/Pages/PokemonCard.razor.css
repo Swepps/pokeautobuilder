@@ -1,0 +1,119 @@
+﻿body {
+}
+
+img{
+    max-width: 100%;
+}
+
+.card {
+    display: flow;
+    width: 100%;
+    border-radius: 0.5rem;
+    background-color: dimgrey;
+}
+
+/* search bar related CSS */
+
+.autocomplete {
+    position: relative;
+}
+
+.autocomplete .options {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    background: white;
+    width: 100%;
+    min-width: 10em;
+    max-height: 30em;
+    padding: 0;
+    z-index: 10;
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    box-shadow: 0 30px 25px 8px rgba(0, 0, 0, 0.1);
+    text-overflow: clip;
+    overflow: hidden;
+    overflow-y: scroll;
+}
+
+.autocomplete .option {
+    display: block;
+    padding: 0.25rem;
+}
+
+.autocomplete .option .option-text {
+    padding: 0.25rem 0.5rem;
+}
+
+.autocomplete .option:hover {
+    background: #1E90FF;
+    color: #fff;
+}
+
+.autocomplete .option.disabled {
+    background-color: lightgrey;
+    cursor: not-allowed;
+}
+
+.autocomplete .option.disabled:hover {
+    background: lightgrey;
+    color: var(--bs-body);
+}
+
+/* type images */
+
+.types {
+    text-align: center;
+}
+
+.types img {
+    display: inline-block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+    max-width: 70px;
+    padding: 5px;
+}
+
+/* generation */
+
+.generation {
+    text-align: center;
+}
+
+/* forms */
+
+.forms .options {
+    background: white;
+    width: 100%;
+    padding: 0;
+    z-index: 10;
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    text-overflow: clip;
+}
+
+.forms .option {
+    display: block;
+    padding: 0.25rem;
+}
+
+.forms .option .option-text {
+    padding: 0.25rem 0.5rem;
+}
+
+.forms .option:hover {
+    background: #1E90FF;
+    color: #fff;
+    cursor: pointer;
+}
+
+.forms .option.disabled {
+    background-color: lightgrey;
+    cursor: not-allowed;
+}
+
+.forms .option.disabled:hover {
+    background: lightgrey;
+    color: var(--bs-body);
+}
