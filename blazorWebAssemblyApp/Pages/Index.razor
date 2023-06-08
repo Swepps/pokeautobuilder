@@ -1,5 +1,4 @@
 ﻿@page "/"
-@using blazorServerApp.Data
 @using PokeApiNet
 
 <PageTitle>Index</PageTitle>
@@ -12,13 +11,32 @@ else
 {
     <body>
         <div class="team-grid-container">
-            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="swampert" />  </div>            
-            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="garchomp" />  </div>
-            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="rayquaza" />  </div>
-            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="skarmory" />  </div>
-            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="linoone" />   </div>
-            <div class="card-grid-item"><PokemonCard PokemonSpeciesName="gardevoir" /> </div>
+            <PokemonCard OnUpdated="Update" PokemonTeamIndex="0" />
+            <PokemonCard OnUpdated="Update" PokemonTeamIndex="1" />
+            <PokemonCard OnUpdated="Update" PokemonTeamIndex="2" />
+            <PokemonCard OnUpdated="Update" PokemonTeamIndex="3" />
+            <PokemonCard OnUpdated="Update" PokemonTeamIndex="4" />
+            <PokemonCard OnUpdated="Update" PokemonTeamIndex="5" />
         </div>
+        @if (!Globals.PokemonTeam.IsEmpty)
+        {
+            <Tabs>
+                @foreach (SmartPokemon? p in Globals.PokemonTeam)
+                {
+                    @if (p != null)
+                    {
+                        <Tab>
+                            <TitleTemplate>
+                                <StatsTabTitleTemplate Pokemon="p" />
+                            </TitleTemplate>
+                            <Content>
+                                <StatsPanel Pokemon="p" />
+                            </Content>
+                        </Tab>
+                    }
+                }
+            </Tabs>
+        }
     </body>
 }
 
@@ -35,5 +53,10 @@ else
             Globals.Pokedex.SetPokedex(downloadedDex);
         }
         initialised = true;
+    }
+
+    public void Update()
+    {
+        StateHasChanged();
     }
 }

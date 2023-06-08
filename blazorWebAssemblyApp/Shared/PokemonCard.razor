@@ -1,10 +1,9 @@
 ﻿@using PokeApiNet
-@using blazorWebAssemblyApp.Source
 @using Type = PokeApiNet.Type
 
 <div class="card">
-    <form >
-        <div class="autocomplete">
+    <div class="autocomplete">
+        <form >            
             <input @bind=PokemonSpeciesName placeholder="Pokemon" @oninput="@HandleInput" class="form-control filter" />
             @if (entryResults is not null)
             {
@@ -30,20 +29,16 @@
                         <li class="disabled option">No results</li>
                     }
                 </ul>
-            }
-        </div>
-    </form>
-    @if (error)
+            }            
+        </form>
+    </div>
+    @if (pokemon == null || species == null || generation == null)
     {
-        <p>Error while fetching @PokemonSpeciesName</p>
-    }
-    else if (pokemon == null || species == null || generation == null)
-    {
-        <p>Loading...</p>
+        <span></span>
     }
     else
     {
-        <img src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@pokemon.Name" title="@pokemon.Name"/>
+        <img class="artwork" src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@pokemon.Name" title="@pokemon.Name"/>
         <div class="types">
             @foreach (PokemonType t in pokemon.Types)
             {
@@ -65,20 +60,33 @@
             }
         </div>
         <div class="forms">
-            <select class="input-form" title="Ability" @onchange="OnChangeAbility">
-                @foreach (PokemonAbility a in pokemon.Abilities)
-                {
-                    <option class="option" value="@a.Ability.Name">@a.Ability.Name</option>
-                }
-            </select>
+            @if (pokemon.Abilities.Count > 1)
+            {
+                <select class="input-form" title="Ability" @onchange="OnChangeAbility">
+                    @foreach (PokemonAbility a in pokemon.Abilities)
+                    {
+                        <option class="option" value="@a.Ability.Name">@a.Ability.Name</option>
+                    }
+                </select>
+            }
+            else if (pokemon.Abilities.Count == 1)
+            {
+                <select class="input-form" title="Ability" disabled>
+                    <option class="option" value="@pokemon.Abilities[0].Ability.Name">@pokemon.Abilities[0].Ability.Name</option>
+                </select>
+            }
         </div>
     }
 </div>
 
 @code {
     [Parameter]
-    public string? PokemonSpeciesName { get; set; } = "pikachu";
-    public string? PokemonFormName { get; set; } = "pikachu";
+    public int PokemonTeamIndex { get; set; } = -1;
+    [Parameter] // used for telling the parent of the card that it has updated
+    public EventCallback OnUpdated { get; set; }
+
+    public string? PokemonSpeciesName { get; set; } = "";
+    public string? PokemonFormName { get; set; } = "";
 
     private SmartPokemon? pokemon;
     private PokemonSpecies? species;
@@ -86,35 +94,55 @@
 
     protected override async Task OnInitializedAsync()
     {
-        SetDefaultPokemon();
+        // use the team index to get this pokemon if possible
+        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < 6)
+        {
+            pokemon = Globals.PokemonTeam[PokemonTeamIndex];
+        }
+
+        await Update();
     }
 
-    public async void SetDefaultPokemon()
+    private async Task Update()
     {
-        if (PokemonSpeciesName is null)
-            return;
-
-        species = await PokeApiHandler.GetPokemonSpeciesAsync(PokemonSpeciesName);
-        if (species is not null)
+        if (pokemon == null)
         {
-            // simultaneously get the default pokemon and generation from this species
-            var getPokemonTask = PokeApiHandler.GetPokemonAsync(species.Varieties[0].Pokemon.Name);
-            var getGenerationTask = PokeApiHandler.GetGenerationAsync(species);
-            await Task.WhenAll(getPokemonTask, getGenerationTask);
-            pokemon = getPokemonTask.Result;
-            generation = getGenerationTask.Result;
+            if (PokemonSpeciesName is null)
+                return;
+
+            species = await PokeApiHandler.GetPokemonSpeciesAsync(PokemonSpeciesName);
+            if (species is not null)
+            {
+                // simultaneously get the default pokemon and generation from this species
+                var getPokemonTask = PokeApiHandler.GetPokemonAsync(species.Varieties[0].Pokemon.Name);
+                var getGenerationTask = PokeApiHandler.GetGenerationAsync(species);
+                await Task.WhenAll(getPokemonTask, getGenerationTask);
+                pokemon = getPokemonTask.Result;
+                generation = getGenerationTask.Result;
+            }
+
+            // update the global pokemon team if this card has a team index
+            if (PokemonTeamIndex >= 0 && PokemonTeamIndex < 6)
+                Globals.PokemonTeam[PokemonTeamIndex] = pokemon;
+        }
+        else
+        {
+            
         }
 
         StateHasChanged();
+
+        await OnUpdated.InvokeAsync();
     }
 
     public async void SetForm()
     {
-        if (PokemonFormName is null)
+        if (PokemonFormName is null || 
+            (pokemon != null && PokemonFormName == pokemon.Name))
             return;
 
         pokemon = await PokeApiHandler.GetPokemonAsync(PokemonFormName);
-        StateHasChanged();
+        await Update();
     }
 
     // pokemon search functionality
@@ -122,7 +150,7 @@
     string? filter;
     bool error = false;
 
-    public void HandleInput(ChangeEventArgs e)
+    public async void HandleInput(ChangeEventArgs e)
     {
         error = false;
         filter = e.Value?.ToString();
@@ -136,15 +164,20 @@
             entryResults = null;
             pokemon = null;
             species = null;
+            generation = null;
+            await Update();
         }
     }
 
-    public void SelectPokemon(SmartPokemonEntry entry)
+    public async void SelectPokemon(SmartPokemonEntry entry)
     {
         PokemonSpeciesName = entry.Species.Name;
         entryResults = null;
+        pokemon = null;
+        species = null;
+        generation = null;
 
-        SetDefaultPokemon();
+        await Update();
     }
 
     // pokemon form functionality

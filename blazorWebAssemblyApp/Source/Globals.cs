@@ -6,5 +6,6 @@
 		public static string Language = "en";
 		public static List<Type> AllTypes = new List<Type>();
 		public static SmartPokedex Pokedex = new SmartPokedex();
+		public static PokemonTeam PokemonTeam = new PokemonTeam();
 	}
 }

@@ -15,9 +15,3 @@ div{
     width: 100%;
     padding: 0.5em;
 }
-
-.card-grid-item {
-    flex-basis: calc(100% * (1/6) - 1em);
-    flex-grow: 0.16;
-    min-width: 7em;
-}
