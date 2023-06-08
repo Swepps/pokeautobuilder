@@ -19,6 +19,7 @@ namespace blazorServerApp.Data
 
     public class SmartPokemon : Pokemon
     {
+        public PokemonAbility ChosenAbility { get; set; }
         public Multipliers? Multipliers;
 
         public ObservableCollection<string> Resistances { get; set; }
@@ -47,6 +48,7 @@ namespace blazorServerApp.Data
             Stats = pokemon.Stats;
             Types = pokemon.Types;
 
+            ChosenAbility = Abilities[0];
             Resistances = GetDefenseResistList();
             Weaknesses = GetDefenseWeakList();
             Coverage = GetCoverageList();
@@ -83,6 +85,17 @@ namespace blazorServerApp.Data
             Multipliers ??= PokeApiHandler.GetPokemonMultipliersAsync(this).Result;
 
             return (Multipliers)Multipliers;
+        }
+
+        public bool SetChosenAbility(string abilityName)
+        {
+            PokemonAbility? ab = Abilities.Where( a => a.Ability.Name == abilityName ).FirstOrDefault();
+            if (ab != null )
+            {
+                ChosenAbility = ab;
+                return true;
+            }
+            return false;
         }
 
         public int GetBaseStat(string statName)

@@ -8,8 +8,10 @@ img{
 .card {
     display: flow;
     width: 100%;
+    height: 100%;
     border-radius: 0.5rem;
-    background-color: dimgrey;
+    background-color: lightgray;
+    padding: 0.25rem;
 }
 
 /* search bar related CSS */
@@ -26,7 +28,6 @@ img{
     width: 100%;
     min-width: 10em;
     max-height: 30em;
-    padding: 0;
     z-index: 10;
     border: 1px solid #ced4da;
     border-radius: 0.5rem;
@@ -79,18 +80,25 @@ img{
 
 .generation {
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.generation span {
+    text-overflow: ellipsis;
 }
 
 /* forms */
 
-.forms .options {
-    background: white;
+.forms {
+    overflow: hidden;
+    width: auto;
+    margin: 0.25rem;
+}
+
+.input-form{
+    cursor: pointer;
     width: 100%;
-    padding: 0;
-    z-index: 10;
-    border: 1px solid #ced4da;
-    border-radius: 0.5rem;
-    text-overflow: clip;
 }
 
 .forms .option {

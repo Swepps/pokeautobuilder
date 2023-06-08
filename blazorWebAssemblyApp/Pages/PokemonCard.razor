@@ -51,27 +51,34 @@
             }
         </div>
         <div class="generation">
-            <p>@generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</p>
+            <span>@generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</span>
         </div>
-        @if (species.Varieties.Count > 1)
-        {
-            <div class="forms">
-                <ul class="options">
+        <div class="forms">
+            @if (species.Varieties.Count > 1)
+            {            
+                <select class="input-form" title="Form" @onchange="OnChangeForm">
                     @foreach (PokemonSpeciesVariety v in species.Varieties)
                     {
-                        <li class="option" @onclick=@(_ => SelectForm(v.Pokemon.Name))>
-                            <span class="option-text">@v.Pokemon.Name</span>
-                        </li>
+                        <option class="option" value="@v.Pokemon.Name">@v.Pokemon.Name</option>
                     }
-                </ul>
-            </div>
-        }
+                </select>            
+            }
+        </div>
+        <div class="forms">
+            <select class="input-form" title="Ability" @onchange="OnChangeAbility">
+                @foreach (PokemonAbility a in pokemon.Abilities)
+                {
+                    <option class="option" value="@a.Ability.Name">@a.Ability.Name</option>
+                }
+            </select>
+        </div>
     }
 </div>
 
 @code {
     [Parameter]
     public string? PokemonSpeciesName { get; set; } = "pikachu";
+    public string? PokemonFormName { get; set; } = "pikachu";
 
     private SmartPokemon? pokemon;
     private PokemonSpecies? species;
@@ -101,9 +108,12 @@
         StateHasChanged();
     }
 
-    public async void SetForm(string formName)
+    public async void SetForm()
     {
-        pokemon = await PokeApiHandler.GetPokemonAsync(formName);
+        if (PokemonFormName is null)
+            return;
+
+        pokemon = await PokeApiHandler.GetPokemonAsync(PokemonFormName);
         StateHasChanged();
     }
 
@@ -137,8 +147,17 @@
         SetDefaultPokemon();
     }
 
-    public void SelectForm(string formName)
+    // pokemon form functionality
+    public void OnChangeForm(ChangeEventArgs e)
     {
-        SetForm(formName);
+        PokemonFormName = e.Value?.ToString();
+        SetForm();
+    }
+
+    // pokemon ability functionality
+    public void OnChangeAbility(ChangeEventArgs e)
+    {
+        if (e.Value is not null && pokemon is not null)
+            pokemon.SetChosenAbility(e.Value.ToString()!);
     }
 }
