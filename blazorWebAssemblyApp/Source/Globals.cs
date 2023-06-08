@@ -1,4 +1,4 @@
-﻿namespace blazorServerApp.Data
+﻿namespace blazorWebAssemblyApp.Source
 {
 	using Type = PokeApiNet.Type;
 	public class Globals

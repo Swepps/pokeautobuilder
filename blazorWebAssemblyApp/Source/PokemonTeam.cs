@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace blazorServerApp.Data
+namespace blazorWebAssemblyApp.Source
 {
     public class PokemonTeam : ObservableCollection<SmartPokemon?>
     {

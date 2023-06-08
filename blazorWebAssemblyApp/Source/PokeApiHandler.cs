@@ -1,6 +1,6 @@
 ﻿using PokeApiNet;
 
-namespace blazorServerApp.Data
+namespace blazorWebAssemblyApp.Source
 {
     using Type = PokeApiNet.Type;
     internal class PokeApiHandler

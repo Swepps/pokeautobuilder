@@ -1,4 +1,4 @@
-﻿namespace blazorServerApp.Data
+﻿namespace blazorWebAssemblyApp.Source
 {
     public class StringUtils
     {

@@ -1,7 +1,7 @@
 ﻿using PokeApiNet;
 using System.Collections.ObjectModel;
 
-namespace blazorServerApp.Data
+namespace blazorWebAssemblyApp.Source
 {
     using Type = PokeApiNet.Type;
 
