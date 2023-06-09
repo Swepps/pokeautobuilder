@@ -20,22 +20,17 @@ else
         </div>
         @if (!Globals.PokemonTeam.IsEmpty)
         {
-            <Tabs>
+            <MudTabs>
                 @foreach (SmartPokemon? p in Globals.PokemonTeam)
                 {
                     @if (p != null)
                     {
-                        <Tab>
-                            <TitleTemplate>
-                                <StatsTabTitleTemplate Pokemon="p" />
-                            </TitleTemplate>
-                            <Content>
-                                <StatsPanel Pokemon="p" />
-                            </Content>
-                        </Tab>
+                        <MudTabPanel Icon="p.Sprites.FrontDefault">
+                            <StatsPanel Pokemon="p" />
+                        </MudTabPanel>
                     }
                 }
-            </Tabs>
+            </MudTabs>
         }
     </body>
 }

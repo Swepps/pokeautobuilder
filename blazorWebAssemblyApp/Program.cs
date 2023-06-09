@@ -1,7 +1,7 @@
 using blazorWebAssemblyApp;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using BlazorBootstrap;
+using MudBlazor.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -16,6 +16,6 @@ builder.Services.AddOidcAuthentication(options =>
     builder.Configuration.Bind("Local", options.ProviderOptions);
 });
 
-builder.Services.AddBlazorBootstrap();
+builder.Services.AddMudServices();
 
 await builder.Build().RunAsync();

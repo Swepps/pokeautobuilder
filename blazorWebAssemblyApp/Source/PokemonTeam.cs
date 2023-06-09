@@ -13,9 +13,9 @@ namespace blazorWebAssemblyApp.Source
                 foreach (SmartPokemon? p in this)
                 {
                     if (p != null)
-                        return true;
+                        return false;
                 }
-                return false;
+                return true;
             }
             private set => IsEmpty = value;
         }

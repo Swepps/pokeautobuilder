@@ -4,7 +4,7 @@
 <div class="card">
     <div class="autocomplete">
         <form >            
-            <input @bind=PokemonSpeciesName placeholder="Pokemon" @oninput="@HandleInput" class="form-control filter" />
+            <input @bind=PokemonSearchName placeholder="Pokemon" @oninput="@HandleInput" class="form-control filter" />
             @if (entryResults is not null)
             {
                 <ul class="options">
@@ -80,18 +80,25 @@
 </div>
 
 @code {
+    // the main cards on the team builder page are mapped to an index in the team
+    // in order to be able to update the team when the cards are updated
     [Parameter]
     public int PokemonTeamIndex { get; set; } = -1;
+
     [Parameter] // used for telling the parent of the card that it has updated
     public EventCallback OnUpdated { get; set; }
 
-    public string? PokemonSpeciesName { get; set; } = "";
+    // the string which holds the last valid search result from the search bar
+    public string? PokemonSearchName { get; set; } = "";
+    // the string used in the form selector
     public string? PokemonFormName { get; set; } = "";
 
+    // holds the information about the currently selected pokemon to be displayed on the card
     private SmartPokemon? pokemon;
     private PokemonSpecies? species;
     private Generation? generation;
 
+    // when component is initialised
     protected override async Task OnInitializedAsync()
     {
         // use the team index to get this pokemon if possible
@@ -100,96 +107,92 @@
             pokemon = Globals.PokemonTeam[PokemonTeamIndex];
         }
 
+        if (pokemon is not null)
+            species = await PokeApiHandler.GetPokemonSpeciesAsync(pokemon);
+        if (species is not null)
+            generation = await PokeApiHandler.GetGenerationAsync(species);
+
         await Update();
     }
 
     private async Task Update()
     {
-        if (pokemon == null)
-        {
-            if (PokemonSpeciesName is null)
-                return;
-
-            species = await PokeApiHandler.GetPokemonSpeciesAsync(PokemonSpeciesName);
-            if (species is not null)
-            {
-                // simultaneously get the default pokemon and generation from this species
-                var getPokemonTask = PokeApiHandler.GetPokemonAsync(species.Varieties[0].Pokemon.Name);
-                var getGenerationTask = PokeApiHandler.GetGenerationAsync(species);
-                await Task.WhenAll(getPokemonTask, getGenerationTask);
-                pokemon = getPokemonTask.Result;
-                generation = getGenerationTask.Result;
-            }
-
-            // update the global pokemon team if this card has a team index
-            if (PokemonTeamIndex >= 0 && PokemonTeamIndex < 6)
-                Globals.PokemonTeam[PokemonTeamIndex] = pokemon;
-        }
-        else
-        {
-            
-        }
+        // update the global pokemon team if this card has a team index
+        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < 6)
+            Globals.PokemonTeam[PokemonTeamIndex] = pokemon;
 
         StateHasChanged();
 
         await OnUpdated.InvokeAsync();
     }
 
-    public async void SetForm()
-    {
-        if (PokemonFormName is null || 
-            (pokemon != null && PokemonFormName == pokemon.Name))
-            return;
-
-        pokemon = await PokeApiHandler.GetPokemonAsync(PokemonFormName);
-        await Update();
-    }
-
     // pokemon search functionality
     List<SmartPokemonEntry>? entryResults;
-    string? filter;
-    bool error = false;
+    string? filter; // holds the current text in the search bar
 
+    // called whenever the search box is modified
     public async void HandleInput(ChangeEventArgs e)
     {
-        error = false;
         filter = e.Value?.ToString();
         if (filter?.Length > 1)
         {
             filter = filter.ToLower();
             entryResults = Globals.Pokedex.SearchPokedex(filter);
         }
-        else
+        else // emptied the search string, remove the selected pokemon
         {
             entryResults = null;
             pokemon = null;
             species = null;
             generation = null;
+
             await Update();
         }
     }
 
     public async void SelectPokemon(SmartPokemonEntry entry)
     {
-        PokemonSpeciesName = entry.Species.Name;
+        // empty the search results
         entryResults = null;
-        pokemon = null;
-        species = null;
-        generation = null;
+
+        PokemonSearchName = entry.Species.Name;
+        species = await PokeApiHandler.GetPokemonSpeciesAsync(PokemonSearchName);
+        if (species is not null)
+        {
+            // simultaneously get the default pokemon and generation from this species
+            var getPokemonTask = PokeApiHandler.GetPokemonAsync(species.Varieties[0].Pokemon.Name);
+            var getGenerationTask = PokeApiHandler.GetGenerationAsync(species);
+            await Task.WhenAll(getPokemonTask, getGenerationTask);
+            pokemon = getPokemonTask.Result;
+            generation = getGenerationTask.Result;
+        }
+        else
+        {
+            pokemon = null;
+            generation = null;
+        }
 
         await Update();
     }
 
     // pokemon form functionality
-    public void OnChangeForm(ChangeEventArgs e)
+    public async void OnChangeForm(ChangeEventArgs e)
     {
         PokemonFormName = e.Value?.ToString();
-        SetForm();
+        
+        // don't bother if the form name is the same as the current pokemon
+        if (PokemonFormName is null || (pokemon != null && PokemonFormName == pokemon.Name))
+            return;
+
+        pokemon = await PokeApiHandler.GetPokemonAsync(PokemonFormName);
+
+        await Update();
     }
 
     // pokemon ability functionality
     public void OnChangeAbility(ChangeEventArgs e)
     {
+        // SetChosenAbility uses a string to find an ability with a matching name
         if (e.Value is not null && pokemon is not null)
             pokemon.SetChosenAbility(e.Value.ToString()!);
     }
