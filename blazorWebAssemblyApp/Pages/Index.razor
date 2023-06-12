@@ -19,10 +19,10 @@ else
             <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="5" /></MudItem>
         </MudGrid>
         <MudDivider DividerType="DividerType.Middle" />
-        <MudText>Statistics</MudText>
+        <MudText Typo="Typo.h6">Pokémon Stats</MudText>
         @if (!Globals.PokemonTeam.IsEmpty)
         {
-            <MudTabs Elevation="4" PanelClass="pa-6" ApplyEffectsToContainer="true" Centered="true">
+            <MudTabs Elevation="4" Centered="true">
                 @foreach (SmartPokemon? p in Globals.PokemonTeam)
                 {
                     @if (p != null)
@@ -43,6 +43,10 @@ else
                     }
                 }
             </MudTabs>
+        }
+        else
+        {
+            <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see their stats.</MudText>
         }
     </MudStack>
 }
