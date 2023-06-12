@@ -66,9 +66,9 @@ namespace blazorWebAssemblyApp.Source
             return Remove(entry);
         }
 
-        public SmartPokemonEntry? FindPokemon(string pokemonName)
+        public SmartPokemonEntry? FindPokemon(string speciesName)
         {
-            return this.Where(entry => entry.Species.Name.Equals(pokemonName)).FirstOrDefault();
+            return this.Where(entry => entry.Species.Name.Equals(speciesName)).FirstOrDefault();
         }
 
         public List<SmartPokemonEntry> SearchPokedex(string searchTerm)

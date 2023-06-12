@@ -9,30 +9,42 @@
 }
 else
 {
-    <body>
-        <div class="team-grid-container">
-            <PokemonCard OnUpdated="Update" PokemonTeamIndex="0" />
-            <PokemonCard OnUpdated="Update" PokemonTeamIndex="1" />
-            <PokemonCard OnUpdated="Update" PokemonTeamIndex="2" />
-            <PokemonCard OnUpdated="Update" PokemonTeamIndex="3" />
-            <PokemonCard OnUpdated="Update" PokemonTeamIndex="4" />
-            <PokemonCard OnUpdated="Update" PokemonTeamIndex="5" />
-        </div>
+    <MudStack Spacing="5" Class="mt-4 mb-4">
+        <MudGrid Justify="Justify.SpaceEvenly">
+            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="0" /></MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="1" /></MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="2" /></MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="3" /></MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="4" /></MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="5" /></MudItem>
+        </MudGrid>
+        <MudDivider DividerType="DividerType.Middle" />
+        <MudText>Statistics</MudText>
         @if (!Globals.PokemonTeam.IsEmpty)
         {
-            <MudTabs>
+            <MudTabs Elevation="4" PanelClass="pa-6" ApplyEffectsToContainer="true" Centered="true">
                 @foreach (SmartPokemon? p in Globals.PokemonTeam)
                 {
                     @if (p != null)
                     {
-                        <MudTabPanel Icon="p.Sprites.FrontDefault">
-                            <StatsPanel Pokemon="p" />
+                        <MudTabPanel>
+                            <TabContent>
+                                <MudImage Src="@p.Sprites.FrontDefault"/>
+                            </TabContent>
+                            <TabWrapperContent>
+                                <MudTooltip Text="@StringUtils.FirstCharToUpper(p.Name)" >
+                                    @context
+                                </MudTooltip>
+                            </TabWrapperContent>
+                            <ChildContent>
+                                <StatsPanel Pokemon="p" />
+                            </ChildContent>
                         </MudTabPanel>
                     }
                 }
             </MudTabs>
         }
-    </body>
+    </MudStack>
 }
 
 @code {

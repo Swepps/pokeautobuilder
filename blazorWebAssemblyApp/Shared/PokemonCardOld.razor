@@ -1,46 +1,38 @@
 ﻿@using PokeApiNet
 @using Type = PokeApiNet.Type
 
-<MudCard Elevation="4">
-    <MudCardHeader>
-        <MudItem>
-            <MudAutocomplete T="SmartPokemonEntry" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@SearchPokedex"
-                             ResetValueOnEmptyText="true"
-                             CoerceText="true" CoerceValue="false" />
-        </MudItem>
-@*        <div class="autocomplete">
-            <form >            
-                <input @bind=PokemonSearchName placeholder="Pokemon" @oninput="@HandleInput" class="form-control filter" />
-                @if (entryResults is not null)
-                {
-                    <ul class="options">
-                        @if (entryResults.Any())
+<div class="card">
+    <div class="autocomplete">
+        <form >            
+            <input @bind=PokemonSearchName placeholder="Pokemon" @oninput="@HandleInput" class="form-control filter" />
+            @if (entryResults is not null)
+            {
+                <ul class="options">
+                    @if (entryResults.Any())
+                    {
+                        @if (entryResults[0].Species.Name == filter)
                         {
-                            @if (entryResults[0].Species.Name == filter)
-                            {
-                                SelectPokemon(entryResults[0]);
-                            }
-                            else
-                            {
-                                @foreach (var entry in entryResults)
-                                {
-                                    <li class="option" @onclick=@(_ => SelectPokemon(entry))>
-                                        <span class="option-text">@entry</span>
-                                    </li>
-                                }
-                            }
+                            SelectPokemon(entryResults[0]);
                         }
                         else
                         {
-                            <li class="disabled option">No results</li>
+                            @foreach (var entry in entryResults)
+                            {
+                                <li class="option" @onclick=@(_ => SelectPokemon(entry))>
+                                    <span class="option-text">@entry</span>
+                                </li>
+                            }
                         }
-                    </ul>
-                }            
-            </form>
-        </div>*@
-    </MudCardHeader>
-    <MudCardContent>
-    @if (pokemon == null || generation == null || PokemonSearchValue == null)
+                    }
+                    else
+                    {
+                        <li class="disabled option">No results</li>
+                    }
+                </ul>
+            }            
+        </form>
+    </div>
+    @if (pokemon == null || species == null || generation == null)
     {
         <span></span>
     }
@@ -57,10 +49,10 @@
             <span>@generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</span>
         </div>
         <div class="forms">
-                @if (PokemonSearchValue.Species.Varieties.Count > 1)
+            @if (species.Varieties.Count > 1)
             {            
                 <select class="input-form" title="Form" @onchange="OnChangeForm">
-                    @foreach (PokemonSpeciesVariety v in PokemonSearchValue.Species.Varieties)
+                    @foreach (PokemonSpeciesVariety v in species.Varieties)
                     {
                         <option class="option" value="@v.Pokemon.Name">@v.Pokemon.Name</option>
                     }
@@ -85,8 +77,7 @@
             }
         </div>
     }
-    </MudCardContent>
-</MudCard>
+</div>
 
 @code {
     // the main cards on the team builder page are mapped to an index in the team
@@ -98,20 +89,13 @@
     public EventCallback OnUpdated { get; set; }
 
     // the string which holds the last valid search result from the search bar
-    private SmartPokemonEntry? pokemonSearchValue;
-    public SmartPokemonEntry? PokemonSearchValue { 
-        get { return pokemonSearchValue; }
-        set 
-        {
-            pokemonSearchValue = value;
-            SelectPokemon(value);
-        }
-    }
+    public string? PokemonSearchName { get; set; } = "";
     // the string used in the form selector
     public string? PokemonFormName { get; set; } = "";
 
     // holds the information about the currently selected pokemon to be displayed on the card
     private SmartPokemon? pokemon;
+    private PokemonSpecies? species;
     private Generation? generation;
 
     // when component is initialised
@@ -124,9 +108,9 @@
         }
 
         if (pokemon is not null)
-            PokemonSearchValue = Globals.Pokedex.FindPokemon(pokemon.Species.Name);
-        if (PokemonSearchValue is not null)
-            generation = await PokeApiHandler.GetGenerationAsync(PokemonSearchValue.Species);
+            species = await PokeApiHandler.GetPokemonSpeciesAsync(pokemon);
+        if (species is not null)
+            generation = await PokeApiHandler.GetGenerationAsync(species);
 
         await Update();
     }
@@ -143,32 +127,49 @@
     }
 
     // pokemon search functionality
+    List<SmartPokemonEntry>? entryResults;
+    string? filter; // holds the current text in the search bar
 
-    private async Task<IEnumerable<SmartPokemonEntry>> SearchPokedex(string value)
+    // called whenever the search box is modified
+    public async void HandleInput(ChangeEventArgs e)
     {
-        // if text is null or empty, show complete list
-        if (string.IsNullOrEmpty(value))
-            return Globals.Pokedex;
+        filter = e.Value?.ToString();
+        if (filter?.Length > 1)
+        {
+            filter = filter.ToLower();
+            entryResults = Globals.Pokedex.SearchPokedex(filter);
+        }
+        else // emptied the search string, remove the selected pokemon
+        {
+            entryResults = null;
+            pokemon = null;
+            species = null;
+            generation = null;
 
-        value = value.ToLower();
-        return Globals.Pokedex.SearchPokedex(value);
+            await Update();
+        }
     }
 
-    public async void SelectPokemon(SmartPokemonEntry? entry)
+    public async void SelectPokemon(SmartPokemonEntry entry)
     {
-        if (entry is null)
-        {
-            pokemon = null;
-            generation = null;
-        }
-        else
+        // empty the search results
+        entryResults = null;
+
+        PokemonSearchName = entry.Species.Name;
+        species = await PokeApiHandler.GetPokemonSpeciesAsync(PokemonSearchName);
+        if (species is not null)
         {
             // simultaneously get the default pokemon and generation from this species
-            var getPokemonTask = PokeApiHandler.GetPokemonAsync(entry.Species.Varieties[0].Pokemon.Name);
-            var getGenerationTask = PokeApiHandler.GetGenerationAsync(entry.Species);
+            var getPokemonTask = PokeApiHandler.GetPokemonAsync(species.Varieties[0].Pokemon.Name);
+            var getGenerationTask = PokeApiHandler.GetGenerationAsync(species);
             await Task.WhenAll(getPokemonTask, getGenerationTask);
             pokemon = getPokemonTask.Result;
             generation = getGenerationTask.Result;
+        }
+        else
+        {
+            pokemon = null;
+            generation = null;
         }
 
         await Update();
