@@ -85,7 +85,7 @@
       "url": "img\/Type-Water.png"
     },
     {
-      "hash": "sha256-SuNOh4uSvbB2sSOwWoaroDGdSxT\/AbbufnvheTmGgSo=",
+      "hash": "sha256-7swC0dqE23fKiNXUGlr0edAqatHJb45NH56LxoVUEH8=",
       "url": "index.html"
     },
     {
