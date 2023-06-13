@@ -26,6 +26,10 @@ jobs:
       - name: Publish .NET Core Project
         run: dotnet publish blazorWebAssemblyApp/blazorWebAssemblyApp.csproj -c Release -o release --nologo
         
+      # changes the base-tag in index.html from '/' to 'BlazorGitHubPagesDemo' to match GitHub Pages repository subdirectory
+      - name: Change base-tag in index.html from / to pokemonautoteambuilder
+        run: sed -i 's/<base href="\/" \/>/<base href="\/pokemonautoteambuilder\/" \/>/g' release/wwwroot/index.html
+        
       - name: Commit wwwroot to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
