@@ -19,31 +19,29 @@
     }
     @if (PokemonSearchValue is not null)
     {
-        <div>
-            @if (pokemon is not null && generation is not null)
-            {
-                <img class="artwork" src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@pokemon.Name" title="@pokemon.Name"/>
-                <div class="types">
-                    @foreach (PokemonType t in pokemon.Types)
-                    {
-                        <img src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" title="@t.Type.Name" />
-                    }
-                </div>
-                <div class="generation">
-                    <span>@generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</span>
-                </div>
-                <MudSelect Disabled="@(pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
-                    @foreach (PokemonAbility a in pokemon.Abilities)
-                    {
-                        <MudSelectItem Value="@a.Ability.Name" />
-                    }
-                </MudSelect>
-            }
-            else
-            {
-                <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="ma-2" />
-            }
-        </div>
+        @if (pokemon is not null && generation is not null)
+        {
+            <img class="artwork" src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@pokemon.Name" title="@pokemon.Name"/>
+            <div class="types">
+                @foreach (PokemonType t in pokemon.Types)
+                {
+                    <img src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" title="@t.Type.Name" />
+                }
+            </div>
+            <div class="generation">
+                <span>@generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</span>
+            </div>
+            <MudSelect Disabled="@(pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
+                @foreach (PokemonAbility a in pokemon.Abilities)
+                {
+                    <MudSelectItem Value="@a.Ability.Name" />
+                }
+            </MudSelect>
+        }
+        else
+        {
+            <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="ma-2" />
+        }
 
     }
 </MudPaper>

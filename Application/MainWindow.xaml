@@ -302,7 +302,7 @@
             <Label Content="Resistances" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" />
             <Label Content="Weaknesses" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1" />
             <Label Content="Coverage" Foreground="#FFF3F3F3" FontWeight="Bold" FontSize="12" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1" />
-            <Grid Width="220" Height="180" DataContext="{Binding TeamStats, ElementName=MainWindow1}" Grid.Row="0" Grid.RowSpan="4" Margin="10" >
+            <Grid x:Name="TeamStatsGrid" Width="220" Height="180" Grid.Row="0" Grid.RowSpan="4" Margin="10" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="30" />
                     <RowDefinition Height="120" />
@@ -391,9 +391,9 @@
             </Canvas>
         </Grid>
 
-        <Grid x:Name="gridDim" Grid.RowSpan="2" Background="#CC232323" Visibility="Hidden" />
         <Button Content="Build Team" VerticalAlignment="Top" Click="OnClickBuildTeam" Height="20" Margin="0,291,40,0" HorizontalAlignment="Right" Width="140"/>
         <Button Content="Build Team (Genetic)" VerticalAlignment="Top" Click="OnClickBuildTeamGenetic" Height="20" Margin="0,315,40,0" HorizontalAlignment="Right" Width="140"/>
         <Label Content="Team Generation" Foreground="#FFF3F3F3" Height="36" FontWeight="Bold" FontSize="16" HorizontalContentAlignment="Center" VerticalAlignment="Top" Margin="0,252,16,0" HorizontalAlignment="Right" Width="188"/>
+        <Grid x:Name="gridDim" Grid.RowSpan="2" Background="#CC232323" Visibility="Hidden" />
     </Grid>
 </Window>

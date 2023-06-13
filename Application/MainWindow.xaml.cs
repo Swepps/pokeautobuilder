@@ -43,7 +43,7 @@ namespace autoteambuilder
         private PokemonStorage box;
 
         public static PokemonTeam Team { get; set; } = new PokemonTeam();
-        public static ObservableCollection<PokemonStat> TeamStats { get; set; } = new ObservableCollection<PokemonStat>();
+        public static List<PokemonStat> TeamStats { get; set; } = new List<PokemonStat>();
 
         public static List<Type> AllTypes = new List<Type>();
 
@@ -376,6 +376,11 @@ namespace autoteambuilder
                         TeamStats.Add(new PokemonStat() { BaseStat = p.Stats[i].BaseStat, Stat = new NamedApiResource<Stat> { Name = p.Stats[i].Stat.Name } });
                     }
                 }
+            }
+
+            if (!Team.IsEmpty)
+            {
+                TeamStatsGrid.DataContext = TeamStats;
             }
 
             for (int i = 0; i < AllTypes.Count; i++)
@@ -802,10 +807,10 @@ namespace autoteambuilder
     {
         public object Convert(object value, System.Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is not ObservableCollection<PokemonStat>)
+            if (value is not List<PokemonStat>)
                 return 0;
 
-            ObservableCollection<PokemonStat> stats = (ObservableCollection<PokemonStat>)value;
+            List<PokemonStat> stats = (List<PokemonStat>)value;
 
             int statTotal = 0;
             foreach (PokemonStat stat in stats)
@@ -830,11 +835,11 @@ namespace autoteambuilder
             if (parameter is not string)
                 return 0;
 
-            if (value is not ObservableCollection<PokemonStat>)
+            if (value is not List<PokemonStat>)
                 return 0;
 
             string statName = (string)parameter;
-            ObservableCollection<PokemonStat> stats = (ObservableCollection<PokemonStat>)value;
+            List<PokemonStat> stats = (List<PokemonStat>)value;
 
             // collect all the stat data
             int hp = 0;       
@@ -922,11 +927,11 @@ namespace autoteambuilder
             if (parameter is not string)
                 return 0;
 
-            if (value is not ObservableCollection<PokemonStat>)
+            if (value is not List<PokemonStat>)
                 return 0;
 
             string statName = (string)parameter;
-            ObservableCollection<PokemonStat> stats = (ObservableCollection<PokemonStat>)value;
+            List<PokemonStat> stats = (List<PokemonStat>)value;
 
             // collect all the stat data
             int hp = 0;
