@@ -1,71 +1,52 @@
 ﻿@using PokeApiNet
 @using Type = PokeApiNet.Type
 
-<MudCard Elevation="4">
-    <MudCardHeader>
-        <MudAutocomplete T="SmartPokemonEntry" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@SearchPokedex"
-                         ResetValueOnEmptyText="true"
-                         CoerceText="true" CoerceValue="false" />
-    </MudCardHeader>
-    <MudCardContent>
-        @if (PokemonSearchValue is not null)
+<MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
+    <MudAutocomplete T="SmartPokemonEntry" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@SearchPokedex"
+                     ResetValueOnEmptyText="true"
+                     CoerceText="true" CoerceValue="false" />
+    @if (PokemonSearchValue is not null)
+    {
+        @if (PokemonSearchValue.Species.Varieties.Count > 1)
         {
-            @if (PokemonSearchValue.Species.Varieties.Count > 1)
+            <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonFormName">
+                @foreach (PokemonSpeciesVariety v in PokemonSearchValue.Species.Varieties)
+                {
+                    <MudSelectItem Value="@v.Pokemon.Name" />
+                }
+            </MudSelect>
+        }
+    }
+    @if (PokemonSearchValue is not null)
+    {
+        <div>
+            @if (pokemon is not null && generation is not null)
             {
-                <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonFormName">
-                    @foreach (PokemonSpeciesVariety v in PokemonSearchValue.Species.Varieties)
+                <img class="artwork" src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@pokemon.Name" title="@pokemon.Name"/>
+                <div class="types">
+                    @foreach (PokemonType t in pokemon.Types)
                     {
-                        <MudSelectItem Value="@v.Pokemon.Name" />
+                        <img src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" title="@t.Type.Name" />
+                    }
+                </div>
+                <div class="generation">
+                    <span>@generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</span>
+                </div>
+                <MudSelect Disabled="@(pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
+                    @foreach (PokemonAbility a in pokemon.Abilities)
+                    {
+                        <MudSelectItem Value="@a.Ability.Name" />
                     }
                 </MudSelect>
             }
             else
             {
-                <MudSelect Disabled="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter">
-                    <MudSelectItem Value="@PokemonSearchValue.Species.Varieties[0].Pokemon.Name" />
-                </MudSelect>
+                <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="ma-2" />
             }
+        </div>
 
-            <div style="align-items: center;">
-                @if (pokemon is not null && generation is not null)
-                {
-                    <img class="artwork" src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@pokemon.Name" title="@pokemon.Name"/>
-                    <div class="types">
-                        @foreach (PokemonType t in pokemon.Types)
-                        {
-                            <img src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" title="@t.Type.Name" />
-                        }
-                    </div>
-                    <div class="generation">
-                        <span>@generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</span>
-                    </div>
-                    <div class="forms">
-                        @if (pokemon.Abilities.Count > 1)
-                        {
-                            <select class="input-form" title="Ability" @onchange="OnChangeAbility">
-                                @foreach (PokemonAbility a in pokemon.Abilities)
-                                {
-                                    <option class="option" value="@a.Ability.Name">@a.Ability.Name</option>
-                                }
-                            </select>
-                        }
-                        else if (pokemon.Abilities.Count == 1)
-                        {
-                            <select class="input-form" title="Ability" disabled>
-                                <option class="option" value="@pokemon.Abilities[0].Ability.Name">@pokemon.Abilities[0].Ability.Name</option>
-                            </select>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
-                }
-            </div>
-
-        }
-    </MudCardContent>
-</MudCard>
+    }
+</MudPaper>
 
 @code {
     // the main cards on the team builder page are mapped to an index in the team
@@ -84,6 +65,7 @@
         {
             pokemon = null;
             generation = null;
+            pokemonFormName = null;
             pokemonSearchValue = value;
             SelectPokemon(value);
         }
@@ -100,6 +82,18 @@
             pokemon = null;
             pokemonFormName = value;
             SelectForm(value);
+        }
+    }
+
+    private string? pokemonAbilityName;
+    public string? PokemonAbilityName
+    {
+
+        get { return pokemonAbilityName; }
+        set
+        {
+            pokemonAbilityName = value;
+            OnChangeAbility(value);
         }
     }
 
@@ -162,6 +156,11 @@
             await Task.WhenAll(getPokemonTask, getGenerationTask);
             pokemon = getPokemonTask.Result;
             generation = getGenerationTask.Result;
+            if (pokemon is not null)
+            {
+                pokemonFormName = pokemon.Name;
+                pokemonAbilityName = pokemon.Abilities[0].Ability.Name;
+            }
         }
 
         await Update();
@@ -176,15 +175,17 @@
         pokemon = null;
         StateHasChanged();
         pokemon = await PokeApiHandler.GetPokemonAsync(formName);
+        if (pokemon is not null)
+            pokemonAbilityName = pokemon.Abilities[0].Ability.Name;
         await Update();
     }
 
 
     // pokemon ability functionality
-    public void OnChangeAbility(ChangeEventArgs e)
+    public void OnChangeAbility(string? value)
     {
         // SetChosenAbility uses a string to find an ability with a matching name
-        if (e.Value is not null && pokemon is not null)
-            pokemon.SetChosenAbility(e.Value.ToString()!);
+        if (value is not null && pokemon is not null)
+            pokemon.SetChosenAbility(value);
     }
 }

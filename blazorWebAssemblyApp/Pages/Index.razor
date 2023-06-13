@@ -22,14 +22,14 @@ else
         <MudText Typo="Typo.h6">Pokémon Stats</MudText>
         @if (!Globals.PokemonTeam.IsEmpty)
         {
-            <MudTabs Elevation="4" Centered="true">
+            <MudTabs Elevation="4" Border="true" Centered="true" Rounded="true" Position="Position.Left" ApplyEffectsToContainer="true">
                 @foreach (SmartPokemon? p in Globals.PokemonTeam)
                 {
                     @if (p != null)
                     {
                         <MudTabPanel>
                             <TabContent>
-                                <MudImage Src="@p.Sprites.FrontDefault"/>
+                                <MudImage Src="@p.Sprites.FrontDefault" Fluid="true"/>
                             </TabContent>
                             <TabWrapperContent>
                                 <MudTooltip Text="@StringUtils.FirstCharToUpper(p.Name)" >

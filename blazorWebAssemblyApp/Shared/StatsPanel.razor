@@ -1,12 +1,78 @@
 ﻿@using Type = PokeApiNet.Type
 
-<div class="stats-panel">
-	<span>Here are some stats</span>
-	<span>1 2 miss a few 99 100</span>
-	<span>Omg he's sick</span>
-</div>
+@if (Pokemon is not null)
+{
+	<MudGrid Class="pa-4">
+		<MudItem xs="12" lg="4">
+			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
+				<MudText Typo="Typo.h6">Base Stats</MudText>
+				<MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="70%" Height="100%"
+						  InputData="@Pokemon.GetBaseStatsArray()" InputLabels="@Labels">
+					<CustomGraphics>
+						<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="2">Total</text>
+						<text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="5">@Pokemon.GetBaseStatsTotal()</text>
+					</CustomGraphics>
+				</MudChart>
+			</MudPaper>
+		</MudItem>
+		<MudItem xs="12" lg="4">
+			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
+				<MudText Typo="Typo.h6">Resistances</MudText>
+				<MudGrid Class="pa-2">
+					@foreach (Type t in Globals.AllTypes)
+					{
+						@if (Pokemon.GetEffectivenessTo(t.Name) < 1.0)
+						{
+							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center pa-2">
+								<MudImage Src="@StringUtils.TypeImgFromName(t.Name)" Alt="@t.Name" title="@t.Name" Height="40" Class="ma-1" />
+								@if (Pokemon.GetEffectivenessTo(t.Name) == 0.5)
+								{
+									<MudText Typo="Typo.caption">½x</MudText>
+								}
+								else if (Pokemon.GetEffectivenessTo(t.Name) == 0.25)
+								{
+									<MudText Typo="Typo.caption" Style="font-weight: bold;">¼x</MudText>
+								}
+								else
+								{
+									<MudText Typo="Typo.caption" Style="font-weight: bold;">Immune</MudText>
+								}
+							</MudStack>
+						}
+					}
+				</MudGrid>
+			</MudPaper>
+		</MudItem>
+		<MudItem xs="12" lg="4">
+			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
+				<MudText Typo="Typo.h6">Weaknesses</MudText>
+				<MudGrid Class="pa-2">
+					@foreach (Type t in Globals.AllTypes)
+					{
+						@if (Pokemon.GetEffectivenessTo(t.Name) > 1.0)
+						{
+							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center pa-2">
+								<MudImage Src="@StringUtils.TypeImgFromName(t.Name)" Alt="@t.Name" title="@t.Name" Height="40" Class="ma-1" />
+								@if (Pokemon.GetEffectivenessTo(t.Name) == 2.0)
+								{
+									<MudText Typo="Typo.caption">2x</MudText>
+								}
+								else
+								{
+									<MudText Typo="Typo.caption" Style="font-weight: bold;">4x</MudText>
+								}
+							</MudStack>
+						}
+					}
+				</MudGrid>
+			</MudPaper>
+		</MudItem>
+	</MudGrid>
+}
 
 @code {
-	[Parameter]
-	public SmartPokemon? Pokemon { get; set; }
+    [Parameter]
+    public SmartPokemon? Pokemon { get; set; }
+
+    public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed"};
 }

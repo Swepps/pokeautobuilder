@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider />
+<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
@@ -10,13 +10,29 @@
     </div>
 
     <main>
-        <div class="top-row px-4 auth">
+        <MudAppBar Fixed="false">
             <LoginDisplay />
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
+            <MudSpacer />
+            <MudSwitch @bind-Checked="@_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" Label="Toggle Light/Dark Mode" />
+        </MudAppBar>
 
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
+@code{
+    // theme stuff
+    private bool _isDarkMode;
+    private MudThemeProvider _mudThemeProvider;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            StateHasChanged();
+        }
+    }
+}

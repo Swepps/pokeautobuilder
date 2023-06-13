@@ -107,12 +107,40 @@ namespace blazorWebAssemblyApp.Source
             return stat.BaseStat;
         }
 
+        public double[] GetBaseStatsArray()
+        {
+            double[] stats = new double[6];
+
+            // make sure we're getting the correct stat in each position
+            stats[0] = GetBaseStat("hp");
+            stats[1] = GetBaseStat("attack");
+            stats[2] = GetBaseStat("special-attack");
+            stats[3] = GetBaseStat("defense");
+            stats[4] = GetBaseStat("special-defense");
+            stats[5] = GetBaseStat("speed");
+
+            return stats;
+        }
+
+        public int GetBaseStatsTotal()
+        {
+            int total = 0;
+            foreach (PokemonStat stat in Stats)
+            {
+                total += stat.BaseStat;
+            }
+
+            return total;
+        }
+
         private ObservableCollection<string> GetDefenseResistList()
         {
             ObservableCollection<string> ret = new ObservableCollection<string>();
             foreach (Type type in Globals.AllTypes)
             {
-                if (GetEffectivenessTo(type.Name) < 1.0)
+                double eff = GetEffectivenessTo(type.Name);
+
+				if (eff < 1.0 && eff > 0)
                     ret.Add(type.Name);
             }
 
