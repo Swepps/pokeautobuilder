@@ -1,5 +1,8 @@
 name: Deploy to GitHub Pages
 
+permissions:
+  contents: write
+
 # Run workflow on every push to the master branch
 on:
   push:
