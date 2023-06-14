@@ -17,7 +17,7 @@
         <MudNavMenu>
             <MudNavLink Match="NavLinkMatch.All">Team Builder</MudNavLink>
         </MudNavMenu>
-        
+        <MudSwitch @bind-Checked="@_isDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Toggle Light/Dark Mode" />
     </MudDrawer>
     <MudMainContent Class="pt-16 px-2">
         <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
