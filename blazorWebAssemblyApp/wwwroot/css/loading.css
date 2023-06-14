@@ -1,23 +1,23 @@
-﻿.loading-spin
-{
+﻿.loading-spin {
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
+    background: #32333dff;
+    height: 100vh;
+    width: 100vw;
 }
 
 .lds-ellipsis {
     position: relative;
     width: 160px;
-    height: 100px;
 }
 .lds-ellipsis div {
     position: absolute;
-    top: 48vh;
     width: 30px;
     height: 2px;
     border-radius: 50%;
-    background: #fff;
+    background: #ffffffb2;
     animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 .lds-ellipsis div:nth-child(1) {

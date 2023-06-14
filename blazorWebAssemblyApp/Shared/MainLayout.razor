@@ -8,7 +8,6 @@
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
         <MudSpacer />
-        <MudSwitch @bind-Checked="@_isDarkMode" Color="Color.Primary" Class="ma-4" T="bool" Label="Toggle Light/Dark Mode" />
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/Swepps/pokemonautoteambuilder" Target="_blank" />
     </MudAppBar>
     <MudDrawer @bind-Open="@open" Elevation="1">
@@ -18,9 +17,10 @@
         <MudNavMenu>
             <MudNavLink Match="NavLinkMatch.All">Team Builder</MudNavLink>
         </MudNavMenu>
+        
     </MudDrawer>
     <MudMainContent Class="pt-16 px-2">
-        <MudContainer Class="mt-6">
+        <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
             @Body
         </MudContainer>
     </MudMainContent>
@@ -29,7 +29,7 @@
 @code{
     // theme stuff
     private bool _isDarkMode;
-    public MudThemeProvider _mudThemeProvider;
+    private MudThemeProvider _mudThemeProvider;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

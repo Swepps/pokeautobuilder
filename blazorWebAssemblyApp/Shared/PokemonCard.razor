@@ -7,18 +7,17 @@
                      CoerceText="true" CoerceValue="false" />
     @if (PokemonSearchValue is not null)
     {
-        @if (PokemonSearchValue.Species.Varieties.Count > 1)
-        {
-            <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonFormName">
-                @foreach (PokemonSpeciesVariety v in PokemonSearchValue.Species.Varieties)
-                {
-                    <MudSelectItem Value="@v.Pokemon.Name" />
-                }
-            </MudSelect>
-        }
-    }
-    @if (PokemonSearchValue is not null)
-    {
+        <div style="height: 50px">
+            @if (PokemonSearchValue.Species.Varieties.Count > 1)
+            {
+                <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonFormName">
+                    @foreach (PokemonSpeciesVariety v in PokemonSearchValue.Species.Varieties)
+                    {
+                        <MudSelectItem Value="@v.Pokemon.Name" />
+                    }
+                </MudSelect>
+            }
+        </div>
         @if (pokemon is not null && generation is not null)
         {
             <img class="artwork" src="@pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@pokemon.Name" title="@pokemon.Name"/>
@@ -40,7 +39,7 @@
         }
         else
         {
-            <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="ma-2" />
+            <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" />
         }
 
     }
@@ -135,8 +134,8 @@
         if (string.IsNullOrEmpty(value))
             return Globals.Pokedex;
 
-        value = value.ToLower();
-        return Globals.Pokedex.SearchPokedex(value);
+        // search the pokedex in a background thread
+        return await Task.Run(() => Globals.Pokedex.SearchPokedex(value.ToLower()));
     }
 
     public async void SelectPokemon(SmartPokemonEntry? entry)

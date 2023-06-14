@@ -2,69 +2,92 @@
 
 @if (Pokemon is not null)
 {
-	<MudGrid Class="pa-4">
-		<MudItem xs="12" lg="4">
+	<MudGrid Class="pa-4" Justify="Justify.Center">
+		<MudItem xs="12" sm="8" md="6" lg="4">
 			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 				<MudText Typo="Typo.h6">Base Stats</MudText>
 				<MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="70%" Height="100%"
 						  InputData="@Pokemon.GetBaseStatsArray()" InputLabels="@Labels">
 					<CustomGraphics>
-						<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="#757575" font-family="Helvetica" font-size="2">Total</text>
-						<text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#757575" font-family="Helvetica" font-size="5">@Pokemon.GetBaseStatsTotal()</text>
+						<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="var(--mud-palette-text-primary)" font-family="Helvetica" font-size="2">Total</text>
+						<text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="var(--mud-palette-text-primary)" font-family="Helvetica" font-size="5">@Pokemon.GetBaseStatsTotal()</text>
 					</CustomGraphics>
 				</MudChart>
 			</MudPaper>
 		</MudItem>
-		<MudItem xs="12" lg="4">
-			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
-				<MudText Typo="Typo.h6">Resistances</MudText>
-				<MudGrid Class="pa-2">
-					@foreach (Type t in Globals.AllTypes)
-					{
-						@if (Pokemon.GetEffectivenessTo(t.Name) < 1.0)
-						{
-							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center pa-2">
-								<MudImage Src="@StringUtils.TypeImgFromName(t.Name)" Alt="@t.Name" title="@t.Name" Height="40" Class="ma-1" />
-								@if (Pokemon.GetEffectivenessTo(t.Name) == 0.5)
+		<MudItem xs="12" sm="6" md="3" lg="3">
+			<MudPaper Class="d-flex flex-column align-center justify-center pa-2">
+				<MudStack Spacing="5" AlignItems="AlignItems.Center" Style="width: 100%;" Class="pa-2">
+					<MudText Typo="Typo.h6">Defense</MudText>
+					<MudStack Row="true" Style="width: 100%; height: 40px;" AlignItems="AlignItems.Center">
+						<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">Resist</MudText>
+						<MudGrid>
+							@foreach (Type t in Globals.AllTypes)
+							{
+								@if (Pokemon.GetEffectivenessTo(t.Name) < 1.0)
 								{
-									<MudText Typo="Typo.caption">½x</MudText>
+									<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
+										<MudImage Src="@StringUtils.TypeImgFromName(t.Name)" Alt="@t.Name" title="@t.Name" Height="20" />
+										@if (Pokemon.GetEffectivenessTo(t.Name) == 0.5)
+										{
+											<MudText Typo="Typo.caption">½x</MudText>
+										}
+										else if (Pokemon.GetEffectivenessTo(t.Name) == 0.25)
+										{
+											<MudText Typo="Typo.caption" Style="font-weight: bold;">¼x</MudText>
+										}
+										else
+										{
+											<MudText Typo="Typo.caption" Style="font-weight: bold;">Imm</MudText>
+										}
+									</MudStack>
 								}
-								else if (Pokemon.GetEffectivenessTo(t.Name) == 0.25)
+							}
+						</MudGrid>
+					</MudStack>
+					<MudDivider />
+					<MudStack Row="true" Style="width: 100%; height: 40px;" AlignItems="AlignItems.Center">
+						<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">Weak</MudText>
+						<MudGrid>
+							@foreach (Type t in Globals.AllTypes)
+							{
+								@if (Pokemon.GetEffectivenessTo(t.Name) > 1.0)
 								{
-									<MudText Typo="Typo.caption" Style="font-weight: bold;">¼x</MudText>
+									<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
+										<MudImage Src="@StringUtils.TypeImgFromName(t.Name)" Alt="@t.Name" title="@t.Name" Height="20" />
+										@if (Pokemon.GetEffectivenessTo(t.Name) == 2.0)
+										{
+											<MudText Typo="Typo.caption">2x</MudText>
+										}
+										else
+										{
+											<MudText Typo="Typo.caption" Style="font-weight: bold;">4x</MudText>
+										}
+									</MudStack>
 								}
-								else
-								{
-									<MudText Typo="Typo.caption" Style="font-weight: bold;">Immune</MudText>
-								}
-							</MudStack>
-						}
-					}
-				</MudGrid>
+							}
+						</MudGrid>
+					</MudStack>
+				</MudStack>
 			</MudPaper>
 		</MudItem>
-		<MudItem xs="12" lg="4">
-			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
-				<MudText Typo="Typo.h6">Weaknesses</MudText>
-				<MudGrid Class="pa-2">
-					@foreach (Type t in Globals.AllTypes)
-					{
-						@if (Pokemon.GetEffectivenessTo(t.Name) > 1.0)
-						{
-							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center pa-2">
-								<MudImage Src="@StringUtils.TypeImgFromName(t.Name)" Alt="@t.Name" title="@t.Name" Height="40" Class="ma-1" />
-								@if (Pokemon.GetEffectivenessTo(t.Name) == 2.0)
+		<MudItem xs="12" sm="6" md="3" lg="3">
+			<MudPaper Class="d-flex flex-column align-center justify-center pa-2">
+				<MudStack Spacing="5" AlignItems="AlignItems.Center" Style="width: 100%;" Class="pa-2">
+					<MudText Typo="Typo.h6">Coverage</MudText>
+					<MudStack Row="true" Style="width: 100%; height: 40px;" AlignItems="AlignItems.Center">
+						<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">STAB Moves</MudText>
+						<MudGrid>
+							@foreach (Type t in Globals.AllTypes)
+							{
+								@if (Pokemon.IsCoveredBySTAB(t.Name))
 								{
-									<MudText Typo="Typo.caption">2x</MudText>
+									<MudImage Src="@StringUtils.TypeImgFromName(t.Name)" Alt="@t.Name" title="@t.Name" Height="20" Class="ma-1" />
 								}
-								else
-								{
-									<MudText Typo="Typo.caption" Style="font-weight: bold;">4x</MudText>
-								}
-							</MudStack>
-						}
-					}
-				</MudGrid>
+							}
+						</MudGrid>
+					</MudStack>
+				</MudStack>
 			</MudPaper>
 		</MudItem>
 	</MudGrid>

@@ -11,25 +11,25 @@ else
 {
     <MudStack Spacing="5" Class="mt-4 mb-4">
         <MudGrid Justify="Justify.SpaceEvenly">
-            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="0" /></MudItem>
-            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="1" /></MudItem>
-            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="2" /></MudItem>
-            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="3" /></MudItem>
-            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="4" /></MudItem>
-            <MudItem xs="12" sm="6" md="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="5" /></MudItem>
+            <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="0" /></MudItem>
+            <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="1" /></MudItem>
+            <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="2" /></MudItem>
+            <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="3" /></MudItem>
+            <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="4" /></MudItem>
+            <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="5" /></MudItem>
         </MudGrid>
         <MudDivider DividerType="DividerType.Middle" />
         <MudText Typo="Typo.h6">Pokémon Stats</MudText>
         @if (!Globals.PokemonTeam.IsEmpty)
         {
-            <MudTabs Elevation="4" Border="true" Centered="true" Rounded="true" Position="Position.Left" ApplyEffectsToContainer="true">
+            <MudTabs Elevation="4" Border="true" Centered="true" Rounded="true" Position="Position.Top" ApplyEffectsToContainer="true">
                 @foreach (SmartPokemon? p in Globals.PokemonTeam)
                 {
                     @if (p != null)
                     {
-                        <MudTabPanel>
+                        <MudTabPanel Style="min-width: 50px;">
                             <TabContent>
-                                <MudImage Src="@p.Sprites.FrontDefault" Fluid="true"/>
+                                <MudImage Src="@p.Sprites.FrontDefault" Height="50"/>
                             </TabContent>
                             <TabWrapperContent>
                                 <MudTooltip Text="@StringUtils.FirstCharToUpper(p.Name)" >
