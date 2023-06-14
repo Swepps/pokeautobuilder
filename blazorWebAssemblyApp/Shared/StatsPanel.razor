@@ -7,10 +7,13 @@
 			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 				<MudText Typo="Typo.h6">Base Stats</MudText>
 				<MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="70%" Height="100%"
-						  InputData="@Pokemon.GetBaseStatsArray()" InputLabels="@Labels">
+					  InputData="@Data" InputLabels="@Labels" @bind-SelectedIndex="SelectedIndex" @onmouseout="OnMouseLeaveChart">
 					<CustomGraphics>
 						<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="var(--mud-palette-text-primary)" font-family="Helvetica" font-size="2">Total</text>
 						<text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="var(--mud-palette-text-primary)" font-family="Helvetica" font-size="5">@Pokemon.GetBaseStatsTotal()</text>
+						<MudPopover Open="@IsTooltipOpen" Class="pa-1" AnchorOrigin="Origin.CenterCenter" TransformOrigin="Origin.TopCenter">
+							<MudText>@GetChartTooltip()</MudText>
+						</MudPopover>
 					</CustomGraphics>
 				</MudChart>
 			</MudPaper>
@@ -18,8 +21,8 @@
 		<MudItem xs="12" sm="6" md="3" lg="3">
 			<MudPaper Class="d-flex flex-column align-center justify-center pa-2">
 				<MudStack Spacing="5" AlignItems="AlignItems.Center" Style="width: 100%;" Class="pa-2">
-					<MudText Typo="Typo.h6">Defense</MudText>
-					<MudStack Row="true" Style="width: 100%; height: 40px;" AlignItems="AlignItems.Center">
+					<MudText Typo="Typo.h6" Class="mb-2">Defense</MudText>
+					<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
 						<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">Resist</MudText>
 						<MudGrid>
 							@foreach (Type t in Globals.AllTypes)
@@ -46,7 +49,7 @@
 						</MudGrid>
 					</MudStack>
 					<MudDivider />
-					<MudStack Row="true" Style="width: 100%; height: 40px;" AlignItems="AlignItems.Center">
+					<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
 						<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">Weak</MudText>
 						<MudGrid>
 							@foreach (Type t in Globals.AllTypes)
@@ -74,8 +77,8 @@
 		<MudItem xs="12" sm="6" md="3" lg="3">
 			<MudPaper Class="d-flex flex-column align-center justify-center pa-2">
 				<MudStack Spacing="5" AlignItems="AlignItems.Center" Style="width: 100%;" Class="pa-2">
-					<MudText Typo="Typo.h6">Coverage</MudText>
-					<MudStack Row="true" Style="width: 100%; height: 40px;" AlignItems="AlignItems.Center">
+					<MudText Typo="Typo.h6" Class="mb-2">Coverage</MudText>
+					<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
 						<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">STAB Moves</MudText>
 						<MudGrid>
 							@foreach (Type t in Globals.AllTypes)
@@ -94,8 +97,47 @@
 }
 
 @code {
-    [Parameter]
-    public SmartPokemon? Pokemon { get; set; }
+	[Parameter]
+	public SmartPokemon? Pokemon { get; set; }
 
-    public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed"};
+	public double[] Data = new double[6];
+	private int selectedIndex;
+	public int SelectedIndex { 
+		get
+		{
+			return selectedIndex;
+		}
+		set
+		{
+			selectedIndex = value;
+			IsTooltipOpen = true;
+		}
+	}
+	public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed"};
+
+	public bool IsTooltipOpen = false;
+
+	// when component is initialised
+	protected override async Task OnInitializedAsync()
+	{
+		if (Pokemon is not null)
+		{
+			Data = Pokemon.GetBaseStatsArray();
+		}
+	}
+
+	public string GetChartTooltip()
+	{
+		if (SelectedIndex >= 0 && SelectedIndex < Data.Length)
+		{
+			return Labels[SelectedIndex] + ": " + Data[SelectedIndex];
+		}
+
+		return "";
+	}
+
+	public void OnMouseLeaveChart()
+	{
+		IsTooltipOpen = false;
+	}
 }
