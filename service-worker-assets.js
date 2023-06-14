@@ -1,7 +1,7 @@
 ﻿self.assetsManifest = {
   "assets": [
     {
-      "hash": "sha256-wVNpBy1ciQS9KBhp+2MbIu87mQWG3siyX11KHfasGRY=",
+      "hash": "sha256-SzQv2wribPZ7nDEFrbdQa4pM6gTK7DPun9LoY7fLv70=",
       "url": "css\/loading.css"
     },
     {
@@ -89,7 +89,7 @@
       "url": "img\/Type-Water.png"
     },
     {
-      "hash": "sha256-KdOwNVtFcNZEHNWRfHm7zr6YHrEdPRkmAyPNug4MNgQ=",
+      "hash": "sha256-VwcHqdyZBDvMcGRiCqAcRojslUgaM2+/Ilw+19UD4E8=",
       "url": "index.html"
     },
     {
@@ -133,7 +133,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-t9MY18e4JkHkURZ5YEsHAKaZFgHQ6NfM2\/\/8Se1wT1U=",
+      "hash": "sha256-vroVRS6Qnb+bgYs80JzLHru9g1mIG7roaCn9y5YF71c=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -153,7 +153,7 @@
       "url": "_framework\/Accord.Math.dll"
     },
     {
-      "hash": "sha256-Hdfcc6NY\/OnWD1s9agvvcbLkMHnfAJY5\/FpSTEAc5vk=",
+      "hash": "sha256-sAK+bdSaE04ocneQyInK3KetQkrPTcaji7HktdUXAiE=",
       "url": "_framework\/blazorWebAssemblyApp.dll"
     },
     {
@@ -249,7 +249,7 @@
       "url": "_framework\/Microsoft.JSInterop.WebAssembly.dll"
     },
     {
-      "hash": "sha256-540p7kKlr51AIeub4eN4g9bwgvYD1fqqDVCEw82X6Ak=",
+      "hash": "sha256-P79thVy3Xd1BS+ZFqHYsaux9h3YgJ2KBHm5z+GjuHew=",
       "url": "_framework\/MudBlazor.dll"
     },
     {
@@ -385,7 +385,7 @@
       "url": "_framework\/System.Private.Xml.Linq.dll"
     },
     {
-      "hash": "sha256-wr9Gh2bmJAluBaHusI\/2iSDNyWLrqCX94ISsa+Xyj5I=",
+      "hash": "sha256-pT+O+vx0zcn7qxNh93+rX++jvNZRVz+hgqbLDVsObFg=",
       "url": "_framework\/System.Runtime.dll"
     },
     {
@@ -441,7 +441,7 @@
       "url": "appsettings.json"
     },
     {
-      "hash": "sha256-fCNUk88c1qpg68Utmvb21XPfpKRF+2Pzct5dXV2zcrA=",
+      "hash": "sha256-GW1keCF4BJSmF7ywI2zHB9LrCpd5fBXB6aEthtKeUTI=",
       "url": "blazorWebAssemblyApp.styles.css"
     },
     {
@@ -457,5 +457,5 @@
       "url": "_content\/MudBlazor\/MudBlazor.min.js"
     }
   ],
-  "version": "By6Hv9+I"
+  "version": "8FTGN32o"
 };
