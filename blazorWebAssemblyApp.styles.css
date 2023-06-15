@@ -449,3 +449,16 @@ img[b-71qrk4rwaj]{
     height: 100%;
     overflow: hidden;
 }
+/* /Shared/StatsTeamPanel.razor.rz.scp.css */
+.table-header[b-w1z33053nn]
+{
+    text-align: center;
+}
+
+.table-header img[b-w1z33053nn] {
+    width: 90%;
+}
+
+.table-row[b-w1z33053nn] {
+    width: 5%;
+}

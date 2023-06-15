@@ -133,7 +133,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-N\/Gr6obMO0EW7gTmep+oUc\/FGek9QDcjwCS6BMQpsCQ=",
+      "hash": "sha256-7h0A0UWawELT0yNXwyjZ+vLBBbtofj6jAajOElWdP3I=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -153,7 +153,7 @@
       "url": "_framework\/Accord.Math.dll"
     },
     {
-      "hash": "sha256-mx8R83Q2xkCbgGMBFK2Jhc3STYX\/ZOUH40b3W6j0NVA=",
+      "hash": "sha256-t3TcJygm\/eiAS8sUKd8p9r5FvYaQOKNoVoT0qnDaIPo=",
       "url": "_framework\/blazorWebAssemblyApp.dll"
     },
     {
@@ -441,7 +441,7 @@
       "url": "appsettings.json"
     },
     {
-      "hash": "sha256-GW1keCF4BJSmF7ywI2zHB9LrCpd5fBXB6aEthtKeUTI=",
+      "hash": "sha256-l34qNPe\/Umz0Vo3iCtLK8jNVA0n+Cb8qRXsqMjSFKms=",
       "url": "blazorWebAssemblyApp.styles.css"
     },
     {
@@ -457,5 +457,5 @@
       "url": "_content\/MudBlazor\/MudBlazor.min.js"
     }
   ],
-  "version": "uMSYLUHL"
+  "version": "FC92U9L1"
 };
