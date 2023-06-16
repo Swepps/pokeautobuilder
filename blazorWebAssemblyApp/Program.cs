@@ -1,4 +1,6 @@
+using Blazored.LocalStorage;
 using blazorWebAssemblyApp;
+using blazorWebAssemblyApp.Source;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -17,5 +19,8 @@ builder.Services.AddOidcAuthentication(options =>
 });
 
 builder.Services.AddMudServices();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<ProfileService>();
+builder.Services.AddScoped<PokeApiService>();
 
 await builder.Build().RunAsync();

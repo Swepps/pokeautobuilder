@@ -2,7 +2,7 @@
 
 namespace blazorWebAssemblyApp.Source
 {
-    public class PokemonTeam : ObservableCollection<SmartPokemon?>
+    public class PokemonTeam : List<SmartPokemon?>
     {
         public static readonly int MaxTeamSize = 6;
 

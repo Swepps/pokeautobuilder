@@ -1,6 +1,11 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider @ref="@_mudThemeProvider" @bind-IsDarkMode="@_isDarkMode" />
+@inject ProfileService ProfileService
+@inject PokeApiService PokeApiService
+
+@using PokeApiNet
+
+<MudThemeProvider @ref="@Globals.MudThemeProvider" @bind-IsDarkMode="@isDarkMode" />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
@@ -11,33 +16,77 @@
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/Swepps/pokemonautoteambuilder" Target="_blank" />
     </MudAppBar>
     <MudDrawer @bind-Open="@open" Elevation="1">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h6">AutoBuilder</MudText>
-        </MudDrawerHeader>
-        <MudNavMenu>
-            <MudNavLink Match="NavLinkMatch.All">Team Builder</MudNavLink>
-        </MudNavMenu>
-        <MudSwitch @bind-Checked="@_isDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Toggle Light/Dark Mode" />
+        <MudSwitch @bind-Checked="@IsDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Toggle Light/Dark Mode" />
     </MudDrawer>
     <MudMainContent Class="pt-16 px-2">
         <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
-            @Body
+            @if (state == Init.Done)
+            {            
+                @Body
+            }
+            else if (state == Init.Initialising)
+            {
+                <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" Size="Size.Large" />
+            }
+            else
+            {
+                <MudText Typo="Typo.body1" Color="Color.Error">Error initialising app. Please report on GitHub.</MudText>
+            }
         </MudContainer>
     </MudMainContent>
 </MudLayout>
 
 @code{
+    enum Init { Initialising, Done, Error }
+
+    Init state = Init.Initialising;
+
     // theme stuff
-    private bool _isDarkMode;
-    private MudThemeProvider _mudThemeProvider;
+    private bool isDarkMode;
+    private bool IsDarkMode
+    {
+        get { return isDarkMode; }
+        set
+        {
+            isDarkMode = value;
+            OnChangeDarkMode();
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            _isDarkMode = await _mudThemeProvider.GetSystemPreference();
+            // initialising global variables used across the app
+            var getPreferencesTask = ProfileService.GetPreferencesAsync();
+            var getUserDataTask = ProfileService.GetUserDataAsync();
+            var getAllTypesTask = PokeApiService.GetAllTypesAsync();
+            var getNationalDexTask = PokeApiService.GetNationalDex();
+
+            await Task.WhenAll(getPreferencesTask, getUserDataTask, getAllTypesTask, getNationalDexTask);
+
+            isDarkMode = getPreferencesTask.Result.DarkMode;
+            Globals.PokemonTeam = getUserDataTask.Result.Team;
+            Globals.AllTypes = getAllTypesTask.Result;
+            Globals.NationalDex = getNationalDexTask.Result;
+            if (Globals.NationalDex != null)
+            {
+                state = Init.Done;
+            }
+            else
+            {
+                // uh oh
+                state = Init.Error;
+
+            }
+
             StateHasChanged();
         }
+    }
+
+    void OnChangeDarkMode()
+    {
+        ProfileService?.SetDarkMode(IsDarkMode);
     }
 
     // nav menu

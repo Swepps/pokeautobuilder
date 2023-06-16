@@ -1,11 +1,15 @@
-﻿namespace blazorWebAssemblyApp.Source
+﻿using MudBlazor;
+
+namespace blazorWebAssemblyApp.Source
 {
-	using Type = PokeApiNet.Type;
-	public class Globals
+    using Type = PokeApiNet.Type;
+    public class Globals
 	{
-		public static string Language = "en";
+        public static MudThemeProvider? MudThemeProvider;
+        public static string Language = "en";
 		public static List<Type> AllTypes = new List<Type>();
-		public static SmartPokedex Pokedex = new SmartPokedex();
+		public static SmartPokedex? NationalDex;
 		public static PokemonTeam PokemonTeam = new PokemonTeam();
+		public static PokemonStorage PokemonStorage = new PokemonStorage();
 	}
 }

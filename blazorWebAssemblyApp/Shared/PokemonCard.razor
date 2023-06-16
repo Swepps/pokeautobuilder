@@ -1,4 +1,7 @@
-﻿@using PokeApiNet
+﻿@inject PokeApiService PokeApiService
+@inject ProfileService ProfileService
+
+@using PokeApiNet
 @using Type = PokeApiNet.Type
 
 <MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
@@ -36,6 +39,10 @@
                     <MudSelectItem Value="@a.Ability.Name" />
                 }
             </MudSelect>
+        }
+        else if (errorFetchingPokemon)
+        {
+            <MudText Typo="Typo.caption">Error Fetching @PokemonSearchValue.Species.Name from API</MudText>
         }
         else
         {
@@ -98,6 +105,8 @@
     private SmartPokemon? pokemon;
     private Generation? generation;
 
+    bool errorFetchingPokemon = false;
+
     // when component is initialised
     protected override async Task OnInitializedAsync()
     {
@@ -108,9 +117,9 @@
         }
 
         if (pokemon is not null)
-            PokemonSearchValue = Globals.Pokedex.FindPokemon(pokemon.Species.Name);
+            PokemonSearchValue = Globals.NationalDex!.FindPokemon(pokemon.Species.Name);
         if (PokemonSearchValue is not null)
-            generation = await PokeApiHandler.GetGenerationAsync(PokemonSearchValue.Species);
+            generation = await PokeApiService.GetGenerationAsync(PokemonSearchValue.Species);
 
         await Update();
     }
@@ -124,6 +133,8 @@
         StateHasChanged();
 
         await OnUpdated.InvokeAsync();
+
+        await ProfileService.UpdateUserDataAsync();
     }
 
     // pokemon search functionality
@@ -132,14 +143,15 @@
     {
         // if text is null or empty, show complete list
         if (string.IsNullOrEmpty(value))
-            return Globals.Pokedex;
+            return Globals.NationalDex!;
 
         // search the pokedex in a background thread
-        return await Task.Run(() => Globals.Pokedex.SearchPokedex(value.ToLower()));
+        return await Task.Run(() => Globals.NationalDex!.SearchPokedex(value.ToLower()));
     }
 
     public async void SelectPokemon(SmartPokemonEntry? entry)
     {
+        errorFetchingPokemon = false;
         if (entry is null)
         {
             pokemon = null;
@@ -148,8 +160,8 @@
         else
         {
             // simultaneously get the default pokemon and generation from this species
-            var getPokemonTask = PokeApiHandler.GetPokemonAsync(entry.Species.Varieties[0].Pokemon.Name);
-            var getGenerationTask = PokeApiHandler.GetGenerationAsync(entry.Species);
+            var getPokemonTask = PokeApiService.GetPokemonAsync(entry.Species.Varieties[0].Pokemon.Name);
+            var getGenerationTask = PokeApiService.GetGenerationAsync(entry.Species);
             await Task.WhenAll(getPokemonTask, getGenerationTask);
             pokemon = getPokemonTask.Result;
             generation = getGenerationTask.Result;
@@ -157,6 +169,10 @@
             {
                 pokemonFormName = pokemon.Name;
                 pokemonAbilityName = pokemon.Abilities[0].Ability.Name;
+            }
+            else
+            {
+                errorFetchingPokemon = true;
             }
         }
 
@@ -171,7 +187,7 @@
 
         pokemon = null;
         StateHasChanged();
-        pokemon = await PokeApiHandler.GetPokemonAsync(formName);
+        pokemon = await PokeApiService.GetPokemonAsync(formName);
         if (pokemon is not null)
             pokemonAbilityName = pokemon.Abilities[0].Ability.Name;
         await Update();

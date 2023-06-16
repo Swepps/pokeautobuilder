@@ -1,4 +1,5 @@
-﻿using PokeApiNet;
+﻿using Newtonsoft.Json;
+using PokeApiNet;
 using System.Collections.ObjectModel;
 
 namespace blazorWebAssemblyApp.Source
@@ -38,7 +39,7 @@ namespace blazorWebAssemblyApp.Source
 
     // an observable collection of SmartPokemonEntry objects which is used as a binding
     // for the pokedex combobox
-    public class SmartPokedex : ObservableCollection<SmartPokemonEntry>
+    public class SmartPokedex : List<SmartPokemonEntry>
     {
         public SmartPokedex() { }
         public SmartPokedex(Pokedex pokedex) 
@@ -51,7 +52,7 @@ namespace blazorWebAssemblyApp.Source
             this.Clear();
             var tasks = pokedex.PokemonEntries.Select(async entry =>
             {
-                PokemonSpecies? species = await PokeApiHandler.GetPokemonSpeciesAsync(entry);
+                PokemonSpecies? species = await PokeApiService.GetPokemonSpeciesAsync(entry);
                 if (species != null)
                     Add(new SmartPokemonEntry(entry.EntryNumber, species));
             });

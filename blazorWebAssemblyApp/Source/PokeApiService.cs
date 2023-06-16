@@ -1,14 +1,74 @@
-﻿using PokeApiNet;
+﻿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components;
+using Microsoft.VisualBasic;
+using PokeApiNet;
 
 namespace blazorWebAssemblyApp.Source
 {
     using Type = PokeApiNet.Type;
-    internal class PokeApiHandler
+
+    public record Cache
+    {        
+        public List<Type>       AllTypes { get; init; } = new List<Type>();
+        public SmartPokedex?    NationalDex { get; init; }
+    }
+
+    public class PokeApiService
     {
         private static PokeApiClient ApiClient = new PokeApiClient();
+        private readonly ILocalStorageService _localStorageService;
 
-        public static async Task<List<Type>> GetAllTypesAsync()
+        public PokeApiService(ILocalStorageService localStorageService)
         {
+            _localStorageService = localStorageService;
+        }
+        
+        // -- persistent caching functions --
+
+        private async Task<Cache> GetCache()
+        {
+            // if they've already specified their preferences explicitly, use them
+            if (await _localStorageService.ContainKeyAsync("cache"))
+                return await _localStorageService.GetItemAsync<Cache>("cache");
+
+            return new Cache();
+        }
+
+        private async Task SetCache(Cache cache)
+        {
+            await _localStorageService.SetItemAsync("cache", cache);
+        }
+
+        private async void SetAllTypes(List<Type> allTypes)
+        {
+            Cache cache = await GetCache();
+            Cache newCache = cache
+                with
+            { AllTypes = allTypes };
+
+            await SetCache(newCache);
+        }
+
+        private async Task SetNationalDex(SmartPokedex nationaldex)
+        {
+            Cache cache = await GetCache();
+            Cache newCache = cache
+                with
+            { NationalDex = nationaldex };
+
+            await SetCache(newCache);
+        }
+
+        // -- API access functions --
+
+        public async Task<List<Type>> GetAllTypesAsync()
+        {
+            Cache cache = await GetCache();
+            if (cache.AllTypes.Any())
+            {
+                return cache.AllTypes;
+            }
+
             List<Type> pokemonTypes = new List<Type>();
 
             NamedApiResourceList<Type> allTypesPage = await ApiClient.GetNamedResourcePageAsync<Type>();
@@ -23,14 +83,32 @@ namespace blazorWebAssemblyApp.Source
                 pokemonTypes.Add(type);
             }
 
+            SetAllTypes(pokemonTypes);
+
             return pokemonTypes;
         }
 
-        public static async Task<Pokedex?> GetNationalDex()
+        // we will cache the national pokedex between sessions for faster loading time
+        public async Task<SmartPokedex?> GetNationalDex()
         {
-            return await GetPokedex(1);
+            Cache cache = await GetCache();
+            if (cache.NationalDex is not null && cache.NationalDex.Count > 0)
+            {
+                return cache.NationalDex;
+            }
+
+            Pokedex? nationalDex = await GetPokedex(1);
+
+            if (nationalDex is not null)
+            {
+                SmartPokedex smNatDex = new SmartPokedex(nationalDex);
+                await SetNationalDex(smNatDex);
+                return smNatDex;
+            }
+
+            return null;
         }
-        public static async Task<Pokedex?> GetPokedex(int i)
+        public async Task<Pokedex?> GetPokedex(int i)
         {
             try
             {

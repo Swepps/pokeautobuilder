@@ -2,7 +2,7 @@
 
 namespace blazorWebAssemblyApp.Source
 {
-    public class PokemonStorage : ObservableCollection<SmartPokemon>
+    public class PokemonStorage : List<SmartPokemon>
     {
         public PokemonTeam GetRandomTeam(PokemonTeam? lockedMembers = null)
         {

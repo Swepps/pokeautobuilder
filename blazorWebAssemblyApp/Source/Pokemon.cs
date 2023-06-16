@@ -1,4 +1,5 @@
-﻿using PokeApiNet;
+﻿using Newtonsoft.Json;
+using PokeApiNet;
 using System.Collections.ObjectModel;
 
 namespace blazorWebAssemblyApp.Source
@@ -19,12 +20,25 @@ namespace blazorWebAssemblyApp.Source
 
     public class SmartPokemon : Pokemon
     {
-        public PokemonAbility ChosenAbility { get; set; }
-        public Multipliers? Multipliers;
+        [JsonProperty("chosen-ability")]
+        public PokemonAbility? ChosenAbility { get; set; }
+        [JsonIgnore]
+        public Multipliers? Multipliers = null;
 
+        [JsonIgnore]
         public ObservableCollection<string> Resistances { get; set; }
+        [JsonIgnore]
         public ObservableCollection<string> Weaknesses { get; set; }
+        [JsonIgnore]
         public ObservableCollection<string> Coverage { get; set; }
+
+        [JsonConstructor]
+        public SmartPokemon()
+        {
+            Resistances = GetDefenseResistList();
+            Weaknesses = GetDefenseWeakList();
+            Coverage = GetCoverageList();
+        }
 
         public SmartPokemon(Pokemon pokemon)
         {
@@ -82,7 +96,7 @@ namespace blazorWebAssemblyApp.Source
 
         public Multipliers GetMultipliers()
         {
-            Multipliers ??= PokeApiHandler.GetPokemonMultipliersAsync(this).Result;
+            Multipliers ??= PokeApiService.GetPokemonMultipliersAsync(this).Result;
 
             return (Multipliers)Multipliers;
         }
