@@ -1,9 +1,11 @@
-﻿<MudDrawerHeader>
+﻿@inject NavigationManager Navigator
+
+<MudDrawerHeader>
     <MudText Typo="Typo.h6">AutoBuilder</MudText>
 </MudDrawerHeader>
 <MudNavMenu>
-    <MudNavLink Icon="@Icons.Material.Filled.Build" Href="/" Match="NavLinkMatch.All">Team Builder</MudNavLink>
-    <MudNavLink Icon="@Icons.Material.Filled.Storage" Href="/storage" >Pokémon Storage</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Build" Href="@Navigator.BaseUri" Match="NavLinkMatch.All">Team Builder</MudNavLink>
+    <MudNavLink Icon="@Icons.Material.Filled.Storage" Href="@(Navigator.BaseUri + "storage")" >Pokémon Storage</MudNavLink>
 </MudNavMenu>
 
 @code {
