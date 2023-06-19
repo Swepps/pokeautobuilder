@@ -1,12 +1,16 @@
-/* /Pages/Index.razor.rz.scp.css */
-body[b-22bfh82yse] {
+/* /Pages/PokemonStoragePage.razor.rz.scp.css */
+.expand-button[b-z8ima6k5pv] {
+    transform: rotate(-0.25turn);
+}
+/* /Pages/TeamBuilderPage.razor.rz.scp.css */
+body[b-znvyaxn9f9] {
 }
 
-div[b-22bfh82yse]{
+div[b-znvyaxn9f9]{
     border: 1px solid red;
 }
 
-.team-grid-container[b-22bfh82yse] {
+.team-grid-container[b-znvyaxn9f9] {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -301,145 +305,6 @@ img[b-uefzjuq2iu]{
 }
 
 .forms .option.disabled:hover[b-uefzjuq2iu] {
-    background: lightgrey;
-    color: var(--bs-body);
-}
-/* /Shared/PokemonCardOld.razor.rz.scp.css */
-body[b-71qrk4rwaj] {
-}
-
-img[b-71qrk4rwaj]{
-    max-width: 100%;
-}
-
-.card[b-71qrk4rwaj] {
-    flex-basis: calc(100% * 1/6 - 1em);
-    min-width: 7em;
-    display: flow;
-    width: 100%;
-    border-radius: 0.5rem;
-    background-color: lightgray;
-    padding: 0.25rem;
-}
-
-/* search bar related CSS */
-
-.autocomplete[b-71qrk4rwaj] {
-    position: relative;
-}
-
-.autocomplete .options[b-71qrk4rwaj] {
-    position: absolute;
-    top: 40px;
-    left: 0;
-    background: white;
-    width: 100%;
-    min-width: 10em;
-    max-height: 30em;
-    z-index: 10;
-    border: 1px solid #ced4da;
-    border-radius: 0.5rem;
-    box-shadow: 0 30px 25px 8px rgba(0, 0, 0, 0.1);
-    text-overflow: clip;
-    overflow: hidden;
-    overflow-y: scroll;
-    padding-inline-start: 0;
-    cursor: pointer;
-}
-
-.autocomplete .option[b-71qrk4rwaj] {
-    display: block;
-    padding: 0.25rem;
-}
-
-.autocomplete .option .option-text[b-71qrk4rwaj] {
-    padding: 0.25rem 0.5rem;
-}
-
-.autocomplete .option:hover[b-71qrk4rwaj] {
-    background: #1E90FF;
-    color: #fff;
-}
-
-.autocomplete .option.disabled[b-71qrk4rwaj] {
-    background-color: lightgrey;
-    cursor: not-allowed;
-}
-
-.autocomplete .option.disabled:hover[b-71qrk4rwaj] {
-    background: lightgrey;
-    color: var(--bs-body);
-}
-
-/* artwork image */
-
-.artwork[b-71qrk4rwaj] {
-    -webkit-filter: drop-shadow(5px 5px 5px #222);
-    filter: drop-shadow(5px 5px 5px #222);
-}
-
-/* type images */
-
-.types[b-71qrk4rwaj] {
-    text-align: center;
-}
-
-.types img[b-71qrk4rwaj] {
-    display: inline-block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%;
-    max-width: 70px;
-    padding: 5px;
-}
-
-/* generation */
-
-.generation[b-71qrk4rwaj] {
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-}
-
-.generation span[b-71qrk4rwaj] {
-    text-overflow: ellipsis;
-}
-
-/* forms */
-
-.forms[b-71qrk4rwaj] {
-    overflow: hidden;
-    width: auto;
-    margin: 0.25rem;
-    height: 1.5em;
-}
-
-.input-form[b-71qrk4rwaj]{
-    cursor: pointer;
-    width: 100%;
-}
-
-.forms .option[b-71qrk4rwaj] {
-    display: block;
-    padding: 0.25rem;
-}
-
-.forms .option .option-text[b-71qrk4rwaj] {
-    padding: 0.25rem 0.5rem;
-}
-
-.forms .option:hover[b-71qrk4rwaj] {
-    background: #1E90FF;
-    color: #fff;
-    cursor: pointer;
-}
-
-.forms .option.disabled[b-71qrk4rwaj] {
-    background-color: lightgrey;
-    cursor: not-allowed;
-}
-
-.forms .option.disabled:hover[b-71qrk4rwaj] {
     background: lightgrey;
     color: var(--bs-body);
 }
