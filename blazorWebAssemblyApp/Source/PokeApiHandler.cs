@@ -1,74 +1,21 @@
-﻿using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.VisualBasic;
 using PokeApiNet;
+using System.Diagnostics;
 
 namespace blazorWebAssemblyApp.Source
 {
     using Type = PokeApiNet.Type;
 
-    public record Cache
-    {        
-        public List<Type>       AllTypes { get; init; } = new List<Type>();
-        public SmartPokedex?    NationalDex { get; init; }
-    }
-
-    public class PokeApiService
+    public class PokeApiHandler
     {
         private static PokeApiClient ApiClient = new PokeApiClient();
-        private readonly ILocalStorageService _localStorageService;
-
-        public PokeApiService(ILocalStorageService localStorageService)
-        {
-            _localStorageService = localStorageService;
-        }
-        
-        // -- persistent caching functions --
-
-        private async Task<Cache> GetCache()
-        {
-            // if they've already specified their preferences explicitly, use them
-            if (await _localStorageService.ContainKeyAsync("cache"))
-                return await _localStorageService.GetItemAsync<Cache>("cache");
-
-            return new Cache();
-        }
-
-        private async Task SetCache(Cache cache)
-        {
-            await _localStorageService.SetItemAsync("cache", cache);
-        }
-
-        private async void SetAllTypes(List<Type> allTypes)
-        {
-            Cache cache = await GetCache();
-            Cache newCache = cache
-                with
-            { AllTypes = allTypes };
-
-            await SetCache(newCache);
-        }
-
-        private async Task SetNationalDex(SmartPokedex nationaldex)
-        {
-            Cache cache = await GetCache();
-            Cache newCache = cache
-                with
-            { NationalDex = nationaldex };
-
-            await SetCache(newCache);
-        }
 
         // -- API access functions --
 
-        public async Task<List<Type>> GetAllTypesAsync()
-        {
-            Cache cache = await GetCache();
-            if (cache.AllTypes.Any())
-            {
-                return cache.AllTypes;
-            }
-
+        // it works but I may as well just hard code it so no longer used...
+        public static async Task<List<Type>> GetAllTypesAsync()
+        { 
             List<Type> pokemonTypes = new List<Type>();
 
             NamedApiResourceList<Type> allTypesPage = await ApiClient.GetNamedResourcePageAsync<Type>();
@@ -83,32 +30,23 @@ namespace blazorWebAssemblyApp.Source
                 pokemonTypes.Add(type);
             }
 
-            SetAllTypes(pokemonTypes);
-
             return pokemonTypes;
         }
 
         // we will cache the national pokedex between sessions for faster loading time
-        public async Task<SmartPokedex?> GetNationalDex()
+        public static async Task<SmartPokedex?> GetNationalDex()
         {
-            Cache cache = await GetCache();
-            if (cache.NationalDex is not null && cache.NationalDex.Count > 0)
-            {
-                return cache.NationalDex;
-            }
-
             Pokedex? nationalDex = await GetPokedex(1);
 
             if (nationalDex is not null)
             {
                 SmartPokedex smNatDex = new SmartPokedex(nationalDex);
-                await SetNationalDex(smNatDex);
                 return smNatDex;
             }
 
             return null;
         }
-        public async Task<Pokedex?> GetPokedex(int i)
+        public static async Task<Pokedex?> GetPokedex(int i)
         {
             try
             {
@@ -168,7 +106,7 @@ namespace blazorWebAssemblyApp.Source
             try
             {
                 Pokemon pokemon = await ApiClient.GetResourceAsync<Pokemon>(pokemonName);
-                SmartPokemon smartPokemon = new SmartPokemon(pokemon);
+                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon);
 
                 return smartPokemon;
             }
@@ -183,7 +121,7 @@ namespace blazorWebAssemblyApp.Source
             try
             {
                 Pokemon pokemon = await ApiClient.GetResourceAsync<Pokemon>(pokedexId);
-                SmartPokemon smartPokemon = new SmartPokemon(pokemon);
+                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon);
 
                 return smartPokemon;
             }
@@ -209,7 +147,7 @@ namespace blazorWebAssemblyApp.Source
             }
         }
 
-        public static async Task<Multipliers> GetPokemonMultipliersAsync(SmartPokemon pokemon)
+        public static async Task<Multipliers> GetPokemonMultipliersAsync(Pokemon pokemon)
         {
             Multipliers multipliers = new Multipliers();
 
@@ -234,7 +172,7 @@ namespace blazorWebAssemblyApp.Source
                 }
                 foreach (var namedType in noDamageFrom)
                 {
-                    multipliers.defense[namedType.Name] = 0;
+                    multipliers.Defense[namedType.Name] = 0;
                 }
 
                 // resistant types
@@ -251,13 +189,13 @@ namespace blazorWebAssemblyApp.Source
                 }
                 foreach (var namedType in halfDamageFrom)
                 {
-                    if (multipliers.defense.ContainsKey(namedType.Name))
+                    if (multipliers.Defense.ContainsKey(namedType.Name))
                     {
-                        multipliers.defense[namedType.Name] = multipliers.defense[namedType.Name] * 0.5;
+                        multipliers.Defense[namedType.Name] = multipliers.Defense[namedType.Name] * 0.5;
                     }
                     else
                     {
-                        multipliers.defense[namedType.Name] = 0.5;
+                        multipliers.Defense[namedType.Name] = 0.5;
                     }
                 }
 
@@ -272,17 +210,17 @@ namespace blazorWebAssemblyApp.Source
                     //{
                     //    multipliers.coverage[namedType.Name] = 2.0;
                     //}
-                    multipliers.coverage[namedType.Name] = true;
+                    multipliers.Coverage[namedType.Name] = true;
                 }
                 foreach (var namedType in doubleDamageFrom)
                 {
-                    if (multipliers.defense.ContainsKey(namedType.Name))
+                    if (multipliers.Defense.ContainsKey(namedType.Name))
                     {
-                        multipliers.defense[namedType.Name] = multipliers.defense[namedType.Name] * 2.0;
+                        multipliers.Defense[namedType.Name] = multipliers.Defense[namedType.Name] * 2.0;
                     }
                     else
                     {
-                        multipliers.defense[namedType.Name] = 2.0;
+                        multipliers.Defense[namedType.Name] = 2.0;
                     }
                 }
             }

@@ -11,7 +11,6 @@ namespace blazorWebAssemblyApp.Source
 
     public record UserData
     {
-        public PokemonTeam Team { get; init; } = new PokemonTeam();
         public PokemonStorage Storage { get; init; } = new PokemonStorage();
     }
 
@@ -69,21 +68,10 @@ namespace blazorWebAssemblyApp.Source
         {
             UserData data = new UserData
             {
-                Team = Globals.PokemonTeam,
                 Storage = Globals.PokemonStorage
             };
 
             await SetUserDataAsync(data);
-        }
-
-        public async Task SetTeam(PokemonTeam team)
-        {
-            UserData data = await GetUserDataAsync();
-            UserData newData = data
-                with
-            { Team = team };
-
-            await _localStorageService.SetItemAsync("userdata", newData);
         }
     }
 }

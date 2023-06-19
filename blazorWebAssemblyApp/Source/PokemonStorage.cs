@@ -10,7 +10,7 @@ namespace blazorWebAssemblyApp.Source
             {
                 lockedMembers = new PokemonTeam();
             }
-            else if (lockedMembers.CountPokemon() >= 6 || Count < 6)
+            else if (lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize || Count < PokemonTeam.MaxTeamSize)
             {
                 // they're all locked!
                 return lockedMembers;
@@ -18,7 +18,7 @@ namespace blazorWebAssemblyApp.Source
 
             // generate the random members and stick into an array for later
             Random rand = new Random();
-            SmartPokemon[] randomMembers = new SmartPokemon[6 - lockedMembers.CountPokemon()];
+            SmartPokemon[] randomMembers = new SmartPokemon[PokemonTeam.MaxTeamSize - lockedMembers.CountPokemon()];
             for (int i = 0; i < randomMembers.Length; i++)
             {
                 SmartPokemon randPokemon = this[rand.Next(0, Count)];
@@ -33,7 +33,7 @@ namespace blazorWebAssemblyApp.Source
             // create a new team using lockedMembers and random members
             PokemonTeam newTeam = new PokemonTeam();
             int randIdx = 0;
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
                 if (lockedMembers[i] != null)
                 {

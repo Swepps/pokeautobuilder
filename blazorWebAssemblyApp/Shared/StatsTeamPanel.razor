@@ -118,9 +118,9 @@
 	// when component is initialised
 	protected override async Task OnInitializedAsync()
 	{
-		foreach (Type t in Globals.AllTypes)
+		foreach (string t in Globals.AllTypes)
 		{
-			typeHeaders.Add(t.Name);
+			typeHeaders.Add(t);
 		}
 		OnParametersSet();
 	}

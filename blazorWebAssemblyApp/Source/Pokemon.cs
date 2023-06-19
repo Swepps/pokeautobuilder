@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Accord.MachineLearning;
+using Newtonsoft.Json;
 using PokeApiNet;
 using System.Collections.ObjectModel;
 
@@ -8,39 +9,33 @@ namespace blazorWebAssemblyApp.Source
 
     public struct Multipliers
     {
-        public Dictionary<string, double> defense;
-        public Dictionary<string, bool> coverage;
+        public Dictionary<string, double> Defense;
+        public Dictionary<string, bool> Coverage;
 
         public Multipliers()
         {
-            defense = new Dictionary<string, double>();
-            coverage = new Dictionary<string, bool>();
+            Defense = new Dictionary<string, double>();
+            Coverage = new Dictionary<string, bool>();
         }
     }
 
     public class SmartPokemon : Pokemon
     {
-        [JsonProperty("chosen-ability")]
         public PokemonAbility? ChosenAbility { get; set; }
-        [JsonIgnore]
-        public Multipliers? Multipliers = null;
+        public Multipliers Multipliers { get; init; }
+        public List<string> Resistances { get; init; }
+        public List<string> Weaknesses { get; init; }
+        public List<string> Coverage { get; init; }
 
-        [JsonIgnore]
-        public ObservableCollection<string> Resistances { get; set; }
-        [JsonIgnore]
-        public ObservableCollection<string> Weaknesses { get; set; }
-        [JsonIgnore]
-        public ObservableCollection<string> Coverage { get; set; }
-
-        [JsonConstructor]
-        public SmartPokemon()
+        public static async Task<SmartPokemon> BuildSmartPokemonAsync(Pokemon basePokemon)
         {
-            Resistances = GetDefenseResistList();
-            Weaknesses = GetDefenseWeakList();
-            Coverage = GetCoverageList();
+            Multipliers multipliers = await PokeApiHandler.GetPokemonMultipliersAsync(basePokemon);
+
+            return new SmartPokemon(basePokemon, multipliers);
         }
 
-        public SmartPokemon(Pokemon pokemon)
+
+        public SmartPokemon(Pokemon pokemon, Multipliers multipliers)
         {
             // build our own copy constructor since we can't cast
             Id = pokemon.Id;
@@ -62,6 +57,10 @@ namespace blazorWebAssemblyApp.Source
             Stats = pokemon.Stats;
             Types = pokemon.Types;
 
+            // async value collected from builder function
+            Multipliers = multipliers;
+
+            // smart variables that make this pokemon class more useful
             ChosenAbility = Abilities[0];
             Resistances = GetDefenseResistList();
             Weaknesses = GetDefenseWeakList();
@@ -70,8 +69,7 @@ namespace blazorWebAssemblyApp.Source
 
         public double GetEffectivenessTo(string typeName)
         {
-            Multipliers multipliers = GetMultipliers();
-            if (multipliers.defense.TryGetValue(typeName, out double attEff))
+            if (Multipliers.Defense.TryGetValue(typeName, out double attEff))
             {
                 return attEff;
             }
@@ -83,8 +81,7 @@ namespace blazorWebAssemblyApp.Source
 
         public bool IsCoveredBySTAB(string typeName)
         {
-            Multipliers multipliers = GetMultipliers();
-            if (multipliers.coverage.TryGetValue(typeName, out bool covered))
+            if (Multipliers.Coverage.TryGetValue(typeName, out bool covered))
             {
                 return covered;
             }
@@ -92,13 +89,6 @@ namespace blazorWebAssemblyApp.Source
             {
                 return false;
             }
-        }
-
-        public Multipliers GetMultipliers()
-        {
-            Multipliers ??= PokeApiService.GetPokemonMultipliersAsync(this).Result;
-
-            return (Multipliers)Multipliers;
         }
 
         public bool SetChosenAbility(string abilityName)
@@ -147,39 +137,39 @@ namespace blazorWebAssemblyApp.Source
             return total;
         }
 
-        private ObservableCollection<string> GetDefenseResistList()
+        private List<string> GetDefenseResistList()
         {
-            ObservableCollection<string> ret = new ObservableCollection<string>();
-            foreach (Type type in Globals.AllTypes)
+            List<string> ret = new List<string>();
+            foreach (string type in Globals.AllTypes)
             {
-                double eff = GetEffectivenessTo(type.Name);
+                double eff = GetEffectivenessTo(type);
 
 				if (eff < 1.0 && eff > 0)
-                    ret.Add(type.Name);
+                    ret.Add(type);
             }
 
             return ret;
         }
 
-        private ObservableCollection<string> GetDefenseWeakList()
+        private List<string> GetDefenseWeakList()
         {
-            ObservableCollection<string> ret = new ObservableCollection<string>();
-            foreach (Type type in Globals.AllTypes)
+            List<string> ret = new List<string>();
+            foreach (string type in Globals.AllTypes)
             {
-                if (GetEffectivenessTo(type.Name) > 1.0)
-                    ret.Add(type.Name);
+                if (GetEffectivenessTo(type) > 1.0)
+                    ret.Add(type);
             }
 
             return ret;
         }
 
-        private ObservableCollection<string> GetCoverageList()
+        private List<string> GetCoverageList()
         {
-            ObservableCollection<string> ret = new ObservableCollection<string>();
-            foreach (Type type in Globals.AllTypes)
+            List<string> ret = new List<string>();
+            foreach (string type in Globals.AllTypes)
             {
-                if (IsCoveredBySTAB(type.Name))
-                    ret.Add(type.Name);
+                if (IsCoveredBySTAB(type))
+                    ret.Add(type);
             }
 
             return ret;

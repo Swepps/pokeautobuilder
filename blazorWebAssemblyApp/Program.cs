@@ -1,4 +1,5 @@
 using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using blazorWebAssemblyApp;
 using blazorWebAssemblyApp.Source;
 using Microsoft.AspNetCore.Components.Web;
@@ -20,7 +21,8 @@ builder.Services.AddOidcAuthentication(options =>
 
 builder.Services.AddMudServices();
 builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<ProfileService>();
-builder.Services.AddScoped<PokeApiService>();
+builder.Services.AddScoped<SessionService>();
 
 await builder.Build().RunAsync();

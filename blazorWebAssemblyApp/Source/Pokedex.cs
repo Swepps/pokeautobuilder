@@ -52,7 +52,7 @@ namespace blazorWebAssemblyApp.Source
             this.Clear();
             var tasks = pokedex.PokemonEntries.Select(async entry =>
             {
-                PokemonSpecies? species = await PokeApiService.GetPokemonSpeciesAsync(entry);
+                PokemonSpecies? species = await PokeApiHandler.GetPokemonSpeciesAsync(entry);
                 if (species != null)
                     Add(new SmartPokemonEntry(entry.EntryNumber, species));
             });

@@ -1,5 +1,5 @@
-﻿@inject PokeApiService PokeApiService
-@inject ProfileService ProfileService
+﻿@inject ProfileService ProfileService
+@inject SessionService SessionService
 
 @using PokeApiNet
 @using Type = PokeApiNet.Type
@@ -39,6 +39,7 @@
                     <MudSelectItem Value="@a.Ability.Name" />
                 }
             </MudSelect>
+            <MudButton OnClick="OnClickAddToStorage" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" Class="my-2">Add To Storage</MudButton>
         }
         else if (errorFetchingPokemon)
         {
@@ -60,6 +61,9 @@
 
     [Parameter] // used for telling the parent of the card that it has updated
     public EventCallback OnUpdated { get; set; }
+
+    [Parameter]
+    public bool IsStorageCard { get; set; } = false;
 
     // the string which holds the last valid search result from the search bar
     private SmartPokemonEntry? pokemonSearchValue;
@@ -105,21 +109,24 @@
     private SmartPokemon? pokemon;
     private Generation? generation;
 
-    bool errorFetchingPokemon = false;
+    private bool errorFetchingPokemon = false;
 
     // when component is initialised
     protected override async Task OnInitializedAsync()
     {
         // use the team index to get this pokemon if possible
-        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < 6)
+        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
         {
             pokemon = Globals.PokemonTeam[PokemonTeamIndex];
         }
 
         if (pokemon is not null)
-            PokemonSearchValue = Globals.NationalDex!.FindPokemon(pokemon.Species.Name);
+        {
+            pokemonSearchValue = Globals.NationalDex!.FindPokemon(pokemon.Species.Name);
+            pokemonFormName = pokemon.Name;
+        }
         if (PokemonSearchValue is not null)
-            generation = await PokeApiService.GetGenerationAsync(PokemonSearchValue.Species);
+            generation = await PokeApiHandler.GetGenerationAsync(PokemonSearchValue.Species);
 
         await Update();
     }
@@ -128,13 +135,14 @@
     {
         // update the global pokemon team if this card has a team index
         if (PokemonTeamIndex >= 0 && PokemonTeamIndex < 6)
+        {
             Globals.PokemonTeam[PokemonTeamIndex] = pokemon;
+            await SessionService.SetTeamMember(PokemonTeamIndex, pokemon is null ? "" : pokemon.Name);
+        }
 
         StateHasChanged();
 
         await OnUpdated.InvokeAsync();
-
-        await ProfileService.UpdateUserDataAsync();
     }
 
     // pokemon search functionality
@@ -160,8 +168,8 @@
         else
         {
             // simultaneously get the default pokemon and generation from this species
-            var getPokemonTask = PokeApiService.GetPokemonAsync(entry.Species.Varieties[0].Pokemon.Name);
-            var getGenerationTask = PokeApiService.GetGenerationAsync(entry.Species);
+            var getPokemonTask = PokeApiHandler.GetPokemonAsync(entry.Species.Varieties[0].Pokemon.Name);
+            var getGenerationTask = PokeApiHandler.GetGenerationAsync(entry.Species);
             await Task.WhenAll(getPokemonTask, getGenerationTask);
             pokemon = getPokemonTask.Result;
             generation = getGenerationTask.Result;
@@ -187,7 +195,7 @@
 
         pokemon = null;
         StateHasChanged();
-        pokemon = await PokeApiService.GetPokemonAsync(formName);
+        pokemon = await PokeApiHandler.GetPokemonAsync(formName);
         if (pokemon is not null)
             pokemonAbilityName = pokemon.Abilities[0].Ability.Name;
         await Update();
@@ -200,5 +208,13 @@
         // SetChosenAbility uses a string to find an ability with a matching name
         if (value is not null && pokemon is not null)
             pokemon.SetChosenAbility(value);
+    }
+
+    public async void OnClickAddToStorage()
+    {
+        if (pokemon is not null)
+            Globals.PokemonStorage.Add(pokemon);
+
+        await OnUpdated.InvokeAsync();
     }
 }

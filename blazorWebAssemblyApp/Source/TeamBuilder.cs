@@ -26,19 +26,18 @@ namespace blazorWebAssemblyApp.Source
                 return 0;
 
             // gather some information about the types in the team
-            List<Type> typeArray = Globals.AllTypes;
-            Dictionary<Type, int> weaknesses = new Dictionary<Type, int>();
-            Dictionary<Type, int> resistances = new Dictionary<Type, int>();
-            Dictionary<Type, int> coverage = new Dictionary<Type, int>();
+            Dictionary<string, int> weaknesses = new Dictionary<string, int>();
+            Dictionary<string, int> resistances = new Dictionary<string, int>();
+            Dictionary<string, int> coverage = new Dictionary<string, int>();
 
             double totalWeaknesses = 0;
             double totalResistances = 0;
             double totalCoverage = 0;
-            foreach (Type t in typeArray)
+            foreach (string t in Globals.AllTypes)
             {
-                totalWeaknesses += weaknesses[t] = team.CountWeaknesses(t.Name);
-                totalResistances += resistances[t] = team.CountResistances(t.Name);
-                totalCoverage += coverage[t] = team.CountCoverage(t.Name);
+                totalWeaknesses += weaknesses[t] = team.CountWeaknesses(t);
+                totalResistances += resistances[t] = team.CountResistances(t);
+                totalCoverage += coverage[t] = team.CountCoverage(t);
             }
 
             // defense score
@@ -63,40 +62,38 @@ namespace blazorWebAssemblyApp.Source
             double statsScore = CalculateStatsScore(team, BaseStatWeightings);
 
             double score = defenseScore + coverageScore + statsScore;
-            score *= team.CountPokemon() / 6.0;
+            score *= team.CountPokemon() / (double)PokemonTeam.MaxTeamSize;
 
             return score;
         }
 
         // Aah GCSE maths... this seems much easier than I thought it was when I was 15
-        private static double CalculateStandardDeviation(Dictionary<Type, int> typeDictionary)
+        private static double CalculateStandardDeviation(Dictionary<string, int> typeDictionary)
         {
-            List<Type> typeArray = Globals.AllTypes;
             double mean = 0;
-            foreach (Type type in typeArray)
+            foreach (string type in Globals.AllTypes)
             {
                 mean += typeDictionary[type];
             }
-            mean /= typeArray.Count;
+            mean /= Globals.AllTypes.Count;
 
             double variance = 0;
-            foreach (Type type in typeArray)
+            foreach (string type in Globals.AllTypes)
             {
                 variance += Math.Pow((typeDictionary[type] - mean), 2);
             }
-            variance /= typeArray.Count;
+            variance /= Globals.AllTypes.Count;
 
             return Math.Sqrt(variance);
         }
 
-        private static double CalculateCoverageScore(Dictionary<Type, int> typeDictionary, double totalCoverage)
+        private static double CalculateCoverageScore(Dictionary<string, int> typeDictionary, double totalCoverage)
         {
-            List<Type> typeArray = Globals.AllTypes;
             double score = 5.0 + Math.Sqrt(totalCoverage);
-            double scoreForType = score / typeArray.Count;
+            double scoreForType = score / Globals.AllTypes.Count;
 
             // give up to 10 points for having at least 1 coverage of each type
-            foreach (Type type in typeArray)
+            foreach (string type in Globals.AllTypes)
             {
                 if (!typeDictionary.ContainsKey(type))
                     score -= scoreForType;
@@ -163,7 +160,7 @@ namespace blazorWebAssemblyApp.Source
             {
                 lockedMembers = new PokemonTeam();
             }
-            else if (lockedMembers.CountPokemon() >= 6 || availablePokemon.Count < 6)
+            else if (lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize || availablePokemon.Count < PokemonTeam.MaxTeamSize)
             {
                 // they're all locked!
                 return lockedMembers;
@@ -174,7 +171,7 @@ namespace blazorWebAssemblyApp.Source
 
             // using the clever combinations code to quickly iterate through each combination of teams
             // we are selecting (6 - lockedMembers.Count) from all the pokemon in the box
-            foreach (SmartPokemon[] remainingTeamCombination in Combinations<SmartPokemon>(availablePokemon.ToArray(), 6 - lockedMembers.CountPokemon()))
+            foreach (SmartPokemon[] remainingTeamCombination in Combinations<SmartPokemon>(availablePokemon.ToArray(), PokemonTeam.MaxTeamSize - lockedMembers.CountPokemon()))
             {
                 // check that we're not already using one of these selected pokemon in our team already
                 // this is inefficient but the lists will always be small so should be pretty quick
@@ -190,7 +187,7 @@ namespace blazorWebAssemblyApp.Source
                 // create a new team using lockedMembers and chosen combination
                 PokemonTeam newTeam = new PokemonTeam();
                 int combinIdx = 0;
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
                 {
                     if (lockedMembers[i] != null)
                     {
@@ -265,7 +262,7 @@ namespace blazorWebAssemblyApp.Source
             {
                 lockedMembers = new PokemonTeam();
             }
-            else if (lockedMembers.CountPokemon() >= 6 || availablePokemon.Count < 6)
+            else if (lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize || availablePokemon.Count < PokemonTeam.MaxTeamSize)
             {
                 // they're all locked!
                 return lockedMembers;
@@ -304,7 +301,7 @@ namespace blazorWebAssemblyApp.Source
             _storage = storage;
             _lockedMembers = lockedMembers;
             Team = new PokemonTeam();
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
                 Team[i] = team[i];
             }
@@ -328,8 +325,8 @@ namespace blazorWebAssemblyApp.Source
             if (otherChrom == null)
                 return;
 
-            int randIdx = Random.Next(6);
-            for (; randIdx < 6; randIdx++)
+            int randIdx = Random.Next(PokemonTeam.MaxTeamSize);
+            for (; randIdx < PokemonTeam.MaxTeamSize; randIdx++)
             {
                 if (!Team.Contains(otherChrom.Team[randIdx]))
                     Team[randIdx] = otherChrom.Team[randIdx];
@@ -344,13 +341,13 @@ namespace blazorWebAssemblyApp.Source
         public override void Mutate()
         {
             // can't mutate if the data set is less than team size
-            if (_storage.Count <= 6 || _lockedMembers.CountPokemon() >= 6)
+            if (_storage.Count <= PokemonTeam.MaxTeamSize || _lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize)
                 return;
 
             // make sure we don't swap out any locked members
-            int randIdx = Random.Next(6);
+            int randIdx = Random.Next(PokemonTeam.MaxTeamSize);
             while (_lockedMembers[randIdx] != null)
-                randIdx = Random.Next(6);
+                randIdx = Random.Next(PokemonTeam.MaxTeamSize);
 
             // now mutate
             SmartPokemon randPokemon = _storage.GetRandomPokemon();

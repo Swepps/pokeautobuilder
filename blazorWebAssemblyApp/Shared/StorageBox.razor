@@ -1,0 +1,15 @@
+﻿<MudPaper Elevation="4" Class="d-flex flex-wrap justify-start align-start mud-height-full pa-2">
+	<div class="d-flex">
+		@foreach (SmartPokemon p in Globals.PokemonStorage)
+		{
+			<MudImage Src="@p.Sprites.FrontDefault" Style="width: 10vw;" />
+		}
+	</div>
+</MudPaper>
+
+@code {
+	public void Refresh()
+	{
+		StateHasChanged();
+	}
+}

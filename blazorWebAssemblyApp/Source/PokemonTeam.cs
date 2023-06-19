@@ -48,9 +48,7 @@ namespace blazorWebAssemblyApp.Source
                 SmartPokemon? p = this[i];
                 if (p == null) continue;
 
-                Multipliers multipliers = p.GetMultipliers();
-
-                if (multipliers.defense.TryGetValue(typeName, out double value)
+                if (p.Multipliers.Defense.TryGetValue(typeName, out double value)
                     &&
                     value > 1.0)
                 {
@@ -69,9 +67,7 @@ namespace blazorWebAssemblyApp.Source
                 SmartPokemon? p = this[i];
                 if (p == null) continue;
 
-                Multipliers multipliers = p.GetMultipliers();
-
-                if (multipliers.defense.TryGetValue(typeName, out double value)
+                if (p.Multipliers.Defense.TryGetValue(typeName, out double value)
                     &&
                     value < 1.0)
                 {
@@ -90,9 +86,7 @@ namespace blazorWebAssemblyApp.Source
                 SmartPokemon? p = this[i];
                 if (p == null) continue;
 
-                Multipliers multipliers = p.GetMultipliers();
-
-                if (multipliers.coverage.TryGetValue(typeName, out bool value)
+                if (p.Multipliers.Coverage.TryGetValue(typeName, out bool value)
                     &&
                     value)
                 {

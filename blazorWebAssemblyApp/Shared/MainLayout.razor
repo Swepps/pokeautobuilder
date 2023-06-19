@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 @inject ProfileService ProfileService
-@inject PokeApiService PokeApiService
+@inject SessionService SessionService
 
 @using PokeApiNet
 
@@ -16,9 +16,10 @@
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/Swepps/pokemonautoteambuilder" Target="_blank" />
     </MudAppBar>
     <MudDrawer @bind-Open="@open" Elevation="1">
+        <NavMenu />
         <MudSwitch @bind-Checked="@IsDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Toggle Light/Dark Mode" />
     </MudDrawer>
-    <MudMainContent Class="pt-16 px-2">
+    <MudMainContent Class="pt-16 px-2 mud-height-full">
         <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
             @if (state == Init.Done)
             {            
@@ -60,15 +61,28 @@
             // initialising global variables used across the app
             var getPreferencesTask = ProfileService.GetPreferencesAsync();
             var getUserDataTask = ProfileService.GetUserDataAsync();
-            var getAllTypesTask = PokeApiService.GetAllTypesAsync();
-            var getNationalDexTask = PokeApiService.GetNationalDex();
+            var getSessionDataTask = SessionService.GetSessionData();
+            var getNationalDexTask = PokeApiHandler.GetNationalDex();
 
-            await Task.WhenAll(getPreferencesTask, getUserDataTask, getAllTypesTask, getNationalDexTask);
+            await Task.WhenAll(getPreferencesTask, getUserDataTask, getSessionDataTask, getNationalDexTask);
 
             isDarkMode = getPreferencesTask.Result.DarkMode;
-            Globals.PokemonTeam = getUserDataTask.Result.Team;
-            Globals.AllTypes = getAllTypesTask.Result;
             Globals.NationalDex = getNationalDexTask.Result;
+            SessionData session = getSessionDataTask.Result;
+
+            // check for any team already in the session data and use it to
+            // load the global team
+            var getTeamTasks = session.CurrentTeam.Select(async (name, index) =>
+            {
+                if (!string.IsNullOrEmpty(name))
+                {
+                    SmartPokemon? sp = await PokeApiHandler.GetPokemonAsync(name);
+                    if (sp is not null)
+                        Globals.PokemonTeam[index] = sp;
+                }
+            });
+            await Task.WhenAll(getTeamTasks);
+
             if (Globals.NationalDex != null)
             {
                 state = Init.Done;
