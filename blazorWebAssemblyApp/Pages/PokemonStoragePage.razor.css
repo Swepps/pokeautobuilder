@@ -1,3 +1,4 @@
 ﻿.expand-button {
-    transform: rotate(-0.25turn);
+    width: 50px;
+    height: 100%;
 }

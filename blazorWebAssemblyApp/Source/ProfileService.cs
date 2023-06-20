@@ -11,7 +11,7 @@ namespace blazorWebAssemblyApp.Source
 
     public record UserData
     {
-        public PokemonStorage Storage { get; init; } = new PokemonStorage();
+        public List<string> Storage { get; init; } = new List<string>();
     }
 
 	public class ProfileService
@@ -39,7 +39,7 @@ namespace blazorWebAssemblyApp.Source
             };
         }
 
-		public async Task SetDarkMode(bool isDarkMode)
+		public async Task SetDarkModeAsync(bool isDarkMode)
 		{
 			Preferences prefs = await GetPreferencesAsync();
 			Preferences newPrefs = prefs
@@ -68,10 +68,28 @@ namespace blazorWebAssemblyApp.Source
         {
             UserData data = new UserData
             {
-                Storage = Globals.PokemonStorage
+                Storage = Globals.PokemonStorage.GetAllNames()
             };
 
             await SetUserDataAsync(data);
+        }
+
+        public async Task LoadGlobalStorage()
+        {
+            UserData userData = await GetUserDataAsync();
+
+            // get the pokemon from the API using the list of names in the storage
+            // may not load them in the order they were saved
+            var getStorageTasks = userData.Storage.Select(async name =>
+            {
+                if (!string.IsNullOrEmpty(name))
+                {
+                    SmartPokemon? sp = await PokeApiHandler.GetPokemonAsync(name);
+                    if (sp is not null)
+                        Globals.PokemonStorage.Add(sp);
+                }
+            });
+            await Task.WhenAll(getStorageTasks);
         }
     }
 }

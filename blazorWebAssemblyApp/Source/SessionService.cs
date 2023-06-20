@@ -14,6 +14,8 @@ namespace blazorWebAssemblyApp.Source
             "",
             ""
         };
+
+        public int PokemonSearchLocation { get; init; } = 0;
     }
 
     public class SessionService
@@ -25,7 +27,7 @@ namespace blazorWebAssemblyApp.Source
             _sessionStorageService = sessionStorageService;
         }
 
-        public async Task<SessionData> GetSessionData()
+        public async Task<SessionData> GetSessionDataAsync()
         {
             if (await _sessionStorageService.ContainKeyAsync("session"))
                 return await _sessionStorageService.GetItemAsync<SessionData>("session");
@@ -34,9 +36,9 @@ namespace blazorWebAssemblyApp.Source
             return new SessionData();
         }
 
-        public async Task SetTeamMember(int idx, string formName)
+        public async Task SetTeamMemberAsync(int idx, string formName)
         {
-            SessionData session = await GetSessionData();
+            SessionData session = await GetSessionDataAsync();
             List<string> newTeam = session.CurrentTeam;
 
             if (idx >= 0 && idx < newTeam.Count)
@@ -50,6 +52,35 @@ namespace blazorWebAssemblyApp.Source
                 CurrentTeam = newTeam
             };
 
+            await _sessionStorageService.SetItemAsync("session", newSession);
+        }
+
+        public async Task LoadGlobalTeam()
+        {
+            SessionData sessionData = await GetSessionDataAsync();
+
+            // check for any team already in the session data and use it to
+            // load the global team
+            var getTeamTasks = sessionData.CurrentTeam.Select(async (name, index) =>
+            {
+                if (!string.IsNullOrEmpty(name))
+                {
+                    SmartPokemon? sp = await PokeApiHandler.GetPokemonAsync(name);
+                    if (sp is not null)
+                        Globals.PokemonTeam[index] = sp;
+                }
+            });
+            await Task.WhenAll(getTeamTasks);
+        }
+
+        public async Task SetPokemonSearchLocationAsync(int val)
+        {
+            SessionData session = await GetSessionDataAsync();
+            SessionData newSession = session
+                with
+            {
+                PokemonSearchLocation = val
+            };
             await _sessionStorageService.SetItemAsync("session", newSession);
         }
     }

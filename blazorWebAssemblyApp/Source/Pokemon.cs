@@ -1,4 +1,5 @@
 ﻿using Accord.MachineLearning;
+using Accord.Math.Random;
 using Newtonsoft.Json;
 using PokeApiNet;
 using System.Collections.ObjectModel;
@@ -22,6 +23,8 @@ namespace blazorWebAssemblyApp.Source
     public class SmartPokemon : Pokemon
     {
         public PokemonAbility? ChosenAbility { get; set; }
+        public PokemonSpecies LoadedSpecies { get; set; }
+        public Generation Generation { get; set; }
         public Multipliers Multipliers { get; init; }
         public List<string> Resistances { get; init; }
         public List<string> Weaknesses { get; init; }
@@ -30,12 +33,18 @@ namespace blazorWebAssemblyApp.Source
         public static async Task<SmartPokemon> BuildSmartPokemonAsync(Pokemon basePokemon)
         {
             Multipliers multipliers = await PokeApiHandler.GetPokemonMultipliersAsync(basePokemon);
+            PokemonSpecies? species = await PokeApiHandler.GetPokemonSpeciesAsync(basePokemon.Species.Name);
+            if (species is null)
+                throw new Exception("Could not load species information from " + basePokemon.Name);
+            Generation? generation = await PokeApiHandler.GetGenerationAsync(species);
+            if (generation is null)
+                throw new Exception("Could not load generation information from " + species.Name);
 
-            return new SmartPokemon(basePokemon, multipliers);
+            return new SmartPokemon(basePokemon, species, generation, multipliers);
         }
 
 
-        public SmartPokemon(Pokemon pokemon, Multipliers multipliers)
+        public SmartPokemon(Pokemon pokemon, PokemonSpecies loadedSpecies, Generation generation, Multipliers multipliers)
         {
             // build our own copy constructor since we can't cast
             Id = pokemon.Id;
@@ -58,6 +67,8 @@ namespace blazorWebAssemblyApp.Source
             Types = pokemon.Types;
 
             // async value collected from builder function
+            LoadedSpecies = loadedSpecies;
+            Generation = generation;
             Multipliers = multipliers;
 
             // smart variables that make this pokemon class more useful

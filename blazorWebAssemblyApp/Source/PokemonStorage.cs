@@ -55,5 +55,10 @@ namespace blazorWebAssemblyApp.Source
             SmartPokemon randPokemon = this[rand.Next(0, Count)];
             return randPokemon;
         }
+
+        public List<string> GetAllNames()
+        {
+            return this.Select(p => p.Name).ToList();
+        }
     }
 }

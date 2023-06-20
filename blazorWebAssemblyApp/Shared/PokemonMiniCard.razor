@@ -1,0 +1,37 @@
+﻿@inject ProfileService ProfileService
+
+<MudTooltip Text="@Pokemon!.Name">
+	<MudPaper Class="ma-1 pa-1 cursor-pointer" Style="background: var(--mud-palette-surface)" @onclick="OnClick">
+		<MudImage Src="@Pokemon!.Sprites.FrontDefault" Style="width: 40px;" />
+	</MudPaper>
+</MudTooltip>
+
+@code {
+	[Parameter]
+	public SmartPokemon? Pokemon { get; set; }
+
+	[Parameter] // used for telling the parent of the card that it has updated
+	public EventCallback OnUpdated { get; set; }
+
+	public override Task SetParametersAsync(ParameterView parameters)
+	{
+		parameters.SetParameterProperties(this);
+		if (Pokemon == null)
+			throw new InvalidOperationException($"{nameof(PokemonMiniCard)} requires a {nameof(SmartPokemon)} parameter.");
+
+		return base.SetParametersAsync(ParameterView.Empty);
+	}
+
+	private async Task Update()
+	{
+		await ProfileService.UpdateUserDataAsync();
+		await OnUpdated.InvokeAsync();
+	}
+
+	// TODO: show a nice panel when you click a pokemon to see the details
+	public async void OnClick()
+	{
+		Globals.PokemonStorage.Remove(Pokemon!);
+		await Update();
+	}
+}

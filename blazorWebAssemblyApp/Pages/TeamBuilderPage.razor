@@ -1,16 +1,22 @@
-﻿@page "/"
+﻿@inject SessionService SessionService
+
+@page "/"
 @using PokeApiNet
 
 <PageTitle>Team Builder</PageTitle>
 
 <MudStack Spacing="5" Class="mt-4 mb-4">
+    <MudRadioGroup @bind-SelectedOption="@PokemonSearchLocation">
+        <MudRadio Option="0" Color="Color.Primary">National Pokédex</MudRadio>
+        <MudRadio Option="1" Color="Color.Primary">Pokémon Storage</MudRadio>
+    </MudRadioGroup>    
     <MudGrid Justify="Justify.SpaceEvenly">
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="0" /></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="1" /></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="2" /></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="3" /></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="4" /></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="5" /></MudItem>
+        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="0" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
+        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="1" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
+        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="2" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
+        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="3" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
+        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="4" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
+        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="5" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
     </MudGrid>
     <MudDivider DividerType="DividerType.Middle" />
     <MudText Typo="Typo.h6">Pokémon Stats</MudText>
@@ -49,9 +55,26 @@
 
 
 @code {
+    private int pokemonSearchLocation = 0;
+    public int PokemonSearchLocation {
+        get { return pokemonSearchLocation; }
+        set
+        {
+            pokemonSearchLocation = value;
+            Update();
+        }
+    }
 
-    public void Update()
+    // when component is initialised
+    protected override async Task OnInitializedAsync()
+    {
+        SessionData session = await SessionService.GetSessionDataAsync();
+        PokemonSearchLocation = session.PokemonSearchLocation;
+    }
+
+    public async void Update()
     {
         StateHasChanged();
+        await SessionService.SetPokemonSearchLocationAsync(pokemonSearchLocation);
     }
 }

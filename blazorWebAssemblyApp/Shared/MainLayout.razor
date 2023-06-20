@@ -28,6 +28,7 @@
             else if (state == Init.Initialising)
             {
                 <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" Size="Size.Large" />
+                <MudText Typo="Typo.body1">Fetching data from PokeApi...</MudText>
             }
             else
             {
@@ -59,29 +60,22 @@
         if (firstRender)
         {
             // initialising global variables used across the app
-            var getPreferencesTask = ProfileService.GetPreferencesAsync();
-            var getUserDataTask = ProfileService.GetUserDataAsync();
-            var getSessionDataTask = SessionService.GetSessionData();
+
+            // load preferences first before the long ones
+            Preferences prefs = await ProfileService.GetPreferencesAsync();
+            isDarkMode = prefs.DarkMode;
+
+            StateHasChanged();
+
+            // now do the slow tasks
             var getNationalDexTask = PokeApiHandler.GetNationalDex();
 
-            await Task.WhenAll(getPreferencesTask, getUserDataTask, getSessionDataTask, getNationalDexTask);
+            await Task.WhenAll(
+                getNationalDexTask, 
+                SessionService.LoadGlobalTeam(),
+                ProfileService.LoadGlobalStorage());
 
-            isDarkMode = getPreferencesTask.Result.DarkMode;
             Globals.NationalDex = getNationalDexTask.Result;
-            SessionData session = getSessionDataTask.Result;
-
-            // check for any team already in the session data and use it to
-            // load the global team
-            var getTeamTasks = session.CurrentTeam.Select(async (name, index) =>
-            {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    SmartPokemon? sp = await PokeApiHandler.GetPokemonAsync(name);
-                    if (sp is not null)
-                        Globals.PokemonTeam[index] = sp;
-                }
-            });
-            await Task.WhenAll(getTeamTasks);
 
             if (Globals.NationalDex != null)
             {
@@ -100,7 +94,7 @@
 
     void OnChangeDarkMode()
     {
-        ProfileService?.SetDarkMode(IsDarkMode);
+        ProfileService?.SetDarkModeAsync(IsDarkMode);
     }
 
     // nav menu

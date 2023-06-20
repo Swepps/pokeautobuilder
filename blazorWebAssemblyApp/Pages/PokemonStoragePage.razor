@@ -1,22 +1,29 @@
 ﻿@inject NavigationManager NavigationManager
+@inject ProfileService ProfileService
 
 @page "/storage"
 @using PokeApiNet
 
 <PageTitle>Pokémon Storage</PageTitle>
 
-<MudPaper Height="calc(100vh - 110px)" Style="position: relative; overflow:hidden;">
+<MudPaper Height="calc(100vh - 110px)" Class="pa-1" Style="position: relative; overflow:hidden; background: var(--mud-palette-background)" Elevation="0" Square="true">
     <MudDrawerContainer Class="mud-height-full">
-        <MudDrawer @bind-Open="@openAddPokemonDrawer" Anchor="Anchor.End" Fixed="false" Elevation="0" Variant="@DrawerVariant.Persistent">
-            <PokemonCard OnUpdated="Update" IsStorageCard="true" />
+        <MudDrawer @bind-Open="@openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent">
+            <MudButton OnClick="OnClickAddRandomPokemon" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" Class="mb-2">Add Random Pokémon</MudButton>
+            <PokemonCard @ref="_pokemonCard" OnUpdated="Update" />
         </MudDrawer>
-        <MudButton OnClick="ToggleOpenAddPokemonDrawer" Variant="Variant.Outlined" EndIcon="@Icons.Material.Filled.ArrowDropDown" Color="Color.Primary" Class="expand-button">Add Pokémon</MudButton>
-        <StorageBox @ref="_storageBox"/>
+        <div class="d-flex justify-center gap-3 align-content-start mud-height-full">
+            <StorageBox @ref="_storageBox"/>
+            <MudPaper Class="d-flex justify-center align-center mud-height-full cursor-pointer mud-theme-primary" @onclick="ToggleOpenAddPokemonDrawer">
+                <MudIcon Icon="@(openAddPokemonDrawer ? @Icons.Material.Filled.KeyboardArrowRight : @Icons.Material.Filled.KeyboardArrowLeft)" />
+            </MudPaper>
+        </div>
     </MudDrawerContainer>
 </MudPaper>
 
 @code {
     StorageBox? _storageBox;
+    PokemonCard? _pokemonCard;
 
     bool openAddPokemonDrawer = false;
 
@@ -25,9 +32,45 @@
         openAddPokemonDrawer = !openAddPokemonDrawer;
     }
 
-    public void Update()
+    public async void Update()
     {
         StateHasChanged();
-        _storageBox?.Refresh();
+        _storageBox?.Update();
+        await ProfileService.UpdateUserDataAsync();
+    }
+
+    public async void OnClickAddRandomPokemon()
+    {
+        NamedApiResource<Pokemon>? pokemonResource = null;
+        SmartPokemonEntry? entry = Globals.NationalDex!.RandomPokemon();
+        if (entry != null)
+        {
+            Random rand = new Random();
+            List<NamedApiResource<Pokemon>> varieties = entry.GetAllVarieties();
+            pokemonResource = varieties[rand.Next(varieties.Count)];
+        }
+
+        if (pokemonResource != null)
+        {
+            SmartPokemon? pokemon = await PokeApiHandler.GetPokemonAsync(pokemonResource.Name);
+            if (pokemon != null)
+            {
+                Globals.PokemonStorage.Add(pokemon);
+                Update();
+            }
+        }
+    }
+
+    public void OnClickAddPokemon()
+    {
+        if (_pokemonCard is not null)
+        {
+            SmartPokemon? pokemon = _pokemonCard.GetSelectedPokemon();
+            if (pokemon is not null)
+            {
+                Globals.PokemonStorage.Add(pokemon);
+                Update();
+            }
+        }
     }
 }
