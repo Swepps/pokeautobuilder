@@ -2,7 +2,7 @@
 	<div class="d-flex flex-wrap justify-start align-content-start" style="overflow: auto;">
 		@foreach (SmartPokemon p in Globals.PokemonStorage)
 		{
-			<PokemonMiniCard Pokemon="p" OnUpdated="Update" />
+			<PokemonMiniCard Pokemon="p" OnUpdated="StateHasChanged" />
 		}
 	</div>
 </MudPaper>
@@ -11,7 +11,7 @@
 	[Parameter] // used for telling the parent of the card that it has updated
 	public EventCallback OnUpdated { get; set; }
 
-	public void Update()
+	public void Refresh()
 	{
 		StateHasChanged();
 	}

@@ -32,10 +32,10 @@
         openAddPokemonDrawer = !openAddPokemonDrawer;
     }
 
-    public async void Update()
+    private async void Update()
     {
         StateHasChanged();
-        _storageBox?.Update();
+        _storageBox?.Refresh();
         await ProfileService.UpdateUserDataAsync();
     }
 
@@ -65,7 +65,7 @@
     {
         if (_pokemonCard is not null)
         {
-            SmartPokemon? pokemon = _pokemonCard.GetSelectedPokemon();
+            SmartPokemon? pokemon = _pokemonCard.Pokemon;
             if (pokemon is not null)
             {
                 Globals.PokemonStorage.Add(pokemon);

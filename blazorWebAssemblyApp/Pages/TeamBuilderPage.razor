@@ -7,16 +7,14 @@
 
 <MudStack Spacing="5" Class="mt-4 mb-4">
     <MudRadioGroup @bind-SelectedOption="@PokemonSearchLocation">
-        <MudRadio Option="0" Color="Color.Primary">National Pokédex</MudRadio>
-        <MudRadio Option="1" Color="Color.Primary">Pokémon Storage</MudRadio>
+        <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
+        <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
     </MudRadioGroup>    
     <MudGrid Justify="Justify.SpaceEvenly">
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="0" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="1" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="2" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="3" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="4" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
-        <MudItem xs="6" sm="4" lg="2"><PokemonCard OnUpdated="Update" PokemonTeamIndex="5" UseStorage="@(PokemonSearchLocation == 1)"/></MudItem>
+        @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+        {
+            <MudItem xs="6" sm="4" lg="2"><PokemonCard @ref="tempCard" OnUpdated="StateHasChanged" PokemonTeamIndex="@i" UseStorage="@(PokemonSearchLocation == SearchLocation.PokemonStorage)" /></MudItem>
+        }
     </MudGrid>
     <MudDivider DividerType="DividerType.Middle" />
     <MudText Typo="Typo.h6">Pokémon Stats</MudText>
@@ -55,12 +53,39 @@
 
 
 @code {
-    private int pokemonSearchLocation = 0;
-    public int PokemonSearchLocation {
+    List<PokemonCard?> cards = new List<PokemonCard?>();
+    PokemonCard? tempCard
+    {
+        set { cards.Add(value); }
+    }
+
+    public enum SearchLocation
+    {
+        NationalPokedex = 0,
+        PokemonStorage = 1
+    };
+    private SearchLocation pokemonSearchLocation = SearchLocation.NationalPokedex;
+    public SearchLocation PokemonSearchLocation
+    {
         get { return pokemonSearchLocation; }
         set
         {
             pokemonSearchLocation = value;
+
+            // need to clear team of pokemon not in the storage
+            if (pokemonSearchLocation == SearchLocation.PokemonStorage)
+            {
+                for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+                {
+                    SmartPokemon? p = Globals.PokemonTeam[i];
+                    if (p is not null && !Globals.PokemonStorage.Contains(p))
+                    {
+                        Globals.PokemonTeam[i] = null;
+                        cards[i]!.Pokemon = null;
+                    }
+                }
+            }
+
             Update();
         }
     }
@@ -69,12 +94,12 @@
     protected override async Task OnInitializedAsync()
     {
         SessionData session = await SessionService.GetSessionDataAsync();
-        PokemonSearchLocation = session.PokemonSearchLocation;
+        PokemonSearchLocation = (SearchLocation)session.PokemonSearchLocation;
     }
 
-    public async void Update()
+    private async void Update()
     {
         StateHasChanged();
-        await SessionService.SetPokemonSearchLocationAsync(pokemonSearchLocation);
+        await SessionService.SetPokemonSearchLocationAsync((int)pokemonSearchLocation);
     }
 }

@@ -113,7 +113,7 @@
             pokemon = null;
             pokemonFormName = null;
             pokemonSearchValue = value;
-            SelectPokemon(value);
+            SelectSpecies(value);
         }
     }
 
@@ -178,6 +178,11 @@
         await OnUpdated.InvokeAsync();
     }
 
+    public void Refresh()
+    {
+        StateHasChanged();
+    }
+
     // pokemon search functionality
     private async Task<IEnumerable<SmartPokemonEntry>> SearchPokedex(string value)
     {
@@ -199,7 +204,7 @@
         return await Task.Run(() => Globals.PokemonStorage!.Where(p => p.Name.Contains(value.ToLower())).OrderBy(p => p.Name));
     }
 
-    public async void SelectPokemon(SmartPokemonEntry? entry)
+    public async void SelectSpecies(SmartPokemonEntry? entry)
     {
         errorFetchingPokemon = false;
         if (entry is null)
@@ -241,6 +246,16 @@
     public async void SelectPokemon(SmartPokemon? newPokemon)
     {
         pokemon = newPokemon;
+        if (pokemon is not null)
+        {
+            pokemonSearchValue = Globals.NationalDex!.FindPokemon(pokemon.Species.Name);
+            pokemonFormName = pokemon.Name;
+        }
+        else
+        {
+            pokemonSearchValue = null;
+            pokemonFormName = null;
+        }
         await Update();
     }
 
@@ -259,10 +274,5 @@
             Globals.PokemonStorage.Add(pokemon);
 
         await OnUpdated.InvokeAsync();
-    }
-
-    public SmartPokemon? GetSelectedPokemon()
-    {
-        return Pokemon;
     }
 }
