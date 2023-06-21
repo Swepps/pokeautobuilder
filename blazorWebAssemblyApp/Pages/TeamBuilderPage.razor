@@ -13,7 +13,8 @@
     <MudGrid Justify="Justify.SpaceEvenly">
         @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
-            <MudItem xs="6" sm="4" lg="2"><PokemonCard @ref="tempCard" OnUpdated="StateHasChanged" PokemonTeamIndex="@i" UseStorage="@(PokemonSearchLocation == SearchLocation.PokemonStorage)" /></MudItem>
+            int index = i;
+            <MudItem xs="6" sm="4" lg="2"><PokemonCard @ref="tempCard" OnUpdated="Update" PokemonTeamIndex="index" UseStorage="@(PokemonSearchLocation == SearchLocation.PokemonStorage)" /></MudItem>
         }
     </MudGrid>
     <MudDivider DividerType="DividerType.Middle" />
