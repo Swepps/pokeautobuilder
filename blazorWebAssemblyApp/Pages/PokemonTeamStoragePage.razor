@@ -1,0 +1,35 @@
+﻿@inject ProfileService ProfileService
+
+@page "/teamstorage"
+@using PokeApiNet
+
+<PageTitle>Team Storage</PageTitle>
+
+
+
+@if (StoredTeams is not null)
+{
+    <MudText Typo="Typo.h6">Saved Pokémon Teams</MudText>
+    <MudStack>
+        @foreach (PokemonTeam t in StoredTeams)
+        {
+            <PokemonTeamCard Team="t" />
+        }
+    </MudStack>
+}
+else
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" Size="Size.Large" />
+    <MudText Typo="Typo.body1">Fetching data from PokeApi...</MudText>
+}
+
+
+@code {
+    List<PokemonTeam>? StoredTeams;
+
+    // init
+    protected override async Task OnInitializedAsync()
+    {
+        StoredTeams = await ProfileService.FetchTeamStorage();
+    }
+}

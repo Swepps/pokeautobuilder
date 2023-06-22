@@ -8,13 +8,16 @@
 
 <MudPaper Height="calc(100vh - 110px)" Class="pa-1" Style="position: relative; overflow:hidden; background: var(--mud-palette-background)" Elevation="0" Square="true">
     <MudDrawerContainer Class="mud-height-full">
-        <MudDrawer @bind-Open="@openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent">
-            <MudButton OnClick="OnClickAddRandomPokemon" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" Class="mb-2">Add Random Pokémon</MudButton>
-            <PokemonCard @ref="_pokemonCard" OnUpdated="Update" />
+        <MudDrawer @bind-Open="@openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent">
+            <div class="d-flex flex-column justify-start gap-1 align-content-center mud-height-full">
+                <MudText Typo="Typo.h6" Align="Align.Center">Storage Controls</MudText>
+                <MudButton OnClick="OnClickAddRandomPokemon" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" Class="mb-2">Add Random Pokémon</MudButton>
+                <PokemonCard @ref="_pokemonCard" OnUpdated="Update" />
+            </div>
         </MudDrawer>
-        <div class="d-flex justify-center gap-3 align-content-start mud-height-full">
+        <div class="d-flex justify-center gap-0 align-content-start mud-height-full">
             <StorageBox @ref="_storageBox"/>
-            <MudPaper Class="d-flex justify-center align-center mud-height-full cursor-pointer mud-theme-primary" @onclick="ToggleOpenAddPokemonDrawer">
+            <MudPaper Square="true" Class="d-flex justify-center align-center mud-height-full cursor-pointer mx-0" @onclick="ToggleOpenAddPokemonDrawer">
                 <MudIcon Icon="@(openAddPokemonDrawer ? @Icons.Material.Filled.KeyboardArrowRight : @Icons.Material.Filled.KeyboardArrowLeft)" />
             </MudPaper>
         </div>
@@ -25,7 +28,7 @@
     StorageBox? _storageBox;
     PokemonCard? _pokemonCard;
 
-    bool openAddPokemonDrawer = false;
+    bool openAddPokemonDrawer = true;
 
     public void ToggleOpenAddPokemonDrawer()
     {
@@ -36,7 +39,7 @@
     {
         StateHasChanged();
         _storageBox?.Refresh();
-        await ProfileService.UpdateUserDataAsync();
+        await ProfileService.UpdatePokemonStorageAsync();
     }
 
     public async void OnClickAddRandomPokemon()

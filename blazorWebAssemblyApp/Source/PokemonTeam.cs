@@ -1,10 +1,68 @@
 ﻿using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace blazorWebAssemblyApp.Source
 {
+    public class PokemonTeamSerializable
+    {
+        public string Name { get; init; }
+        public List<string> Team { get; init; }
+
+        [JsonConstructor]
+        public PokemonTeamSerializable(string name, List<string> team)
+        {
+            Name = name;
+            Team = team;
+        }
+
+        public PokemonTeamSerializable(PokemonTeam team)
+        {
+            Name = team.Name;
+            Team = new List<string>();
+            foreach (SmartPokemon? p in team)
+            {
+                if (p is null)
+                    Team.Add("");
+                else
+                    Team.Add(p.Name);
+            }
+        }
+
+        public PokemonTeamSerializable()
+        {
+            Name = "";
+            Team = new List<string>();
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                Team.Add("");
+            }
+        }
+
+        public async Task<PokemonTeam> GetPokemonTeam()
+        {
+            PokemonTeam team = new PokemonTeam();
+            var getTeamTasks = Team.Select(async (name, index) =>
+            {
+                if (!string.IsNullOrEmpty(name))
+                {
+                    SmartPokemon? sp = await PokeApiHandler.GetPokemonAsync(name);
+                    if (sp is not null)
+                        team[index] = sp;
+                }
+            });
+            await Task.WhenAll(getTeamTasks);
+
+            team.Name = Name;
+
+            return team;
+        }
+    }
+
     public class PokemonTeam : List<SmartPokemon?>
     {
         public static readonly int MaxTeamSize = 6;
+
+        public string Name { get; set; } = "";
 
         public bool IsEmpty
         {
@@ -17,7 +75,6 @@ namespace blazorWebAssemblyApp.Source
                 }
                 return true;
             }
-            private set => IsEmpty = value;
         }
 
         public PokemonTeam() 
@@ -28,6 +85,7 @@ namespace blazorWebAssemblyApp.Source
                 Add(null);
             }
         }
+
         public int CountPokemon()
         {
             int count = 0;

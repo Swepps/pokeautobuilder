@@ -5,16 +5,7 @@ namespace blazorWebAssemblyApp.Source
 {
     public record SessionData
     {
-        public List<string> CurrentTeam { get; init; } = new List<string>
-        {
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        };
-
+        public PokemonTeamSerializable GlobalTeam { get; init; } = new PokemonTeamSerializable();
         public int PokemonSearchLocation { get; init; } = 0;
     }
 
@@ -36,41 +27,30 @@ namespace blazorWebAssemblyApp.Source
             return new SessionData();
         }
 
-        public async Task SetTeamMemberAsync(int idx, string formName)
+        private async Task SetSessionDataAsync(SessionData data)
+        {
+            await _sessionStorageService.SetItemAsync("session", data);
+        }
+
+        public async Task SetGlobalTeam(PokemonTeam team)
         {
             SessionData session = await GetSessionDataAsync();
-            List<string> newTeam = session.CurrentTeam;
-
-            if (idx >= 0 && idx < newTeam.Count)
-            {
-                newTeam[idx] = formName;
-            }
+            PokemonTeamSerializable pokemonTeamSerializable = new PokemonTeamSerializable(team);
 
             SessionData newSession = session
                 with
             {
-                CurrentTeam = newTeam
+                GlobalTeam = pokemonTeamSerializable
             };
 
-            await _sessionStorageService.SetItemAsync("session", newSession);
+            await SetSessionDataAsync(newSession);
         }
 
-        public async Task LoadGlobalTeam()
+        public async Task<PokemonTeam> FetchGlobalTeam()
         {
             SessionData sessionData = await GetSessionDataAsync();
 
-            // check for any team already in the session data and use it to
-            // load the global team
-            var getTeamTasks = sessionData.CurrentTeam.Select(async (name, index) =>
-            {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    SmartPokemon? sp = await PokeApiHandler.GetPokemonAsync(name);
-                    if (sp is not null)
-                        Globals.PokemonTeam[index] = sp;
-                }
-            });
-            await Task.WhenAll(getTeamTasks);
+            return await sessionData.GlobalTeam.GetPokemonTeam();
         }
 
         public async Task SetPokemonSearchLocationAsync(int val)

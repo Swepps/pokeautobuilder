@@ -1,7 +1,6 @@
 ﻿@inherits LayoutComponentBase
 
 @inject ProfileService ProfileService
-@inject SessionService SessionService
 
 @using PokeApiNet
 
@@ -71,8 +70,7 @@
             var getNationalDexTask = PokeApiHandler.GetNationalDex();
 
             await Task.WhenAll(
-                getNationalDexTask, 
-                SessionService.LoadGlobalTeam(),
+                getNationalDexTask,
                 ProfileService.LoadGlobalStorage());
 
             Globals.NationalDex = getNationalDexTask.Result;

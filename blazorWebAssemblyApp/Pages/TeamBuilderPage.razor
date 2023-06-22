@@ -1,59 +1,67 @@
 ﻿@inject SessionService SessionService
+@inject ProfileService ProfileService
 
 @page "/"
 @using PokeApiNet
 
 <PageTitle>Team Builder</PageTitle>
 
-<MudStack Spacing="5" Class="mt-4 mb-4">
-    <MudRadioGroup @bind-SelectedOption="@PokemonSearchLocation">
-        <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
-        <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
-    </MudRadioGroup>    
-    <MudGrid Justify="Justify.SpaceEvenly">
-        @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+@if (Team is not null)
+{
+    <MudStack Spacing="5" Class="mt-4 mb-4">
+        <MudRadioGroup @bind-SelectedOption="@PokemonSearchLocation">
+            <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
+            <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
+        </MudRadioGroup>
+        @if (!Team.IsEmpty)
         {
-            int index = i;
-            <MudItem xs="6" sm="4" lg="2"><PokemonCard @ref="tempCard" OnUpdated="Update" PokemonTeamIndex="index" UseStorage="@(PokemonSearchLocation == SearchLocation.PokemonStorage)" /></MudItem>
+            <MudTextField @bind-Value="TeamName" Label="Team Name" Variant="Variant.Outlined"></MudTextField>
+            <MudButton OnClick="OnClickAddTeamToStorage" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small">Add Team To Storage</MudButton>
         }
-    </MudGrid>
-    <MudDivider DividerType="DividerType.Middle" />
-    <MudText Typo="Typo.h6">Pokémon Stats</MudText>
-    @if (!Globals.PokemonTeam.IsEmpty)
-    {
-        <MudTabs Elevation="4" Border="true" Centered="true" Rounded="true" Position="Position.Top" ApplyEffectsToContainer="true">
-            @foreach (SmartPokemon? p in Globals.PokemonTeam)
+        <MudGrid Justify="Justify.SpaceEvenly">
+            @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
-                @if (p != null)
-                {
-                    <MudTabPanel Style="min-width: 50px;">
-                        <TabContent>
-                            <MudImage Src="@p.Sprites.FrontDefault" Height="50"/>
-                        </TabContent>
-                        <TabWrapperContent>
-                            <MudTooltip Text="@StringUtils.FirstCharToUpper(p.Name)" >
-                                @context
-                            </MudTooltip>
-                        </TabWrapperContent>
-                        <ChildContent>
-                            <StatsPanel Pokemon="p" />
-                        </ChildContent>
-                    </MudTabPanel>
-                }
+                int index = i;
+                <MudItem xs="6" sm="4" lg="2"><PokemonCard @ref="tempCard" OnUpdated="Update" Team="@Team" PokemonTeamIndex="index" UseStorage="@(PokemonSearchLocation == SearchLocation.PokemonStorage)" /></MudItem>
             }
-        </MudTabs>
+        </MudGrid>
         <MudDivider DividerType="DividerType.Middle" />
-        <MudText Typo="Typo.h6">Team Stats</MudText>
-        <StatsTeamPanel Team="@Globals.PokemonTeam"/>
-    }
-    else
-    {
-        <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see their stats.</MudText>
-    }
-</MudStack>
-
+        <MudText Typo="Typo.h6">Pokémon Stats</MudText>
+        @if (!Team.IsEmpty)
+        {
+            <MudTabs Elevation="4" Border="true" Centered="true" Rounded="true" Position="Position.Top" ApplyEffectsToContainer="true">
+                @foreach (SmartPokemon? p in Team)
+                {
+                    @if (p != null)
+                    {
+                        <MudTabPanel Style="min-width: 50px;">
+                            <TabContent>
+                                <MudImage Src="@p.Sprites.FrontDefault" Height="50"/>
+                            </TabContent>
+                            <TabWrapperContent>
+                                <MudTooltip Text="@StringUtils.FirstCharToUpper(p.Name)" >
+                                    @context
+                                </MudTooltip>
+                            </TabWrapperContent>
+                            <ChildContent>
+                                <StatsPanel Pokemon="p" />
+                            </ChildContent>
+                        </MudTabPanel>
+                    }
+                }
+            </MudTabs>        <MudDivider DividerType="DividerType.Middle" />        <MudText Typo="Typo.h6">Team Stats</MudText>
+            <StatsTeamPanel Team="@Team" />
+        }
+        else
+        {
+            <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see their stats.</MudText>
+        }
+    </MudStack>
+}
 
 @code {
+    PokemonTeam? Team = null;
+
     List<PokemonCard?> cards = new List<PokemonCard?>();
     PokemonCard? tempCard
     {
@@ -91,16 +99,27 @@
         }
     }
 
+    public string TeamName { get; set; } = "";
+
     // when component is initialised
     protected override async Task OnInitializedAsync()
     {
         SessionData session = await SessionService.GetSessionDataAsync();
         PokemonSearchLocation = (SearchLocation)session.PokemonSearchLocation;
+        Team = await session.GlobalTeam.GetPokemonTeam();
     }
 
     private async void Update()
     {
         StateHasChanged();
         await SessionService.SetPokemonSearchLocationAsync((int)pokemonSearchLocation);
+        if (Team is not null)
+            await SessionService.SetGlobalTeam(Team);
+    }
+
+    public async void OnClickAddTeamToStorage()
+    {
+        Team!.Name = TeamName;
+        await ProfileService.AddTeam(Team!);
     }
 }

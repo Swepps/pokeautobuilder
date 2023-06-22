@@ -12,6 +12,7 @@ namespace blazorWebAssemblyApp.Source
     public record UserData
     {
         public List<string> Storage { get; init; } = new List<string>();
+        public List<PokemonTeamSerializable> TeamStorage { get; init; } = new List<PokemonTeamSerializable>();
     }
 
 	public class ProfileService
@@ -64,14 +65,17 @@ namespace blazorWebAssemblyApp.Source
         }
 
 
-        public async Task UpdateUserDataAsync()
+        public async Task UpdatePokemonStorageAsync()
         {
-            UserData data = new UserData
+            UserData userData = await GetUserDataAsync();
+
+            UserData newdata = userData
+                with
             {
                 Storage = Globals.PokemonStorage.GetAllNames()
             };
 
-            await SetUserDataAsync(data);
+            await SetUserDataAsync(newdata);
         }
 
         public async Task LoadGlobalStorage()
@@ -90,6 +94,35 @@ namespace blazorWebAssemblyApp.Source
                 }
             });
             await Task.WhenAll(getStorageTasks);
+        }
+
+        public async Task<List<PokemonTeam>> FetchTeamStorage()
+        {
+            UserData userData = await GetUserDataAsync();
+            List<PokemonTeamSerializable> serializedTeams = userData.TeamStorage;
+            List<PokemonTeam> teams = new List<PokemonTeam>();
+
+            foreach (PokemonTeamSerializable st in serializedTeams)
+            {
+                teams.Add(await st.GetPokemonTeam());
+            }
+
+            return teams;   
+        }
+
+        public async Task AddTeam(PokemonTeam team)
+        {
+            UserData userData = await GetUserDataAsync();
+            List<PokemonTeamSerializable> teams = userData.TeamStorage;
+            teams.Add(new PokemonTeamSerializable(team));
+
+            UserData newData = userData
+                with
+            {
+                TeamStorage = teams
+            };
+
+            await SetUserDataAsync(newData);
         }
     }
 }

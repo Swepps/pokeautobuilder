@@ -24,7 +24,7 @@
 
 	private async Task Update()
 	{
-		await ProfileService.UpdateUserDataAsync();
+		await ProfileService.UpdatePokemonStorageAsync();
 		await OnUpdated.InvokeAsync();
 	}
 

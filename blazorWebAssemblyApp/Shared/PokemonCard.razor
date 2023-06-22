@@ -82,14 +82,19 @@
 </MudPaper>
 
 @code {
-    // the main cards on the team builder page are mapped to an index in the team
-    // in order to be able to update the team when the cards are updated
+    // the reference team this card is a member of
+    [Parameter]
+    public PokemonTeam? Team { get; set; }
+
+    // if the card has a reference team it needs to know its position within the team using this index
     [Parameter]
     public int PokemonTeamIndex { get; set; } = -1;
 
-    [Parameter] // used for telling the parent of the card that it has updated
+    // used for telling the parent of the card that it has updated
+    [Parameter]
     public EventCallback OnUpdated { get; set; }
 
+    // if this is true then all the pokemon options will be gathered from the storage instead of the pokedex
     [Parameter]
     public bool UseStorage { get; set; } = false;
 
@@ -167,10 +172,9 @@
     private async Task Update()
     {
         // update the global pokemon team if this card has a team index
-        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < 6)
+        if (Team is not null && PokemonTeamIndex >= 0 && PokemonTeamIndex < 6)
         {
-            Globals.PokemonTeam[PokemonTeamIndex] = pokemon;
-            await SessionService.SetTeamMemberAsync(PokemonTeamIndex, pokemon is null ? "" : pokemon.Name);
+            Team[PokemonTeamIndex] = pokemon;
         }
 
         StateHasChanged();
