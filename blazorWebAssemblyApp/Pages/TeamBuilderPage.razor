@@ -31,35 +31,14 @@
             }
         </MudGrid>
         <MudDivider DividerType="DividerType.Middle" />
-        <MudText Typo="Typo.h6">Pokémon Stats</MudText>
+        <MudText Typo="Typo.h6">Pokémon Team Stats</MudText>
         @if (!Team.IsEmpty)
         {
-            <MudTabs Elevation="4" Border="true" Centered="true" Rounded="true" Position="Position.Top" ApplyEffectsToContainer="true">
-                @foreach (SmartPokemon? p in Team)
-                {
-                    @if (p != null)
-                    {
-                        <MudTabPanel Style="min-width: 50px;">
-                            <TabContent>
-                                <MudImage Src="@p.Sprites.FrontDefault" Height="50"/>
-                            </TabContent>
-                            <TabWrapperContent>
-                                <MudTooltip Text="@StringUtils.FirstCharToUpper(p.Name)" >
-                                    @context
-                                </MudTooltip>
-                            </TabWrapperContent>
-                            <ChildContent>
-                                <StatsPanel Pokemon="p" />
-                            </ChildContent>
-                        </MudTabPanel>
-                    }
-                }
-            </MudTabs>        <MudDivider DividerType="DividerType.Middle" />        <MudText Typo="Typo.h6">Team Stats</MudText>
             <StatsTeamPanel Team="@Team" />
         }
         else
         {
-            <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see their stats.</MudText>
+            <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see stats.</MudText>
         }
     </MudStack>
 }

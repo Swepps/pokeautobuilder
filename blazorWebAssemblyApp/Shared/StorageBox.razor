@@ -1,4 +1,6 @@
-﻿<MudPaper Class="d-flex mud-width-full mud-height-full pa-2">
+﻿@using blazorWebAssemblyApp.Shared.Cards
+
+<MudPaper Class="d-flex mud-width-full mud-height-full pa-2">
 	<div class="d-flex flex-wrap justify-start align-content-start" style="overflow: auto;">
 		@foreach (SmartPokemon p in Globals.PokemonStorage)
 		{

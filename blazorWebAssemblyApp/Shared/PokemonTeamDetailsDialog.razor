@@ -5,18 +5,16 @@
     <DialogContent>
         <MudGrid>
             <MudItem xs="12" sm="4">
-                <MudPaper Class="py-2">
-                    <PokemonCard Pokemon="@Pokemon" />
-                </MudPaper>
+
             </MudItem>
             <MudItem xs="12" sm="8">
-                <PokemonStatsChartPane Pokemon="@Pokemon" />
+
             </MudItem>
             <MudItem xs="12" sm="6">
-                <PokemonDefensePane Pokemon="@Pokemon" />
+
             </MudItem>
             <MudItem xs="12" sm="6">
-                <PokemonCoveragePane Pokemon="@Pokemon" />
+
             </MudItem>
         </MudGrid>
     </DialogContent>
@@ -27,11 +25,11 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] 
+    [CascadingParameter]
     MudDialogInstance? MudDialog { get; set; }
 
     [Parameter]
-    public SmartPokemon? Pokemon { get; set; }
+    public PokemonTeam? Team { get; set; }
 
     void Submit() => MudDialog!.Close(DialogResult.Ok(true));
     void Cancel() => MudDialog!.Cancel();

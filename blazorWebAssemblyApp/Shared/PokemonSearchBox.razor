@@ -3,6 +3,7 @@
 
 @using PokeApiNet
 @using Type = PokeApiNet.Type
+@using blazorWebAssemblyApp.Shared.Cards
 
 <MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 
@@ -34,7 +35,7 @@
     <MudSelectItem Value="@a.Ability.Name" />
     }
     </MudSelect>*@
-                <MudFab Class="my-2" OnClick="OnClickAddToStorage" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small" Label="Storage" />
+                <MudButton Class="my-2" OnClick="OnClickAddToStorage" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small">Storage</MudButton>
 
             }
             else if (errorFetchingPokemon)

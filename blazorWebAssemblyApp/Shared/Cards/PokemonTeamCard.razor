@@ -1,0 +1,50 @@
+﻿@if (Team is not null)
+{
+	<MudStack Spacing="1">
+		<MudText Typo="Typo.body1" Class="pa-1">@Team.Name</MudText>
+		<div class="d-flex flex-row justify-start gap-1 align-content-center mud-height-full">
+			@foreach (SmartPokemon? p in Team)
+			{
+				@if (p is not null)
+				{
+					<PokemonMiniCard Pokemon="p" />
+				}
+			}
+		</div>
+		<MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+			<MudButton StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails">Details</MudButton>
+			<MudButton StartIcon="@Icons.Material.Filled.Upload" OnClick="OnClickLoadInEditor">Load Into Editor</MudButton>
+			<MudButton StartIcon="@Icons.Material.Filled.Delete" OnClick="OnClickDelete">Delete</MudButton>
+		</MudButtonGroup>
+	</MudStack>
+}
+
+@code {
+	[Parameter]
+	public PokemonTeam? Team { get; set; }
+
+	// ensure Team has been set
+	public override Task SetParametersAsync(ParameterView parameters)
+	{
+		parameters.SetParameterProperties(this);
+		if (Team == null)
+			throw new InvalidOperationException($"{nameof(PokemonTeamCard)} requires a {nameof(PokemonTeam)} parameter.");
+
+		return base.SetParametersAsync(ParameterView.Empty);
+	}
+
+	public void OnClickDetails()
+	{
+		
+	}
+
+	public void OnClickLoadInEditor()
+	{
+
+	}
+
+	public void OnClickDelete()
+	{
+
+	}
+}

@@ -1,7 +1,9 @@
 ﻿@inject ProfileService ProfileService
 
 @page "/teamstorage"
+
 @using PokeApiNet
+@using blazorWebAssemblyApp.Shared.Cards
 
 <PageTitle>Team Storage</PageTitle>
 
@@ -10,10 +12,11 @@
 @if (StoredTeams is not null)
 {
     <MudText Typo="Typo.h6">Saved Pokémon Teams</MudText>
-    <MudStack>
+    <MudStack Spacing="3">
         @foreach (PokemonTeam t in StoredTeams)
         {
             <PokemonTeamCard Team="t" />
+            <MudDivider DividerType="DividerType.FullWidth" />
         }
     </MudStack>
 }

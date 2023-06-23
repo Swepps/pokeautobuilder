@@ -1,0 +1,62 @@
+﻿@if (Pokemon is not null)
+{
+	<MudPaper Class="d-flex flex-column align-center justify-center pa-2">
+		<MudStack Spacing="5" AlignItems="AlignItems.Center" Style="width: 100%;" Class="pa-2">
+			<MudText Typo="Typo.h6" Class="mb-2">Defense</MudText>
+			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
+				<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">Resist</MudText>
+				<MudGrid>
+					@foreach (string t in Globals.AllTypes)
+					{
+						@if (Pokemon.GetEffectivenessTo(t) < 1.0)
+						{
+							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
+								<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" />
+								@if (Pokemon.GetEffectivenessTo(t) == 0.5)
+								{
+									<MudText Typo="Typo.caption">½x</MudText>
+								}
+								else if (Pokemon.GetEffectivenessTo(t) == 0.25)
+								{
+									<MudText Typo="Typo.caption" Style="font-weight: bold;">¼x</MudText>
+								}
+								else
+								{
+									<MudText Typo="Typo.caption" Style="font-weight: bold;">Imm</MudText>
+								}
+							</MudStack>
+						}
+					}
+				</MudGrid>
+			</MudStack>
+			<MudDivider />
+			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
+				<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">Weak</MudText>
+				<MudGrid>
+					@foreach (string t in Globals.AllTypes)
+					{
+						@if (Pokemon.GetEffectivenessTo(t) > 1.0)
+						{
+							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
+								<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" />
+								@if (Pokemon.GetEffectivenessTo(t) == 2.0)
+								{
+									<MudText Typo="Typo.caption">2x</MudText>
+								}
+								else
+								{
+									<MudText Typo="Typo.caption" Style="font-weight: bold;">4x</MudText>
+								}
+							</MudStack>
+						}
+					}
+				</MudGrid>
+			</MudStack>
+		</MudStack>
+	</MudPaper>
+}
+
+@code {
+	[Parameter]
+	public SmartPokemon? Pokemon { get; set; }
+}
