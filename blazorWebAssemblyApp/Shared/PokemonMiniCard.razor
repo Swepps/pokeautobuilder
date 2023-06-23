@@ -1,4 +1,5 @@
 ﻿@inject ProfileService ProfileService
+@inject IDialogService DialogService
 
 <MudTooltip Text="@Pokemon!.Name">
 	<MudPaper Class="ma-1 pa-1 cursor-pointer" Style="background: var(--mud-palette-surface)" @onclick="OnClick">
@@ -28,10 +29,15 @@
 		await OnUpdated.InvokeAsync();
 	}
 
-	// TODO: show a nice panel when you click a pokemon to see the details
+	// opens a dialog with Pokemon details
 	public async void OnClick()
 	{
-		Globals.PokemonStorage.Remove(Pokemon!);
-		await Update();
+		var parameters = new DialogParameters();
+		parameters.Add("Pokemon", Pokemon);
+
+		DialogService.Show<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
+
+		//Globals.PokemonStorage.Remove(Pokemon!);
+		//await Update();
 	}
 }

@@ -9,20 +9,25 @@
 @if (Team is not null)
 {
     <MudStack Spacing="5" Class="mt-4 mb-4">
-        <MudRadioGroup @bind-SelectedOption="@PokemonSearchLocation">
-            <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
-            <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
-        </MudRadioGroup>
-        @if (!Team.IsEmpty)
-        {
-            <MudTextField @bind-Value="TeamName" Label="Team Name" Variant="Variant.Outlined"></MudTextField>
-            <MudButton OnClick="OnClickAddTeamToStorage" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small">Add Team To Storage</MudButton>
-        }
+        <MudGrid>
+            <MudItem md="12" lg="4" Class="d-flex align-center justify-center mud-width-full">
+                <MudRadioGroup @bind-SelectedOption="@PokemonSearchLocation">
+                    <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
+                    <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
+                </MudRadioGroup>
+            </MudItem>
+            <MudItem xs="12" sm="6" lg="4" Class="d-flex align-center justify-center mud-width-full">
+                <MudTextField Disabled="@(Team!.IsEmpty)" @bind-Value="TeamName" Label="Team Name" Variant="Variant.Outlined"></MudTextField>
+            </MudItem>
+            <MudItem xs="12" sm="6" lg="4" Class="d-flex align-center justify-center mud-width-full">
+                <MudButton Disabled="@(Team!.IsEmpty)" OnClick="OnClickAddTeamToStorage" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Large">Add Team To Storage</MudButton>
+            </MudItem>
+        </MudGrid>
         <MudGrid Justify="Justify.SpaceEvenly">
             @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
                 int index = i;
-                <MudItem xs="6" sm="4" lg="2"><PokemonCard @ref="tempCard" OnUpdated="Update" Team="@Team" PokemonTeamIndex="index" UseStorage="@(PokemonSearchLocation == SearchLocation.PokemonStorage)" /></MudItem>
+                <MudItem xs="6" sm="4" lg="2"><PokemonSearchBox @ref="tempCard" OnUpdated="Update" Team="@Team" PokemonTeamIndex="index" UseStorage="@(PokemonSearchLocation == SearchLocation.PokemonStorage)" /></MudItem>
             }
         </MudGrid>
         <MudDivider DividerType="DividerType.Middle" />
@@ -62,8 +67,8 @@
 @code {
     PokemonTeam? Team = null;
 
-    List<PokemonCard?> cards = new List<PokemonCard?>();
-    PokemonCard? tempCard
+    List<PokemonSearchBox?> cards = new List<PokemonSearchBox?>();
+    PokemonSearchBox? tempCard
     {
         set { cards.Add(value); }
     }

@@ -5,7 +5,8 @@
 @using PokeApiNet
 
 <MudThemeProvider @ref="@Globals.MudThemeProvider" @bind-IsDarkMode="@isDarkMode" />
-<MudDialogProvider />
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.ExtraExtraLarge" />
 <MudSnackbarProvider />
 
 <MudLayout>

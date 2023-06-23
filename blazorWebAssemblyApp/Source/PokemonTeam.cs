@@ -62,7 +62,36 @@ namespace blazorWebAssemblyApp.Source
     {
         public static readonly int MaxTeamSize = 6;
 
-        public string Name { get; set; } = "";
+        private string name = "";
+        public string Name
+        {
+            get
+            {
+                // construct a default name if they haven't set one
+                if (string.IsNullOrEmpty(name))
+                {
+                    string defaultName = "";
+                    foreach (SmartPokemon? p in this)
+                    {
+                        if (p is not null)
+                        {
+                            defaultName += StringUtils.FirstCharToUpper(p.Name) + ", ";
+                        }
+                    }
+
+                    if (defaultName.EndsWith(", "))
+                    {
+                        defaultName = defaultName.Substring(0, defaultName.Length - 2);
+                    }
+
+                    return defaultName;
+                }
+
+                return name;
+            }
+
+            set { name = value; }
+        }
 
         public bool IsEmpty
         {

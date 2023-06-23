@@ -1,0 +1,29 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <MudPaper MaxWidth="200px">
+                    <PokemonCard Pokemon="@Pokemon" />
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="8">
+                <StatsPanel Pokemon="@Pokemon" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] 
+    MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public SmartPokemon? Pokemon { get; set; }
+
+    void Submit() => MudDialog!.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog!.Cancel();
+}
