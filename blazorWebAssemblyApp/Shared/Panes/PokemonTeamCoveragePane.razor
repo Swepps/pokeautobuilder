@@ -23,12 +23,21 @@
 						<td class="table-row px-1 py-1" style="width: 5%;">
 							@if (int.TryParse(val, out int result))
 							{
-								<div class="d-flex flex-column flex-grow-1 align-end gap-1">
-									@for (int i = 0; i < result; i++)
-									{
-										<MudPaper Class="mud-theme-primary my-0 " Width="100%" Height="4px" />
-									}
-								</div>
+								@if (result == 0)
+								{
+									<div class="d-flex flex-column align-center">
+										<MudIcon Icon="@Icons.Material.Filled.Clear" Color="Color.Error"/>
+									</div>
+								}
+								else
+								{
+									<div class="d-flex flex-column flex-grow-1 align-end gap-1">
+										@for (int i = 0; i < result; i++)
+										{
+											<MudPaper Class="my-0 " Style="@(GetRowColour(row[0]))" Width="100%" Height="4px" />
+										}
+									</div>
+								}
 							}
 							else
 							{
@@ -77,5 +86,20 @@
 		}
 
 		coverageRows.Add(stabMoveCoverage);
+	}
+
+	private string GetRowColour(string rowName)
+	{
+		switch (rowName)
+		{
+			case "STAB Moves":
+				return "background: var(--mud-palette-success);";
+
+			case "Weak":
+				return "background: var(--mud-palette-error);";
+
+			default:
+				return "background: var(--mud-palette-primary);";
+		}
 	}
 }

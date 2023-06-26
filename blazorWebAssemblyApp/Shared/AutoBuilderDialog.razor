@@ -1,0 +1,28 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.body1">The controls below are used for setting the parameters used for generating a Pokémon team</MudText>
+        <MudGrid>
+            <MudItem xs="3">
+                <MudCheckBox T="bool" Label="Prioritise at least 1 resistant Pokémon for each type"/>
+            </MudItem>
+            <MudItem xs="3">
+                <MudCheckBox T="bool" Label="Prioritise at least 1 Pokémon with STAB effectiveness against each type" />
+            </MudItem>
+            <MudItem xs="3">
+                <MudCheckBox T="bool" Label="Prioritise at least 1 Pokémon with STAB effectiveness against each type" />
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance? MudDialog { get; set; }
+
+    void Submit() => MudDialog!.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog!.Cancel();
+}

@@ -1,10 +1,14 @@
-﻿@using blazorWebAssemblyApp.Shared.Cards
+﻿@inject ProfileService ProfileService
 
-<MudPaper Class="d-flex mud-width-full mud-height-full pa-2">
-	<div class="d-flex flex-wrap justify-start align-content-start" style="overflow: auto;">
-		@foreach (SmartPokemon p in Globals.PokemonStorage)
+@using blazorWebAssemblyApp.Shared.Cards
+
+<MudPaper Class="d-flex mud-width-full mud-height-full pa-2" Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
+	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
+		@for (int i = 0; i < Globals.PokemonStorage.Count; i++)
 		{
-			<PokemonMiniCard Pokemon="p" OnUpdated="StateHasChanged" />
+			int index = i;
+			SmartPokemon p = Globals.PokemonStorage[i];
+			<PokemonMiniCard Pokemon="p" DeleteFromStorageMode="@DeleteMode" OnUpdated="Refresh" />
 		}
 	</div>
 </MudPaper>
@@ -12,6 +16,9 @@
 @code {
 	[Parameter] // used for telling the parent of the card that it has updated
 	public EventCallback OnUpdated { get; set; }
+
+	[Parameter]
+	public bool DeleteMode { get; set; } = false;
 
 	public void Refresh()
 	{

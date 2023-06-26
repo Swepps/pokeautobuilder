@@ -1,5 +1,6 @@
 ﻿@inject ProfileService ProfileService
 @inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 @using PokeApiNet
 @using Type = PokeApiNet.Type
@@ -46,7 +47,6 @@
                         <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
                     </MudTooltip>
                 </MudButtonGroup>
-
             }
             else if (errorFetchingPokemon)
             {
@@ -56,7 +56,6 @@
             {
                 <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" />
             }
-
         }
     }
     else
@@ -278,10 +277,14 @@
 
     public async void OnClickAddToStorage()
     {
-        if (pokemon is not null)
-            Globals.PokemonStorage.Add(pokemon);
+        if (pokemon is null)
+            return;
+
+        Globals.PokemonStorage.Add(pokemon);
 
         await OnUpdated.InvokeAsync();
+
+        Snackbar.Add("Successfully added " + pokemon.Name + " to Pokémon Storage", Severity.Success);
     }
 
     public void OnClickDetails()
