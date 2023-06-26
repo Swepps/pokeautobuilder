@@ -15,7 +15,7 @@
     <MudStack Spacing="3">
         @foreach (PokemonTeam t in StoredTeams)
         {
-            <PokemonTeamCard Team="t" />
+            <PokemonTeamCard Team="t" OnUpdated="Update" />
             <MudDivider DividerType="DividerType.FullWidth" />
         }
     </MudStack>
@@ -34,5 +34,11 @@ else
     protected override async Task OnInitializedAsync()
     {
         StoredTeams = await ProfileService.FetchTeamStorage();
+    }
+
+    public async void Update()
+    {
+        StoredTeams = await ProfileService.FetchTeamStorage();
+        StateHasChanged();
     }
 }

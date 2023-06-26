@@ -44,7 +44,7 @@
 }
 
 @code {
-    PokemonTeam? Team = null;
+    PokemonTeam? Team;
 
     List<PokemonSearchBox?> cards = new List<PokemonSearchBox?>();
     PokemonSearchBox? tempCard
@@ -91,6 +91,7 @@
         SessionData session = await SessionService.GetSessionDataAsync();
         PokemonSearchLocation = (SearchLocation)session.PokemonSearchLocation;
         Team = await session.GlobalTeam.GetPokemonTeam();
+        TeamName = Team.Name;
     }
 
     private async void Update()

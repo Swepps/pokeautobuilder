@@ -56,7 +56,38 @@ namespace blazorWebAssemblyApp.Source
 
             return team;
         }
-    }
+
+		public override bool Equals(object? obj)
+		{
+            if (obj == null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+             
+            PokemonTeamSerializable? objTeam = obj as PokemonTeamSerializable;
+            if (objTeam == null) return false;
+
+            if (objTeam.Name != Name) return false;
+
+            // close enough of an equals operation
+            foreach (string pokemon in objTeam.Team)
+            {
+                if (!Team.Contains(pokemon)) return false;
+            }
+
+			return true;
+		}
+
+		public override int GetHashCode()
+		{
+            int code = Name.GetHashCode();
+            foreach (string pokemon in Team)
+            {
+                code ^= pokemon.GetHashCode();
+            }
+
+            return code;
+		}
+	}
 
     public class PokemonTeam : List<SmartPokemon?>
     {

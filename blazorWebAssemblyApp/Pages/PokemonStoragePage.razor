@@ -10,8 +10,7 @@
     <MudDrawerContainer Class="mud-height-full">
         <MudDrawer @bind-Open="@openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent">
             <div class="d-flex flex-column justify-start gap-1 align-content-center mud-height-full">
-                <MudText Typo="Typo.h6" Align="Align.Center">Storage Controls</MudText>
-                <MudButton OnClick="OnClickAddRandomPokemon" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Add" Class="mb-2">Add Random Pokémon</MudButton>
+                <MudText Typo="Typo.h6" Align="Align.Center">Pokémon Picker</MudText>
                 <PokemonSearchBox @ref="_pokemonCard" OnUpdated="Update" />
             </div>
         </MudDrawer>
@@ -29,6 +28,12 @@
     PokemonSearchBox? _pokemonCard;
 
     bool openAddPokemonDrawer = true;
+
+    protected override void OnInitialized()
+    {
+        // select an initial random pokemon
+        OnClickAddRandomPokemon();
+    }
 
     public void ToggleOpenAddPokemonDrawer()
     {

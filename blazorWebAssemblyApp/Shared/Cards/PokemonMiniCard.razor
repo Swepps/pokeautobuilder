@@ -2,8 +2,8 @@
 @inject IDialogService DialogService
 
 <MudTooltip Text="@Pokemon!.Name">
-	<MudPaper Class="ma-1 pa-1 cursor-pointer" Style="background: var(--mud-palette-surface)" @onclick="OnClick">
-		<MudImage Src="@Pokemon!.Sprites.FrontDefault" Style="width: 40px;" />
+	<MudPaper Class="ma-1 pa-1 cursor-pointer" Style="background: var(--mud-palette-surface)" @onclick="OnClickCard">
+		<MudImage Src="@Pokemon!.Sprites.FrontDefault" Style="width: 50px;" />
 	</MudPaper>
 </MudTooltip>
 
@@ -30,14 +30,11 @@
 	}
 
 	// opens a dialog with Pokemon details
-	public async void OnClick()
+	public void OnClickCard()
 	{
 		var parameters = new DialogParameters();
 		parameters.Add("Pokemon", Pokemon);
 
 		DialogService.Show<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
-
-		//Globals.PokemonStorage.Remove(Pokemon!);
-		//await Update();
 	}
 }

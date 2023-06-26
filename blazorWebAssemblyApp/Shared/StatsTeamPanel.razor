@@ -1,102 +1,16 @@
 ﻿@using Type = PokeApiNet.Type
+@using blazorWebAssemblyApp.Shared.Panes
 
 <MudPaper Style="background: var(--mud-palette-background)" Elevation="4">
 	<MudGrid Class="pa-4" Justify="Justify.Center">
 		<MudItem xs="12" sm="12" md="10" lg="8">
-			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
-				<MudText Typo="Typo.h6">Team Base Stats</MudText>
-				<MudChart ChartType="ChartType.Bar" ChartSeries="@TeamStats" @bind-SelectedIndex="Index" XAxisLabels="@Labels" Width="100%" Style="width: 95%;"></MudChart>
-			</MudPaper>
+			<PokemonTeamStatsChartPane Team="@Team"/>
 		</MudItem>
 		<MudItem xs="12" sm="12" md="12" lg="6">
-			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
-				<MudText Typo="Typo.h6">Team Defense</MudText>
-				<MudSimpleTable Style="width: 100%;" Dense="true" Elevation="0">
-					<thead>
-						<tr>
-						@foreach (string h in typeHeaders)
-							{
-								<th class="table-header mx-0 mt-2 px-0 py-2">
-								@if (!string.IsNullOrEmpty(h))
-								{
-									<img src="@StringUtils.TypeImgFromName(h)" Alt="@h" title="@h" />
-								}
-								</th>
-							}
-						</tr>
-					</thead>
-					<tbody>
-					@foreach (string[] row in defenseRows)
-					{
-						<tr>
-							@foreach (string val in row)
-							{
-								<td class="table-row px-1 py-1">
-									@if (int.TryParse(val, out int result))
-									{										
-										<div class="d-flex flex-column flex-grow-1 align-end gap-1">
-											@for (int i = 0; i < result; i++)
-											{
-												<MudPaper Class="mud-theme-primary my-0 " Width="100%" Height="4px" />
-											}
-										</div>										
-									}
-									else
-									{
-										@val
-									}
-								</td>
-							}
-						</tr>
-					}
-					</tbody>
-				</MudSimpleTable>
-			</MudPaper>
+			<PokemonTeamDefensePane Team="@Team" />
 		</MudItem>
 		<MudItem xs="12" sm="12" md="12" lg="6">
-			<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
-				<MudText Typo="Typo.h6">Team Coverage</MudText>
-				<MudSimpleTable Style="width: 100%;" Dense="true" Elevation="0">
-					<thead>
-						<tr>
-							@foreach (string h in typeHeaders)
-							{
-								<th class="table-header mx-0 mt-2 px-0 py-2">
-									@if (!string.IsNullOrEmpty(h))
-									{
-										<img src="@StringUtils.TypeImgFromName(h)" Alt="@h" title="@h" />
-									}
-								</th>
-							}
-						</tr>
-					</thead>
-					<tbody>
-						@foreach (string[] row in coverageRows)
-						{
-							<tr>
-								@foreach (string val in row)
-								{
-									<td class="table-row px-1 py-1">
-										@if (int.TryParse(val, out int result))
-										{
-											<div class="d-flex flex-column flex-grow-1 align-end gap-1">
-												@for (int i = 0; i < result; i++)
-												{
-													<MudPaper Class="mud-theme-primary my-0 " Width="100%" Height="4px" />
-												}
-											</div>
-										}
-										else
-										{
-											@val
-										}
-									</td>
-								}
-							</tr>
-						}
-					</tbody>
-				</MudSimpleTable>
-			</MudPaper>
+			<PokemonTeamCoveragePane Team="@Team" />
 		</MudItem>
 	</MudGrid>
 </MudPaper>
@@ -104,78 +18,4 @@
 @code {
 	[Parameter]
 	public PokemonTeam? Team { get; set; }
-
-	// team base stats stuff
-	private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
-	public List<ChartSeries> TeamStats = new List<ChartSeries>();
-	public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed" };
-
-	// team defense/coverage stuff
-	List<string> typeHeaders = new List<string>(){ "" };
-	List<string[]> defenseRows = new List<string[]>();
-	List<string[]> coverageRows = new List<string[]>();
-
-	// when component is initialised
-	protected override async Task OnInitializedAsync()
-	{
-		foreach (string t in Globals.AllTypes)
-		{
-			typeHeaders.Add(t);
-		}
-		OnParametersSet();
-	}
-
-
-	protected override void OnParametersSet()
-	{
-		if (Team is null)
-			return;
-
-		TeamStats = new List<ChartSeries>();
-
-		foreach (SmartPokemon? p in Team)
-		{
-			if (p is not null)
-			{
-				// need to add an empty value to get the chart to draw correctly >:(
-				List<double> stats = new List<double>(p.GetBaseStatsArray());
-				stats.Add(0);
-				TeamStats.Add(new ChartSeries() { Name = StringUtils.FirstCharToUpper(p.Name), Data = stats.ToArray() });
-			}
-		}
-
-		// defense table data
-		defenseRows.Clear();
-
-		string[] resistances = new string[Globals.AllTypes.Count + 1];
-		resistances[0] = "Resist";
-		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
-		{
-			resistances[i] = Team.CountResistances(typeHeaders[i]).ToString();
-		}
-
-		defenseRows.Add(resistances);
-
-		string[] weaknesses = new string[Globals.AllTypes.Count + 1];
-		weaknesses[0] = "Weak";
-		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
-		{
-			weaknesses[i] = Team.CountWeaknesses(typeHeaders[i]).ToString();
-		}
-
-		defenseRows.Add(weaknesses);
-
-		// coverage table data
-		coverageRows.Clear();
-
-		string[] stabMoveCoverage = new string[Globals.AllTypes.Count + 1];
-		stabMoveCoverage[0] = "STAB Moves";
-		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
-		{
-			stabMoveCoverage[i] = Team.CountCoverage(typeHeaders[i]).ToString();
-		}
-
-		coverageRows.Add(stabMoveCoverage);
-	}
-
 }

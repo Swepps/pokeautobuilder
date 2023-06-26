@@ -124,5 +124,31 @@ namespace blazorWebAssemblyApp.Source
 
             await SetUserDataAsync(newData);
         }
+
+        public async Task RemoveTeam(PokemonTeam team, int index = -1)
+        {
+			UserData userData = await GetUserDataAsync();
+			List<PokemonTeamSerializable> teams = userData.TeamStorage;
+            PokemonTeamSerializable pts = new PokemonTeamSerializable(team);
+
+            // try to find the first matching team
+            if (index == -1)
+            {
+                index = teams.IndexOf(pts);
+            }
+
+            if (index >= 0)
+            {
+                teams.RemoveAt(index);
+            }
+
+			UserData newData = userData
+				with
+			{
+				TeamStorage = teams
+			};
+
+			await SetUserDataAsync(newData);
+		}
     }
 }

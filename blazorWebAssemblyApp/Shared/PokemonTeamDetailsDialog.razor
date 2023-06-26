@@ -1,28 +1,43 @@
 ﻿@using blazorWebAssemblyApp.Shared.Cards
 @using blazorWebAssemblyApp.Shared.Panes
 
-<MudDialog>
-    <DialogContent>
-        <MudGrid>
-            <MudItem xs="12" sm="4">
-
-            </MudItem>
-            <MudItem xs="12" sm="8">
-
-            </MudItem>
-            <MudItem xs="12" sm="6">
-
-            </MudItem>
-            <MudItem xs="12" sm="6">
-
-            </MudItem>
-        </MudGrid>
-    </DialogContent>
-    <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
-    </DialogActions>
-</MudDialog>
+@if (Team is not null)
+{
+    <MudDialog>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudGrid Justify="Justify.SpaceEvenly">
+                        @foreach (SmartPokemon? p in Team)
+                        {
+                            @if (p is not null)
+                            {
+                                <MudItem xs="4" md="2">
+                                    <MudPaper>
+                                        <PokemonCard Pokemon="p" />
+                                    </MudPaper>
+                                </MudItem>
+                            }
+                        }
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12">
+                    <PokemonTeamStatsChartPane Team="@Team" />
+                </MudItem>
+                <MudItem xs="12">
+                    <PokemonTeamDefensePane Team="@Team" />
+                </MudItem>
+                <MudItem xs="12">
+                    <PokemonTeamCoveragePane Team="@Team" />
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
 
 @code {
     [CascadingParameter]
@@ -33,4 +48,6 @@
 
     void Submit() => MudDialog!.Close(DialogResult.Ok(true));
     void Cancel() => MudDialog!.Cancel();
+
+
 }

@@ -13,6 +13,10 @@
                 <MudImage Src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" title="@t.Type.Name" Width="50"/>
             }
         </MudStack>
+        @if (IsNameDisplayed)
+        {
+            <MudText Typo="Typo.button" Align="Align.Center">@Pokemon.Name</MudText>
+        }
         <MudText Typo="Typo.caption">@Pokemon.Generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</MudText>
     </MudStack>
 }
@@ -20,4 +24,7 @@
 @code {
     [Parameter]
     public SmartPokemon? Pokemon { get; set; }
+
+    [Parameter]
+    public bool IsNameDisplayed { get; set; } = true;
 }

@@ -1,27 +1,32 @@
-﻿@if (Team is not null)
-{
-	<MudStack Spacing="1">
-		<MudText Typo="Typo.body1" Class="pa-1">@Team.Name</MudText>
-		<div class="d-flex flex-row justify-start gap-1 align-content-center mud-height-full">
-			@foreach (SmartPokemon? p in Team)
+﻿@inject SessionService SessionService
+@inject ProfileService ProfileService
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+
+<MudStack Spacing="1">
+	<MudText Typo="Typo.body1" Class="pa-1">@Team!.Name</MudText>
+	<div class="d-flex flex-row justify-start gap-1 align-content-center mud-height-full">
+		@foreach (SmartPokemon? p in Team!)
+		{
+			@if (p is not null)
 			{
-				@if (p is not null)
-				{
-					<PokemonMiniCard Pokemon="p" />
-				}
+				<PokemonMiniCard Pokemon="p" />
 			}
-		</div>
-		<MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
-			<MudButton StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails">Details</MudButton>
-			<MudButton StartIcon="@Icons.Material.Filled.Upload" OnClick="OnClickLoadInEditor">Load Into Editor</MudButton>
-			<MudButton StartIcon="@Icons.Material.Filled.Delete" OnClick="OnClickDelete">Delete</MudButton>
-		</MudButtonGroup>
-	</MudStack>
-}
+		}
+	</div>
+	<MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+		<MudButton StartIcon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails">Details</MudButton>
+		<MudButton StartIcon="@Icons.Material.Filled.Upload" OnClick="OnClickLoadInEditor">Load Into Editor</MudButton>
+		<MudButton StartIcon="@Icons.Material.Filled.Delete" OnClick="OnClickDelete">Delete</MudButton>
+	</MudButtonGroup>
+</MudStack>
 
 @code {
 	[Parameter]
 	public PokemonTeam? Team { get; set; }
+
+	[Parameter] // used for telling the parent of the card that it has updated
+	public EventCallback OnUpdated { get; set; }
 
 	// ensure Team has been set
 	public override Task SetParametersAsync(ParameterView parameters)
@@ -35,16 +40,21 @@
 
 	public void OnClickDetails()
 	{
-		
+		var parameters = new DialogParameters();
+		parameters.Add("Team", Team);
+
+		DialogService.Show<PokemonTeamDetailsDialog>(StringUtils.FirstCharToUpper(Team!.Name), parameters);
 	}
 
-	public void OnClickLoadInEditor()
+	public async void OnClickLoadInEditor()
 	{
-
+		await SessionService.SetGlobalTeam(Team!);
+		NavigationManager.NavigateTo("/");
 	}
 
-	public void OnClickDelete()
+	public async void OnClickDelete()
 	{
-
+		await ProfileService.RemoveTeam(Team!);
+		await OnUpdated.InvokeAsync();
 	}
 }

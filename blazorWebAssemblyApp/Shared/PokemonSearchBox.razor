@@ -1,5 +1,5 @@
 ﻿@inject ProfileService ProfileService
-@inject SessionService SessionService
+@inject IDialogService DialogService
 
 @using PokeApiNet
 @using Type = PokeApiNet.Type
@@ -28,14 +28,24 @@
             </div>
             @if (pokemon is not null)
             {
-                <PokemonCard Pokemon="pokemon" />
+                <PokemonCard Pokemon="pokemon" IsNameDisplayed="false" />
                 @*            <MudSelect Disabled="@(pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
     @foreach (PokemonAbility a in pokemon.Abilities)
     {
     <MudSelectItem Value="@a.Ability.Name" />
     }
     </MudSelect>*@
-                <MudButton Class="my-2" OnClick="OnClickAddToStorage" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small">Storage</MudButton>
+                <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                    <MudTooltip Text="Details">
+                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
+                    </MudTooltip>
+                    <MudTooltip Text="Add To Storage">
+                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
+                    </MudTooltip>
+                    <MudTooltip Text="Randomize">
+                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
+                    </MudTooltip>
+                </MudButtonGroup>
 
             }
             else if (errorFetchingPokemon)
@@ -53,11 +63,22 @@
     {
         <MudAutocomplete T="SmartPokemon" Label="Pokémon" @bind-Value="Pokemon" SearchFunc="@SearchStorage"
                          ResetValueOnEmptyText="true"
-                         CoerceText="true" CoerceValue="false" />
+                         CoerceText="true" CoerceValue="false" MaxItems="null"/>
 
         @if (pokemon is not null)
         {
-            <PokemonCard Pokemon="pokemon" />
+            <PokemonCard Pokemon="pokemon" IsNameDisplayed="false" />
+            <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+                <MudTooltip Text="Details">
+                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="Add To Storage">
+                    <MudIconButton Disabled="true" Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
+                </MudTooltip>
+                <MudTooltip Text="Randomize">
+                    <MudIconButton Disabled="true" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
+                </MudTooltip>
+            </MudButtonGroup>
         }
     }
 
@@ -138,9 +159,9 @@
     protected override async Task OnInitializedAsync()
     {
         // use the team index to get this pokemon if possible
-        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
+        if (Team is not null && PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
         {
-            pokemon = Globals.PokemonTeam[PokemonTeamIndex];
+            pokemon = Team[PokemonTeamIndex];
         }
 
         if (pokemon is not null)
@@ -261,5 +282,37 @@
             Globals.PokemonStorage.Add(pokemon);
 
         await OnUpdated.InvokeAsync();
+    }
+
+    public void OnClickDetails()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Pokemon", Pokemon);
+
+        DialogService.Show<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
+    }
+
+    public async void OnClickRandomize()
+    {
+        NamedApiResource<Pokemon>? pokemonResource = null;
+        SmartPokemonEntry? entry = Globals.NationalDex!.RandomPokemon();
+        if (entry != null)
+        {
+            Random rand = new Random();
+            List<NamedApiResource<Pokemon>> varieties = entry.GetAllVarieties();
+            pokemonResource = varieties[rand.Next(varieties.Count)];
+        }
+
+        if (pokemonResource != null)
+        {
+            SmartPokemon? pokemon = await PokeApiHandler.GetPokemonAsync(pokemonResource.Name);
+            if (pokemon != null)
+            {
+                this.pokemon = pokemon;
+                this.pokemonSearchValue = entry;
+                this.pokemonFormName = pokemon.Name;
+                await Update();
+            }
+        }
     }
 }
