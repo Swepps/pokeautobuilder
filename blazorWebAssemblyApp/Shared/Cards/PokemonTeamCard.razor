@@ -49,7 +49,7 @@
 	public async void OnClickLoadInEditor()
 	{
 		await SessionService.SetGlobalTeam(Team!);
-		NavigationManager.NavigateTo("/");
+		NavigationManager.NavigateTo(NavigationManager.BaseUri + "/");
 	}
 
 	public async void OnClickDelete()
