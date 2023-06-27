@@ -1,6 +1,6 @@
-# pokemonautoteambuilder
+# Poké Auto-Builder
 
-Pokémon Auto Team Builder is a small web-app designed to make planning a team for a playthrough much easier.
+Poké Auto-Builder is a small web-app designed to make planning a team for a playthrough much easier.
 
 Features:
 - Pokémon Team Builder.
@@ -17,6 +17,12 @@ Features:
   - On the right of the page, the Storage Controls can be expanded in and out using the expansion button.
       - These controls are used for easily adding and removing Pokémon to the Storage.
   - Stored Pokémon can be accessed on the Team Builder page using the radio buttons to change the Pokémon search boxes to search the Storage instead of the Pokédex.
+
+- Team Storage
+
+    - The Team Storage holds a collection of your saved Pokémon teams in your browser's local storage.
+    - Saved teams can be expanded to view the details about that team including a chart of the team's base stats, the team's type defense, and the team's coverage.
+    - Teams can be loaded back into the Team Builder using the 'Load Into Editor' button. Changes via the editor won't modify this team and will require saving to the Team Storage independently.
 
 Link to the Web App:
 https://swepps.github.io/pokemonautoteambuilder/
