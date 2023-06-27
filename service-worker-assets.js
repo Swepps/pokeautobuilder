@@ -101,11 +101,11 @@
       "url": "img\/Type-Water.png"
     },
     {
-      "hash": "sha256-s7rCN8dkY18cm\/LP9lmTQBHVtTuMptcTdKBe6yJNucE=",
+      "hash": "sha256-86vYR6YBqWYbYSaihSXVGpyatBJeYzx3hRhk79qpThk=",
       "url": "index.html"
     },
     {
-      "hash": "sha256-QTjlIP4Uf6Csd3c0kKgPdzZRtcuXT2bXDb+N01aBTqg=",
+      "hash": "sha256-FQ5MamA3\/yPblAuc3xw8vgIfJmaAgwyxyOQd4qwLWK4=",
       "url": "manifest.json"
     },
     {
@@ -145,7 +145,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-izpahgCjshbEcE1U+KHrXlMKxjGg0sZupJvhFKOOVQA=",
+      "hash": "sha256-ElsQ0qt6Wn1hbppUUsdvgTptAu1l+f7t1GJaarVUbhg=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -171,10 +171,6 @@
     {
       "hash": "sha256-Y5WVl4GeKE4HMIAYngGySxcPse+7tZjlwyN0jaZSWS4=",
       "url": "_framework\/Blazored.SessionStorage.dll"
-    },
-    {
-      "hash": "sha256-BsH4wwGzikSWTWekb9h+N83FdM0J71WFI80QZzx9M\/A=",
-      "url": "_framework\/blazorWebAssemblyApp.dll"
     },
     {
       "hash": "sha256-0Q273angi2\/Y12vJaIuMRPl0o2NOM6p2hU87m6iZ4eM=",
@@ -283,6 +279,10 @@
     {
       "hash": "sha256-tebKlA9aepLS0jFVq7k4b+ckSyFQ151JxQ1EQeI\/PpE=",
       "url": "_framework\/PokeApiNet.dll"
+    },
+    {
+      "hash": "sha256-JYtaMZp4Z785ev40OYjSBzIx6N4DQYvXAkcfUY07478=",
+      "url": "_framework\/pokeAutoBuilder.dll"
     },
     {
       "hash": "sha256-chMyq7ptZ7pwJjrnaSnJ8oON36V8risco8HOs+J7Ev8=",
@@ -465,8 +465,8 @@
       "url": "appsettings.json"
     },
     {
-      "hash": "sha256-yN8chlpcPV9iIJG3hXK\/RgVXfVTiYp7gJQBluXWF6dc=",
-      "url": "blazorWebAssemblyApp.styles.css"
+      "hash": "sha256-92Gbnh5j25DdffY4Qa60hMIPTsPzecFNOmeq2L2gIRg=",
+      "url": "pokeAutoBuilder.styles.css"
     },
     {
       "hash": "sha256-ufwN9wIcw3DmyXTJUOSibX\/BdZCBQRXyD5\/Ho\/+sh0E=",
@@ -481,5 +481,5 @@
       "url": "_content\/MudBlazor\/MudBlazor.min.js"
     }
   ],
-  "version": "6paNIw\/\/"
+  "version": "On0kYuC+"
 };

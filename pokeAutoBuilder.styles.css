@@ -1,22 +1,22 @@
 /* /Pages/PokemonStoragePage.razor.rz.scp.css */
-.expand-button[b-z8ima6k5pv] {
+.expand-button[b-i04wbqxeph] {
     width: 50px;
     height: 100%;
 }
 /* /Pages/PokemonTeamStoragePage.razor.rz.scp.css */
-.expand-button[b-iag61jn0eb] {
+.expand-button[b-kqq205lwxf] {
     width: 50px;
     height: 100%;
 }
 /* /Pages/TeamBuilderPage.razor.rz.scp.css */
-body[b-znvyaxn9f9] {
+body[b-jwx68gb27s] {
 }
 
-div[b-znvyaxn9f9]{
+div[b-jwx68gb27s]{
     border: 1px solid red;
 }
 
-.team-grid-container[b-znvyaxn9f9] {
+.team-grid-container[b-jwx68gb27s] {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -27,21 +27,21 @@ div[b-znvyaxn9f9]{
     padding: 0.5em;
 }
 /* /Shared/MainLayout.razor.rz.scp.css */
-.page[b-sxs52urypg] {
+.page[b-yo93jt15d7] {
     position: relative;
     display: flex;
     flex-direction: column;
 }
 
-main[b-sxs52urypg] {
+main[b-yo93jt15d7] {
     flex: 1;
 }
 
-.sidebar[b-sxs52urypg] {
+.sidebar[b-yo93jt15d7] {
     background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
 }
 
-.top-row[b-sxs52urypg] {
+.top-row[b-yo93jt15d7] {
     border-bottom: 1px solid #d6d5d5;
     justify-content: flex-end;
     height: 3.5rem;
@@ -49,99 +49,99 @@ main[b-sxs52urypg] {
     align-items: center;
 }
 
-    .top-row[b-sxs52urypg]  a, .top-row[b-sxs52urypg]  .btn-link {
+    .top-row[b-yo93jt15d7]  a, .top-row[b-yo93jt15d7]  .btn-link {
         white-space: nowrap;
         margin-left: 1.5rem;
         text-decoration: none;
     }
 
-    .top-row[b-sxs52urypg]  a:hover, .top-row[b-sxs52urypg]  .btn-link:hover {
+    .top-row[b-yo93jt15d7]  a:hover, .top-row[b-yo93jt15d7]  .btn-link:hover {
         text-decoration: underline;
     }
 
-    .top-row[b-sxs52urypg]  a:first-child {
+    .top-row[b-yo93jt15d7]  a:first-child {
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
 @media (max-width: 640.98px) {
-    .top-row:not(.auth)[b-sxs52urypg] {
+    .top-row:not(.auth)[b-yo93jt15d7] {
         display: none;
     }
 
-    .top-row.auth[b-sxs52urypg] {
+    .top-row.auth[b-yo93jt15d7] {
         justify-content: space-between;
     }
 
-    .top-row[b-sxs52urypg]  a, .top-row[b-sxs52urypg]  .btn-link {
+    .top-row[b-yo93jt15d7]  a, .top-row[b-yo93jt15d7]  .btn-link {
         margin-left: 0;
     }
 }
 
 @media (min-width: 641px) {
-    .page[b-sxs52urypg] {
+    .page[b-yo93jt15d7] {
         flex-direction: row;
     }
 
-    .sidebar[b-sxs52urypg] {
+    .sidebar[b-yo93jt15d7] {
         width: 250px;
         height: 100vh;
         position: sticky;
         top: 0;
     }
 
-    .top-row[b-sxs52urypg] {
+    .top-row[b-yo93jt15d7] {
         position: sticky;
         top: 0;
         z-index: 1;
     }
 
-    .top-row.auth[b-sxs52urypg]  a:first-child {
+    .top-row.auth[b-yo93jt15d7]  a:first-child {
         flex: 1;
         text-align: right;
         width: 0;
     }
 
-    .top-row[b-sxs52urypg], article[b-sxs52urypg] {
+    .top-row[b-yo93jt15d7], article[b-yo93jt15d7] {
         padding-left: 2rem !important;
         padding-right: 1.5rem !important;
     }
 }
 /* /Shared/NavMenu.razor.rz.scp.css */
-.navbar-toggler[b-fzk09t3228] {
+.navbar-toggler[b-s1s71yhn19] {
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.top-row[b-fzk09t3228] {
+.top-row[b-s1s71yhn19] {
     height: 3.5rem;
     background-color: rgba(0,0,0,0.4);
 }
 
-.navbar-brand[b-fzk09t3228] {
+.navbar-brand[b-s1s71yhn19] {
     font-size: 1.1rem;
 }
 
-.oi[b-fzk09t3228] {
+.oi[b-s1s71yhn19] {
     width: 2rem;
     font-size: 1.1rem;
     vertical-align: text-top;
     top: -2px;
 }
 
-.nav-item[b-fzk09t3228] {
+.nav-item[b-s1s71yhn19] {
     font-size: 0.9rem;
     padding-bottom: 0.5rem;
 }
 
-    .nav-item:first-of-type[b-fzk09t3228] {
+    .nav-item:first-of-type[b-s1s71yhn19] {
         padding-top: 1rem;
     }
 
-    .nav-item:last-of-type[b-fzk09t3228] {
+    .nav-item:last-of-type[b-s1s71yhn19] {
         padding-bottom: 1rem;
     }
 
-    .nav-item[b-fzk09t3228]  a {
+    .nav-item[b-s1s71yhn19]  a {
         color: #d7d7d7;
         border-radius: 4px;
         height: 3rem;
@@ -150,42 +150,42 @@ main[b-sxs52urypg] {
         line-height: 3rem;
     }
 
-.nav-item[b-fzk09t3228]  a.active {
+.nav-item[b-s1s71yhn19]  a.active {
     background-color: rgba(255,255,255,0.25);
     color: white;
 }
 
-.nav-item[b-fzk09t3228]  a:hover {
+.nav-item[b-s1s71yhn19]  a:hover {
     background-color: rgba(255,255,255,0.1);
     color: white;
 }
 
 @media (min-width: 641px) {
-    .navbar-toggler[b-fzk09t3228] {
+    .navbar-toggler[b-s1s71yhn19] {
         display: none;
     }
 
-    .collapse[b-fzk09t3228] {
+    .collapse[b-s1s71yhn19] {
         /* Never collapse the sidebar for wide screens */
         display: block;
     }
     
-    .nav-scrollable[b-fzk09t3228] {
+    .nav-scrollable[b-s1s71yhn19] {
         /* Allow sidebar to scroll for tall menus */
         height: calc(100vh - 3.5rem);
         overflow-y: auto;
     }
 }
 /* /Shared/StatsTeamPanel.razor.rz.scp.css */
-.table-header[b-w1z33053nn]
+.table-header[b-64k8vmm77i]
 {
     text-align: center;
 }
 
-.table-header img[b-w1z33053nn] {
+.table-header img[b-64k8vmm77i] {
     width: 90%;
 }
 
-.table-row[b-w1z33053nn] {
+.table-row[b-64k8vmm77i] {
     width: 5%;
 }
