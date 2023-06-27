@@ -1,7 +1,7 @@
 ﻿using Accord.Genetic;
 using PokeApiNet;
 
-namespace blazorWebAssemblyApp.Source
+namespace pokeAutoBuilder.Source
 {
     using Type = PokeApiNet.Type;
 

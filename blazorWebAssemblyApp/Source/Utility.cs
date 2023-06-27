@@ -1,4 +1,4 @@
-﻿namespace blazorWebAssemblyApp.Source
+﻿namespace pokeAutoBuilder.Source
 {
     public class StringUtils
     {

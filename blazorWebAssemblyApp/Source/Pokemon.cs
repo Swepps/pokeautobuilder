@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using PokeApiNet;
 using System.Collections.ObjectModel;
 
-namespace blazorWebAssemblyApp.Source
+namespace pokeAutoBuilder.Source
 {
     using Type = PokeApiNet.Type;
 

@@ -112,7 +112,7 @@
         Team!.Name = TeamName;
         await ProfileService.AddTeam(Team!);
 
-        Snackbar.Add("Successfully added team '" + Team!.Name + "' to Team Storage", Severity.Success);
+        Snackbar.Add("Added team '" + Team!.Name + "' to Team Storage", Severity.Success);
     }
 
     public void OnClickAutoBuilder()

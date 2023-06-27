@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 
-namespace blazorWebAssemblyApp.Source
+namespace pokeAutoBuilder.Source
 {
     using Type = PokeApiNet.Type;
     public class Globals

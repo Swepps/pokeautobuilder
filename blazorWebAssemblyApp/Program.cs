@@ -1,7 +1,7 @@
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
-using blazorWebAssemblyApp;
-using blazorWebAssemblyApp.Source;
+using pokeAutoBuilder;
+using pokeAutoBuilder.Source;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;

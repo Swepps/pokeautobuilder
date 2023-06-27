@@ -3,7 +3,7 @@ using Microsoft.VisualBasic;
 using PokeApiNet;
 using System.Diagnostics;
 
-namespace blazorWebAssemblyApp.Source
+namespace pokeAutoBuilder.Source
 {
     using Type = PokeApiNet.Type;
 

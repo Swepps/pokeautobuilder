@@ -2,7 +2,7 @@
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 
-namespace blazorWebAssemblyApp.Source
+namespace pokeAutoBuilder.Source
 {
 	public record Preferences
 	{

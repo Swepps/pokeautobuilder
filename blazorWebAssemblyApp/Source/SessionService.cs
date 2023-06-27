@@ -1,6 +1,6 @@
 ﻿using Blazored.SessionStorage;
 
-namespace blazorWebAssemblyApp.Source
+namespace pokeAutoBuilder.Source
 {
     public record SessionData
     {

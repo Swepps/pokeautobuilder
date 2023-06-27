@@ -3,7 +3,7 @@
 @page "/teamstorage"
 
 @using PokeApiNet
-@using blazorWebAssemblyApp.Shared.Cards
+@using pokeAutoBuilder.Shared.Cards
 
 <PageTitle>Team Storage</PageTitle>
 
@@ -12,15 +12,17 @@
 @if (StoredTeams is not null)
 {
     <MudText Typo="Typo.h6">Pokémon Team Storage</MudText>
-    <MudPaper Class="d-flex mud-width-full mud-height-full pa-2" Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
-        <MudStack Spacing="3">
-            @foreach (PokemonTeam t in StoredTeams)
-            {
-                <PokemonTeamCard Team="t" OnUpdated="Update" />
-                <MudDivider DividerType="DividerType.FullWidth" />
-            }
-        </MudStack>
-    </MudPaper>
+    <MudDivider Class="mb-4" DividerType="DividerType.FullWidth" />
+    <MudGrid>
+        @foreach (PokemonTeam t in StoredTeams)
+        {
+            <MudItem xs="12" md="6" lg="4" xl="3" Class="pa-1">
+                <MudPaper Outlined="true" Style="background: var(--mud-palette-background)">
+                    <PokemonTeamCard Team="t" OnUpdated="Update" />
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
 }
 else
 {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace blazorWebAssemblyApp.Source
+namespace pokeAutoBuilder.Source
 {
     public class PokemonStorage : List<SmartPokemon>
     {

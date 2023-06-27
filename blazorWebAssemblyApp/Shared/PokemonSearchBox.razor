@@ -4,7 +4,7 @@
 
 @using PokeApiNet
 @using Type = PokeApiNet.Type
-@using blazorWebAssemblyApp.Shared.Cards
+@using pokeAutoBuilder.Shared.Cards
 
 <MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 
@@ -284,7 +284,7 @@
 
         await OnUpdated.InvokeAsync();
 
-        Snackbar.Add("Successfully added " + pokemon.Name + " to Pokémon Storage", Severity.Success);
+        Snackbar.Add("Added " + pokemon.Name + " to Pokémon Storage", Severity.Success);
     }
 
     public void OnClickDetails()

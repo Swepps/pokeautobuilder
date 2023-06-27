@@ -2,7 +2,7 @@
 using PokeApiNet;
 using System.Collections.ObjectModel;
 
-namespace blazorWebAssemblyApp.Source
+namespace pokeAutoBuilder.Source
 {
     // this class stores a single pokedex entry which is typically a single pokemon
     // however there are some pokemon with multiple varieties (e.g. rotom) which is

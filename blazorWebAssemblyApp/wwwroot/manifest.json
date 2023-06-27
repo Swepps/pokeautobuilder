@@ -1,6 +1,6 @@
 {
-  "name": "blazorWebAssemblyApp",
-  "short_name": "blazorWebAssemblyApp",
+  "name": "Poké Autobuilder",
+  "short_name": "Poké Autobuilder",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
