@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="archive\**" />
+    <Content Remove="archive\**" />
+    <EmbeddedResource Remove="archive\**" />
+    <None Remove="archive\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Accord.Genetic" Version="3.8.0" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.3.0" />
     <PackageReference Include="Blazored.SessionStorage" Version="2.3.0" />
