@@ -27,8 +27,8 @@ jobs:
         run: dotnet publish blazorWebAssemblyApp/blazorWebAssemblyApp.csproj -c Release -o release --nologo
         
       # changes the base-tag in index.html from '/' to 'BlazorGitHubPagesDemo' to match GitHub Pages repository subdirectory
-      - name: Change base-tag in index.html from / to pokemonautoteambuilder
-        run: sed -i 's/<base href="\/" \/>/<base href="\/pokemonautoteambuilder\/" \/>/g' release/wwwroot/index.html
+      # - name: Change base-tag in index.html from / to pokemonautoteambuilder
+      #  run: sed -i 's/<base href="\/" \/>/<base href="\/pokemonautoteambuilder\/" \/>/g' release/wwwroot/index.html
         
       # updating the hash on each modified file and update service-worker-assets.js with the hashes
       # this will allow the app to continue to run as a PWA
