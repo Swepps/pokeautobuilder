@@ -17,8 +17,10 @@ Features:
   - On the right of the page, the Storage Controls can be expanded in and out using the expansion button.
       - These controls are used for easily adding and removing Pokémon to the Storage.
   - Stored Pokémon can be accessed on the Team Builder page using the radio buttons to change the Pokémon search boxes to search the Storage instead of the Pokédex.
-  
+
+Link to the Web App:
 https://swepps.github.io/pokemonautoteambuilder/
+
 
 One day I will write a proper README...
 
