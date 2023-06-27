@@ -13,11 +13,21 @@
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/Swepps/pokemonautoteambuilder" Target="_blank" />
+        <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudImage Src="icon-512.png" Width="30" Height="30" />
+            <MudStack AlignItems="AlignItems.Center" Spacing="0">
+                <MudText Typo="Typo.h6">Poké Autobuilder</MudText>
+            </MudStack>
+        </MudStack>
+        <MudSpacer />
+        <MudTooltip Text="GitHub Repository">
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/Swepps/pokemonautoteambuilder" Target="_blank" />
+        </MudTooltip>
     </MudAppBar>
-    <MudDrawer @bind-Open="@open" Elevation="1">
+    <MudDrawer @bind-Open="@open" Elevation="1" ClipMode="DrawerClipMode.Always">
         <NavMenu />
-        <MudSwitch @bind-Checked="@IsDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Toggle Light/Dark Mode" />
+        <MudDivider />
+        <MudSwitch @bind-Checked="@IsDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Dark Mode" />
     </MudDrawer>
     <MudMainContent Class="pt-16 px-2 mud-height-full">
         <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">

@@ -9,7 +9,7 @@
 <MudText Typo="Typo.h6">Pokémon Storage</MudText>
 <MudPaper Height="calc(100vh - 140px)" Class="pa-1" Style="position: relative; overflow:hidden; background: var(--mud-palette-background)" Elevation="0" Square="true">
     <MudDrawerContainer Class="mud-height-full">
-        <MudDrawer @bind-Open="@openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent">
+        <MudDrawer @bind-Open="@openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent" Width="200px">
             <MudPaper Class="d-flex flex-column justify-start gap-1 align-content-center mud-height-full py-2 px-1 mb-2 ml-n1"  Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
                 <MudText Typo="Typo.h6" Align="Align.Center">Pokémon Picker</MudText>
                 <PokemonSearchBox @ref="_pokemonCard" OnUpdated="Update" />

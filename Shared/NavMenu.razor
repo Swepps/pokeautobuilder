@@ -1,13 +1,5 @@
 ﻿@inject NavigationManager Navigator
 
-<MudDrawerHeader Class="py-1 px-3">
-    <MudStack Row="true" AlignItems="AlignItems.Center">
-        <MudImage Src="icon-512.png" Width="30" Height="30"/>
-        <MudStack AlignItems="AlignItems.Center" Spacing="0">
-            <MudText Typo="Typo.h6">Poké Autobuilder</MudText>
-        </MudStack>
-    </MudStack>
-</MudDrawerHeader>
 <MudNavMenu>
     <MudNavLink Icon="@Icons.Material.Filled.Build" Href="@Navigator.BaseUri" Match="NavLinkMatch.All">Team Builder</MudNavLink>
     <MudNavLink Icon="@Icons.Material.Filled.Dataset" Href="@(Navigator.BaseUri + "storage")" >Pokémon Storage</MudNavLink>
