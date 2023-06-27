@@ -1,6 +1,6 @@
-# Poké Auto-Builder
+# Poké Autobuilder
 
-Poké Auto-Builder is a small web-app designed to make planning a team for a playthrough much easier.
+Poké Autobuilder is a small web-app designed to make planning a team for a playthrough much easier.
 
 Features:
 - Pokémon Team Builder.
@@ -24,8 +24,9 @@ Features:
     - Saved teams can be expanded to view the details about that team including a chart of the team's base stats, the team's type defense, and the team's coverage.
     - Teams can be loaded back into the Team Builder using the 'Load Into Editor' button. Changes via the editor won't modify this team and will require saving to the Team Storage independently.
 
-Link to the Web App:
-https://swepps.github.io/pokemonautoteambuilder/
+Poké Autobuilder can be found here:
+
+https://pokeautobuilder.com
 
 There are two archived applications in this repository currently:
 - The first WPF app I wrote which will only work on desktop Windows
