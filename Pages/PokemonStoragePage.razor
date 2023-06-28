@@ -1,5 +1,6 @@
 ﻿@inject NavigationManager NavigationManager
 @inject ProfileService ProfileService
+@inject PokeApiService PokeApiService
 
 @page "/storage"
 @using PokeApiNet
@@ -51,7 +52,7 @@
 
         if (pokemonResource != null)
         {
-            SmartPokemon? pokemon = await PokeApiHandler.GetPokemonAsync(pokemonResource.Name);
+            SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
             if (pokemon != null && _pokemonCard is not null)
             {
                 _pokemonCard.Pokemon = pokemon;
@@ -84,7 +85,7 @@
 
         if (pokemonResource != null)
         {
-            SmartPokemon? pokemon = await PokeApiHandler.GetPokemonAsync(pokemonResource.Name);
+            SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
             if (pokemon != null)
             {
                 Globals.PokemonStorage.Add(pokemon);

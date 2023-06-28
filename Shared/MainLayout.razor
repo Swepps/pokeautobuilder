@@ -1,6 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 @inject ProfileService ProfileService
+@inject PokeApiService PokeApiService
 
 @using PokeApiNet
 
@@ -78,7 +79,7 @@
             StateHasChanged();
 
             // now do the slow tasks
-            var getNationalDexTask = PokeApiHandler.GetNationalDex();
+            var getNationalDexTask = PokeApiService.GetNationalDex();
 
             await Task.WhenAll(
                 getNationalDexTask,

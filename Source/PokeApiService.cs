@@ -7,14 +7,22 @@ namespace pokeAutoBuilder.Source
 {
     using Type = PokeApiNet.Type;
 
-    public class PokeApiHandler
+    public class PokeApiService
     {
-        private static PokeApiClient ApiClient = new PokeApiClient();
+        public static PokeApiService? Instance { get; private set; }
+
+        private readonly PokeApiClient ApiClient;
+
+        public PokeApiService(HttpClient httpClient)
+        {
+            ApiClient = new PokeApiClient(httpClient);
+            Instance = this;
+        }
 
         // -- API access functions --
 
         // it works but I may as well just hard code it so no longer used...
-        public static async Task<List<Type>> GetAllTypesAsync()
+        public async Task<List<Type>> GetAllTypesAsync()
         { 
             List<Type> pokemonTypes = new List<Type>();
 
@@ -34,7 +42,7 @@ namespace pokeAutoBuilder.Source
         }
 
         // we will cache the national pokedex between sessions for faster loading time
-        public static async Task<SmartPokedex?> GetNationalDex()
+        public async Task<SmartPokedex?> GetNationalDex()
         {
             Pokedex? nationalDex = await GetPokedex(1);
 
@@ -46,7 +54,7 @@ namespace pokeAutoBuilder.Source
 
             return null;
         }
-        public static async Task<Pokedex?> GetPokedex(int i)
+        public async Task<Pokedex?> GetPokedex(int i)
         {
             try
             {
@@ -60,7 +68,7 @@ namespace pokeAutoBuilder.Source
             }
         }
 
-        public static async Task<PokemonSpecies?> GetPokemonSpeciesAsync(PokemonEntry entry)
+        public async Task<PokemonSpecies?> GetPokemonSpeciesAsync(PokemonEntry entry)
         {
             try
             {
@@ -73,7 +81,7 @@ namespace pokeAutoBuilder.Source
                 return null;
             }
         }
-        public static async Task<PokemonSpecies?> GetPokemonSpeciesAsync(SmartPokemon pokemon)
+        public async Task<PokemonSpecies?> GetPokemonSpeciesAsync(SmartPokemon pokemon)
         {
             try
             {
@@ -86,7 +94,7 @@ namespace pokeAutoBuilder.Source
                 return null;
             }
         }
-        public static async Task<PokemonSpecies?> GetPokemonSpeciesAsync(string speciesName)
+        public async Task<PokemonSpecies?> GetPokemonSpeciesAsync(string speciesName)
         {
             try
             {
@@ -100,7 +108,7 @@ namespace pokeAutoBuilder.Source
             }
         }
 
-        public static async Task<SmartPokemon?> GetPokemonAsync(string pokemonName)
+        public async Task<SmartPokemon?> GetPokemonAsync(string pokemonName)
         {
             pokemonName = pokemonName.ToLower();
             try
@@ -116,7 +124,7 @@ namespace pokeAutoBuilder.Source
                 return null;
             }
         }
-        public static async Task<SmartPokemon?> GetPokemonAsync(int pokedexId)
+        public async Task<SmartPokemon?> GetPokemonAsync(int pokedexId)
         {
             try
             {
@@ -132,7 +140,7 @@ namespace pokeAutoBuilder.Source
             }
         }
 
-        public static async Task<Generation?> GetGenerationAsync(PokemonSpecies species)
+        public async Task<Generation?> GetGenerationAsync(PokemonSpecies species)
         {
             try
             {
@@ -147,7 +155,7 @@ namespace pokeAutoBuilder.Source
             }
         }
 
-        public static async Task<Multipliers> GetPokemonMultipliersAsync(Pokemon pokemon)
+        public async Task<Multipliers> GetPokemonMultipliersAsync(Pokemon pokemon)
         {
             Multipliers multipliers = new Multipliers();
 
@@ -228,7 +236,7 @@ namespace pokeAutoBuilder.Source
             return multipliers;
         }
 
-        public static async Task<SmartPokemon?> GetFinalEvolution(SmartPokemon pokemon)
+        public async Task<SmartPokemon?> GetFinalEvolution(SmartPokemon pokemon)
         {
             try
             {

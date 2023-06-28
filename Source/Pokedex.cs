@@ -52,12 +52,15 @@ namespace pokeAutoBuilder.Source
             this.Clear();
             var tasks = pokedex.PokemonEntries.Select(async entry =>
             {
-                PokemonSpecies? species = await PokeApiHandler.GetPokemonSpeciesAsync(entry);
+                PokemonSpecies? species = await PokeApiService.Instance!.GetPokemonSpeciesAsync(entry);
                 if (species != null)
                     Add(new SmartPokemonEntry(entry.EntryNumber, species));
             });
 
             await Task.WhenAll(tasks);
+
+            // make sure the list is in Pokedex entry order
+            Sort((a, b) => a.Id.CompareTo(b.Id));
         }
 
         public bool RemovePokemon(string speciesName)

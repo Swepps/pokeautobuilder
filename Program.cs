@@ -24,5 +24,6 @@ builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<SessionService>();
+builder.Services.AddHttpClient<PokeApiService>();
 
 await builder.Build().RunAsync();

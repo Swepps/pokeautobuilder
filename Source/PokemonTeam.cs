@@ -45,7 +45,7 @@ namespace pokeAutoBuilder.Source
             {
                 if (!string.IsNullOrEmpty(name))
                 {
-                    SmartPokemon? sp = await PokeApiHandler.GetPokemonAsync(name);
+                    SmartPokemon? sp = await PokeApiService.Instance!.GetPokemonAsync(name);
                     if (sp is not null)
                         team[index] = sp;
                 }

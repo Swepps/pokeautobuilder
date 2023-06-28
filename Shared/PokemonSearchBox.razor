@@ -1,4 +1,5 @@
 ﻿@inject ProfileService ProfileService
+@inject PokeApiService PokeApiService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
@@ -221,7 +222,7 @@
         else
         {
             // simultaneously get the default pokemon and generation from this species
-            pokemon = await PokeApiHandler.GetPokemonAsync(entry.Species.Varieties[0].Pokemon.Name);
+            pokemon = await PokeApiService.GetPokemonAsync(entry.Species.Varieties[0].Pokemon.Name);
             if (pokemon is not null)
             {
                 pokemonFormName = pokemon.Name;
@@ -244,7 +245,7 @@
 
         pokemon = null;
         StateHasChanged();
-        pokemon = await PokeApiHandler.GetPokemonAsync(formName);
+        pokemon = await PokeApiService.GetPokemonAsync(formName);
         if (pokemon is not null)
             pokemonAbilityName = pokemon.Abilities[0].Ability.Name;
         await Update();
@@ -308,7 +309,7 @@
 
         if (pokemonResource != null)
         {
-            SmartPokemon? pokemon = await PokeApiHandler.GetPokemonAsync(pokemonResource.Name);
+            SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
             if (pokemon != null)
             {
                 this.pokemon = pokemon;
