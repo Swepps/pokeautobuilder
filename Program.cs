@@ -5,6 +5,7 @@ using pokeAutoBuilder.Source;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
+using MudBlazor;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -19,7 +20,19 @@ builder.Services.AddOidcAuthentication(options =>
     builder.Configuration.Bind("Local", options.ProviderOptions);
 });
 
-builder.Services.AddMudServices();
+builder.Services.AddMudServices(
+    config =>
+    {
+        config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomCenter;
+
+        config.SnackbarConfiguration.PreventDuplicates = true;
+        config.SnackbarConfiguration.NewestOnTop = false;
+        config.SnackbarConfiguration.ShowCloseIcon = true;
+        config.SnackbarConfiguration.VisibleStateDuration = 2000;
+        config.SnackbarConfiguration.HideTransitionDuration = 500;
+        config.SnackbarConfiguration.ShowTransitionDuration = 500;
+        config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
+    });
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<ProfileService>();

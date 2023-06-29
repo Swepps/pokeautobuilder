@@ -82,7 +82,7 @@
 		stabMoveCoverage[0] = "STAB Moves";
 		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
 		{
-			stabMoveCoverage[i] = Team.CountCoverage(typeHeaders[i]).ToString();
+			stabMoveCoverage[i] = Team.CountSTABCoverage(typeHeaders[i]).ToString();
 		}
 
 		coverageRows.Add(stabMoveCoverage);

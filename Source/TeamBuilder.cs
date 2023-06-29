@@ -37,7 +37,7 @@ namespace pokeAutoBuilder.Source
             {
                 totalWeaknesses += weaknesses[t] = team.CountWeaknesses(t);
                 totalResistances += resistances[t] = team.CountResistances(t);
-                totalCoverage += coverage[t] = team.CountCoverage(t);
+                totalCoverage += coverage[t] = team.CountSTABCoverage(t);
             }
 
             // defense score

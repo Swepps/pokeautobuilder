@@ -6,49 +6,46 @@ namespace pokeAutoBuilder.Source
     public class PokemonTeamSerializable
     {
         public string Name { get; init; }
-        public List<string> Team { get; init; }
+        public List<SmartPokemonSerializable> Team { get; init; }
 
         [JsonConstructor]
-        public PokemonTeamSerializable(string name, List<string> team)
+        public PokemonTeamSerializable(string Name, List<SmartPokemonSerializable> Team)
         {
-            Name = name;
-            Team = team;
+            this.Name = Name;
+            this.Team = Team;
         }
 
         public PokemonTeamSerializable(PokemonTeam team)
         {
             Name = team.Name;
-            Team = new List<string>();
+            Team = new List<SmartPokemonSerializable>();
             foreach (SmartPokemon? p in team)
             {
                 if (p is null)
-                    Team.Add("");
+                    Team.Add(new SmartPokemonSerializable());
                 else
-                    Team.Add(p.Name);
+                    Team.Add(new SmartPokemonSerializable(p));
             }
         }
 
         public PokemonTeamSerializable()
         {
             Name = "";
-            Team = new List<string>();
+            Team = new List<SmartPokemonSerializable>();
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
-                Team.Add("");
+                Team.Add(new SmartPokemonSerializable());
             }
         }
 
         public async Task<PokemonTeam> GetPokemonTeam()
         {
             PokemonTeam team = new PokemonTeam();
-            var getTeamTasks = Team.Select(async (name, index) =>
+            var getTeamTasks = Team.Select(async (pokemon, index) =>
             {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    SmartPokemon? sp = await PokeApiService.Instance!.GetPokemonAsync(name);
-                    if (sp is not null)
-                        team[index] = sp;
-                }
+                SmartPokemon? sp = await pokemon.GetSmartPokemon();
+                if (sp is not null)
+                    team[index] = sp;
             });
             await Task.WhenAll(getTeamTasks);
 
@@ -69,7 +66,7 @@ namespace pokeAutoBuilder.Source
             if (objTeam.Name != Name) return false;
 
             // close enough of an equals operation
-            foreach (string pokemon in objTeam.Team)
+            foreach (SmartPokemonSerializable pokemon in objTeam.Team)
             {
                 if (!Team.Contains(pokemon)) return false;
             }
@@ -80,7 +77,7 @@ namespace pokeAutoBuilder.Source
 		public override int GetHashCode()
 		{
             int code = Name.GetHashCode();
-            foreach (string pokemon in Team)
+            foreach (SmartPokemonSerializable pokemon in Team)
             {
                 code ^= pokemon.GetHashCode();
             }
@@ -196,7 +193,7 @@ namespace pokeAutoBuilder.Source
             return resistances;
         }
 
-        public int CountCoverage(string typeName)
+        public int CountSTABCoverage(string typeName)
         {
             int coverage = 0;
             for (int i = 0; i < MaxTeamSize; i++)
@@ -204,9 +201,9 @@ namespace pokeAutoBuilder.Source
                 SmartPokemon? p = this[i];
                 if (p == null) continue;
 
-                if (p.Multipliers.Coverage.TryGetValue(typeName, out bool value)
+                if (p.Multipliers.Attack.TryGetValue(typeName, out double value)
                     &&
-                    value)
+                    value > 1.0)
                 {
                     coverage++;
                 }

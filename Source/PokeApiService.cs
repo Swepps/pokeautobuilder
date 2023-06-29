@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Accord.Math;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualBasic;
 using PokeApiNet;
 using System.Diagnostics;
@@ -155,85 +156,32 @@ namespace pokeAutoBuilder.Source
             }
         }
 
-        public async Task<Multipliers> GetPokemonMultipliersAsync(Pokemon pokemon)
+        public async Task<Move?> GetMoveAsync(string moveName)
         {
-            Multipliers multipliers = new Multipliers();
-
-            List<Type> types = await ApiClient.GetResourceAsync(pokemon.Types.Select(type => type.Type));
-
-            foreach (Type type in types)
+            try
             {
-                // get lists of type name to check effectivenesses
-                // don't need full type details, just the names
-                TypeRelations tr = type.DamageRelations;
-                var noDamageTo = tr.NoDamageTo;
-                var noDamageFrom = tr.NoDamageFrom;
-                var halfDamageTo = tr.HalfDamageTo;
-                var halfDamageFrom = tr.HalfDamageFrom;
-                var doubleDamageTo = tr.DoubleDamageTo;
-                var doubleDamageFrom = tr.DoubleDamageFrom;
+                Move move = await ApiClient.GetResourceAsync<Move>(moveName);
 
-                // immune types
-                foreach (var namedType in noDamageTo)
-                {
-                    //multipliers.coverage[namedType.Name] = 0;
-                }
-                foreach (var namedType in noDamageFrom)
-                {
-                    multipliers.Defense[namedType.Name] = 0;
-                }
+                return move;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
 
-                // resistant types
-                foreach (var namedType in halfDamageTo)
-                {
-                    //if (!multipliers.coverage.ContainsKey(namedType.Name))
-                    //{
-                    //    multipliers.coverage[namedType.Name] = multipliers.coverage[namedType.Name] * 0.5;
-                    //}
-                    //else
-                    //{
-                    //    multipliers.coverage[namedType.Name] = 0.5;
-                    //}
-                }
-                foreach (var namedType in halfDamageFrom)
-                {
-                    if (multipliers.Defense.ContainsKey(namedType.Name))
-                    {
-                        multipliers.Defense[namedType.Name] = multipliers.Defense[namedType.Name] * 0.5;
-                    }
-                    else
-                    {
-                        multipliers.Defense[namedType.Name] = 0.5;
-                    }
-                }
+        public async Task<List<Type>> GetPokemonTypesAsync(Pokemon pokemon)
+        {
+            List<Type> types = new List<Type>();
 
-                // super effective types
-                foreach (var namedType in doubleDamageTo)
-                {
-                    //if (multipliers.coverage.ContainsKey(namedType.Name))
-                    //{
-                    //    multipliers.coverage[namedType.Name] = multipliers.coverage[namedType.Name] * 2.0;
-                    //}
-                    //else
-                    //{
-                    //    multipliers.coverage[namedType.Name] = 2.0;
-                    //}
-                    multipliers.Coverage[namedType.Name] = true;
-                }
-                foreach (var namedType in doubleDamageFrom)
-                {
-                    if (multipliers.Defense.ContainsKey(namedType.Name))
-                    {
-                        multipliers.Defense[namedType.Name] = multipliers.Defense[namedType.Name] * 2.0;
-                    }
-                    else
-                    {
-                        multipliers.Defense[namedType.Name] = 2.0;
-                    }
-                }
+            // TODO attempt caching of all types... maybe that will speed up load times?
+            foreach (PokemonType t in pokemon.Types)
+            {
+                types.Add(await ApiClient.GetResourceAsync(t.Type));
             }
 
-            return multipliers;
+            return types;
         }
 
         public async Task<SmartPokemon?> GetFinalEvolution(SmartPokemon pokemon)

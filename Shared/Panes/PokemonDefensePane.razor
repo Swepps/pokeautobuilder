@@ -8,15 +8,15 @@
 				<MudGrid>
 					@foreach (string t in Globals.AllTypes)
 					{
-						@if (Pokemon.GetEffectivenessTo(t) < 1.0)
+						@if (Pokemon.GetResistance(t) < 1.0)
 						{
 							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
 								<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" />
-								@if (Pokemon.GetEffectivenessTo(t) == 0.5)
+								@if (Pokemon.GetResistance(t) == 0.5)
 								{
 									<MudText Typo="Typo.caption">½x</MudText>
 								}
-								else if (Pokemon.GetEffectivenessTo(t) == 0.25)
+								else if (Pokemon.GetResistance(t) == 0.25)
 								{
 									<MudText Typo="Typo.caption" Style="font-weight: bold;">¼x</MudText>
 								}
@@ -35,11 +35,11 @@
 				<MudGrid>
 					@foreach (string t in Globals.AllTypes)
 					{
-						@if (Pokemon.GetEffectivenessTo(t) > 1.0)
+						@if (Pokemon.GetResistance(t) > 1.0)
 						{
 							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
 								<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" />
-								@if (Pokemon.GetEffectivenessTo(t) == 2.0)
+								@if (Pokemon.GetResistance(t) == 2.0)
 								{
 									<MudText Typo="Typo.caption">2x</MudText>
 								}

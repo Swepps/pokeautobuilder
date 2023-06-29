@@ -11,7 +11,7 @@ namespace pokeAutoBuilder.Source
 
     public record UserData
     {
-        public List<string> Storage { get; init; } = new List<string>();
+        public List<SmartPokemonSerializable> Storage { get; init; } = new List<SmartPokemonSerializable>();
         public List<PokemonTeamSerializable> TeamStorage { get; init; } = new List<PokemonTeamSerializable>();
     }
 
@@ -72,7 +72,7 @@ namespace pokeAutoBuilder.Source
             UserData newdata = userData
                 with
             {
-                Storage = Globals.PokemonStorage.GetAllNames()
+                Storage = Globals.PokemonStorage.GetSerializableList()
             };
 
             await SetUserDataAsync(newdata);
@@ -82,18 +82,26 @@ namespace pokeAutoBuilder.Source
         {
             UserData userData = await GetUserDataAsync();
 
-            // get the pokemon from the API using the list of names in the storage
+            // creates a list of null pokemon with same size as the stored list
+            List<SmartPokemon?> pokemonList = new List<SmartPokemon?>(new SmartPokemon?[userData.Storage.Count]);
+
+            // get the pokemon from the API using the list of serialised pokemon in the storage
             // may not load them in the order they were saved
-            var getStorageTasks = userData.Storage.Select(async name =>
+            var getStorageTasks = userData.Storage.Select(async (pokemon, index) =>
             {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    SmartPokemon? sp = await PokeApiService.Instance!.GetPokemonAsync(name);
-                    if (sp is not null)
-                        Globals.PokemonStorage.Add(sp);
-                }
+                SmartPokemon? sp = await pokemon.GetSmartPokemon();
+                if (sp is not null)
+                    pokemonList[index] = sp;
             });
             await Task.WhenAll(getStorageTasks);
+
+            // add any successful deserialisations into global storage
+            foreach (SmartPokemon? pokemon in pokemonList)
+            {
+                if (pokemon is null) continue;
+
+                Globals.PokemonStorage.Add(pokemon);
+            }
         }
 
         public async Task<List<PokemonTeam>> FetchTeamStorage()

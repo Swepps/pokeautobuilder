@@ -4,6 +4,13 @@ namespace pokeAutoBuilder.Source
 {
     public class PokemonStorage : List<SmartPokemon>
     {
+        public PokemonStorage() { }
+
+        // used when getting cached pokemon storage list
+        public PokemonStorage(List<SmartPokemon> pokemonList) 
+        { 
+        }
+
         public PokemonTeam GetRandomTeam(PokemonTeam? lockedMembers = null)
         {
             if (lockedMembers == null)
@@ -56,9 +63,15 @@ namespace pokeAutoBuilder.Source
             return randPokemon;
         }
 
-        public List<string> GetAllNames()
+        public List<SmartPokemonSerializable> GetSerializableList()
         {
-            return this.Select(p => p.Name).ToList();
+            List<SmartPokemonSerializable> smartPokemonSerializables = new List<SmartPokemonSerializable>();
+            foreach (SmartPokemon sp in this)
+            {
+                smartPokemonSerializables.Add(new SmartPokemonSerializable(sp));
+            }
+
+            return smartPokemonSerializables;
         }
     }
 }

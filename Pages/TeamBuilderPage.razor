@@ -102,9 +102,11 @@
     {
         StateHasChanged();
         await SessionService.SetPokemonSearchLocationAsync((int)pokemonSearchLocation);
-        Team!.Name = TeamName;
         if (Team is not null)
+        {
+            Team.Name = TeamName;
             await SessionService.SetGlobalTeam(Team);
+        }
     }
 
     public async void OnClickAddTeamToStorage()
