@@ -1,26 +1,56 @@
 ﻿using Accord.Genetic;
+using Microsoft.AspNetCore.Components;
 using PokeApiNet;
 
 namespace pokeAutoBuilder.Source
 {
     using Type = PokeApiNet.Type;
 
-    internal class TeamBuilder
+    public struct AutoBuilderWeightings
     {
-        public static double TypeDefenseWeighting = 1.0;
-        public static double TypeCoverageWeighting = 1.0;
-        public static Dictionary<string, double> BaseStatWeightings = new Dictionary<string, double>()
-        {
-            { "hp", 1.0 },
-            { "attack", 1.0 },
-            { "special-attack", 1.0 },
-            { "defense", 1.0 },
-            { "special-defense", 1.0 },
-            { "speed", 1.0 },
-        };
+        // priorities
+        public bool ResistantAll;
+        public bool STABCoverageAll;
 
+        // balance weightings
+        public double MoveSetBalanceWeighting;
+        public double ResistanceBalanceWeighting;
+        public double WeaknessBalanceWeighting;
+
+        // base stats
+        public double BaseStatHpWeighting;
+        public double BaseStatAttWeighting;
+        public double BaseStatDefWeighting;
+        public double BaseStatSpAttWeighting;
+        public double BaseStatSpDefWeighting;
+        public double BaseStatSpeWeighting;
+
+        public AutoBuilderWeightings(bool resistantAll, bool stabCoverageAll, double moveSetBalanceWeighting, 
+            double resistanceBalanceWeighting, 
+            double weaknessBalanceWeighting, double baseStatHpWeighting, double baseStatAttWeighting, 
+            double baseStatDefWeighting, double baseStatSpAttWeighting, double baseStatSpDefWeighting,
+            double baseStatSpeWeighting)
+        {
+            ResistantAll = resistantAll;
+            STABCoverageAll = stabCoverageAll;
+
+            MoveSetBalanceWeighting = moveSetBalanceWeighting;
+            ResistanceBalanceWeighting = resistanceBalanceWeighting;
+            WeaknessBalanceWeighting = weaknessBalanceWeighting;
+
+            BaseStatHpWeighting = baseStatHpWeighting;
+            BaseStatAttWeighting = baseStatAttWeighting;
+            BaseStatDefWeighting = baseStatDefWeighting;
+            BaseStatSpAttWeighting = baseStatSpAttWeighting;
+            BaseStatSpDefWeighting = baseStatSpDefWeighting;
+            BaseStatSpeWeighting = baseStatSpeWeighting;
+        }
+    }
+
+    internal class AutoBuilder
+    {
         // The main juice of the team building. this is what decides how good a team is
-        public static double CalculateScore(PokemonTeam team)
+        public static double CalculateScore(PokemonTeam team, AutoBuilderWeightings weightings)
         {
             if (team.CountPokemon() == 0)
                 return 0;
@@ -42,24 +72,24 @@ namespace pokeAutoBuilder.Source
 
             // defense score
             double defenseScore = 0;
-            if (TypeDefenseWeighting > 0)
+            if (weightings.ResistanceBalanceWeighting > 0)
             {
                 double weaknessesSD = CalculateStandardDeviation(weaknesses);
                 double resistancesSD = CalculateStandardDeviation(resistances);
 
                 defenseScore = 10 - (weaknessesSD + (2 * resistancesSD) + (totalWeaknesses / totalResistances));
-                defenseScore *= TypeDefenseWeighting;
+                defenseScore *= weightings.ResistanceBalanceWeighting;
             }
 
             // coverage score
             double coverageScore = 0;
-            if (TypeCoverageWeighting > 0)
+            if (weightings.STABCoverageAll /*TypeCoverageWeighting > 0*/)
             {
                 coverageScore = CalculateCoverageScore(coverage, totalCoverage);
-                coverageScore *= TypeCoverageWeighting;
+                //coverageScore *= TypeCoverageWeighting;
             }
 
-            double statsScore = CalculateStatsScore(team, BaseStatWeightings);
+            double statsScore = CalculateStatsScore(team, weightings);
 
             double score = defenseScore + coverageScore + statsScore;
             score *= team.CountPokemon() / (double)PokemonTeam.MaxTeamSize;
@@ -105,7 +135,7 @@ namespace pokeAutoBuilder.Source
             return score;
         }
 
-        private static double CalculateStatsScore(PokemonTeam team, Dictionary<string, double> statWeightings)
+        private static double CalculateStatsScore(PokemonTeam team, AutoBuilderWeightings weightings)
         {
             double score = 0;
 
@@ -126,8 +156,29 @@ namespace pokeAutoBuilder.Source
             }
 
             foreach (KeyValuePair<string, int> kvp in statTotals)
-            {
-                score += (kvp.Value / 300.0) * statWeightings[kvp.Key];
+            {     
+
+                switch (kvp.Key)
+                {
+                    case "hp":
+                        score += (kvp.Value / 300.0) * weightings.BaseStatHpWeighting;
+                        break;
+                    case "attack":
+                        score += (kvp.Value / 300.0) * weightings.BaseStatAttWeighting;
+                        break;
+                    case "special-attack":
+                        score += (kvp.Value / 300.0) * weightings.BaseStatSpAttWeighting;
+                        break;
+                    case "defense":
+                        score += (kvp.Value / 300.0) * weightings.BaseStatDefWeighting;
+                        break;
+                    case "special-defense":
+                        score += (kvp.Value / 300.0) * weightings.BaseStatSpDefWeighting;
+                        break;
+                    case "speed":
+                        score += (kvp.Value / 300.0) * weightings.BaseStatSpeWeighting;
+                        break;
+                }
             }
 
             // --- commented this out because it didn't work very well and was unnecessary computation time
@@ -154,7 +205,7 @@ namespace pokeAutoBuilder.Source
 
 
 
-        public static PokemonTeam BuildTeam(PokemonStorage availablePokemon, PokemonTeam? lockedMembers)
+        public static PokemonTeam BuildTeam(PokemonStorage availablePokemon, PokemonTeam? lockedMembers, AutoBuilderWeightings weightings)
         {
             if (lockedMembers == null)
             {
@@ -201,7 +252,7 @@ namespace pokeAutoBuilder.Source
                 }
 
                 // check to see if new team is better
-                double newTeamScore = CalculateScore(newTeam);
+                double newTeamScore = CalculateScore(newTeam, weightings);
                 if (newTeamScore > bestTeamScore)
                 {
                     bestTeam = newTeam;
@@ -256,7 +307,7 @@ namespace pokeAutoBuilder.Source
 
 
 
-        public static PokemonTeam BuildTeamGenetic(PokemonStorage availablePokemon, PokemonTeam? lockedMembers)
+        public static async Task<PokemonTeam> BuildTeamGenetic(PokemonStorage availablePokemon, AutoBuilderWeightings weightings, PokemonTeam? lockedMembers, EventCallback<int> progressCallback)
         {
             if (lockedMembers == null)
             {
@@ -268,11 +319,12 @@ namespace pokeAutoBuilder.Source
                 return lockedMembers;
             }
 
-            Population population = new Population(500, new PokemonTeamChromosome(availablePokemon, lockedMembers), new PokemonTeamChromosome.FitnessFunction(), new EliteSelection());
+            Population population = new Population(500, new PokemonTeamChromosome(availablePokemon, weightings, lockedMembers), new PokemonTeamChromosome.FitnessFunction(), new EliteSelection());
 
             for (int i = 0; i < 100; i++)
             {
                 population.RunEpoch();
+                await progressCallback.InvokeAsync(i);
             }
 
             return ((PokemonTeamChromosome)population.BestChromosome).Team;
@@ -285,14 +337,18 @@ namespace pokeAutoBuilder.Source
 
         private readonly PokemonStorage _storage;
         private readonly PokemonTeam _lockedMembers;
+        public readonly AutoBuilderWeightings _weightings;
 
         public PokemonTeam Team;
 
-        public PokemonTeamChromosome(PokemonStorage storage, PokemonTeam lockedMembers)
+        public PokemonTeamChromosome(PokemonStorage storage, AutoBuilderWeightings weightings, PokemonTeam lockedMembers)
         {
             _storage = storage;
             _lockedMembers = lockedMembers;
+            _weightings = weightings;
+
             Team = new PokemonTeam();
+
             Generate();
         }
 
@@ -314,7 +370,7 @@ namespace pokeAutoBuilder.Source
 
         public override IChromosome CreateNew()
         {
-            PokemonTeamChromosome chrom = new PokemonTeamChromosome(_storage, _lockedMembers);
+            PokemonTeamChromosome chrom = new PokemonTeamChromosome(_storage, _weightings, _lockedMembers);
             chrom.Generate();
             return chrom;
         }
@@ -366,7 +422,7 @@ namespace pokeAutoBuilder.Source
                 if (pokeChrom == null)
                     return 0;
 
-                return TeamBuilder.CalculateScore(pokeChrom.Team);
+                return AutoBuilder.CalculateScore(pokeChrom.Team, pokeChrom._weightings);
             }
         }
     }
