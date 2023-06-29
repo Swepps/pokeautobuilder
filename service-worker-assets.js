@@ -145,7 +145,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-mvYEa136NX7B+SK3j4WwjOEfFVSH8pSXGeB9b6rbTZU=",
+      "hash": "sha256-aopwsF9piNvo1p40uxsS4JZy1HdLPtYBqK3d2cjMUws=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -181,7 +181,7 @@
       "url": "_framework\/Microsoft.AspNetCore.Components.Authorization.dll"
     },
     {
-      "hash": "sha256-gCSTciWrO3toqTgEw8czPzq6N2c6GX1P8HcJzSa3Cns=",
+      "hash": "sha256-5lz1jwU1tIU7Cgll\/+1+yifgBsVEXBJhxBshSHiy+E4=",
       "url": "_framework\/Microsoft.AspNetCore.Components.dll"
     },
     {
@@ -277,7 +277,7 @@
       "url": "_framework\/Microsoft.JSInterop.WebAssembly.dll"
     },
     {
-      "hash": "sha256-7\/mwS4aSGYwdcS2m\/7mS4f8r3rC\/8F75F9eOYasSS9Y=",
+      "hash": "sha256-vG8RpEIAx5WaAA4N9S1QuZXW1zWJcavkAeaoOL32mtk=",
       "url": "_framework\/MudBlazor.dll"
     },
     {
@@ -293,7 +293,7 @@
       "url": "_framework\/PokeApiNet.dll"
     },
     {
-      "hash": "sha256-1AzJxbiaq8l4qsMZp\/CRr\/vblcfZTwdW+G7UjqvCSzk=",
+      "hash": "sha256-GX5wPWdty5heeIFOIXfxZqD\/Qlv9\/mMld0kHaTV+6VA=",
       "url": "_framework\/pokeAutoBuilder.dll"
     },
     {
@@ -401,7 +401,7 @@
       "url": "_framework\/System.ObjectModel.dll"
     },
     {
-      "hash": "sha256-xnnJEmSKVRBwyC6tSvT9k2pBQca4\/f1006Xpv5\/e4kY=",
+      "hash": "sha256-yCmS\/DVCSpo7eIv\/oTqM78\/VLyc9KopNpj6BCXRrQXo=",
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
@@ -493,5 +493,5 @@
       "url": "_content\/MudBlazor\/MudBlazor.min.js"
     }
   ],
-  "version": "WA+YX7ao"
+  "version": "eChWmg5P"
 };
