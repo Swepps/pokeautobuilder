@@ -45,10 +45,20 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         public PokemonTeam GetTeam()
         {
             var genes = GetGenes();
+            List<SmartPokemon> smartPokemonList = new List<SmartPokemon>();
+            foreach (var gene in genes)
+            {
+                smartPokemonList.Add((gene.Value as SmartPokemon)!);
+            }
+            
+            // sort them into pokedex entry order to make comparisons easier
+            smartPokemonList.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+            // now put them into a team
             PokemonTeam team = new PokemonTeam();
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
-                team[i] = genes[i].Value as SmartPokemon;
+                team[i] = smartPokemonList[i];
             }
 
             return team;

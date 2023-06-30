@@ -23,7 +23,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             var crossover = new OrderedCrossover();
             var mutation = new ReverseSequenceMutation();
             var selection = new RouletteWheelSelection();
-            var population = new Population(50, 100, chromosome);
+            var population = new Population(100, 500, chromosome);
 
             _ga = new GeneticAlgorithm(population, Fitness, selection, crossover, mutation);
         }
