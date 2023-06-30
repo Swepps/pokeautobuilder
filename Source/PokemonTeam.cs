@@ -143,6 +143,20 @@ namespace pokeAutoBuilder.Source
             }
         }
 
+        public bool ContainsDuplicates()
+        {
+            for (int i = 0; i < MaxTeamSize; i++)
+            {
+                for (int j = i + 1; j < MaxTeamSize; j++)
+                {
+                    if (this[i] == this[j])
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
         public int CountPokemon()
         {
             int count = 0;

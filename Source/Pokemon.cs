@@ -2,6 +2,7 @@
 using Accord.Math.Random;
 using Newtonsoft.Json;
 using PokeApiNet;
+using pokeAutoBuilder.Source.Services;
 using System.Collections.ObjectModel;
 
 namespace pokeAutoBuilder.Source

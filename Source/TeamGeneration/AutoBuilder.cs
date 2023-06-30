@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using PokeApiNet;
 
-namespace pokeAutoBuilder.Source
+namespace pokeAutoBuilder.Source.TeamGeneration
 {
     using Type = PokeApiNet.Type;
 
@@ -25,9 +25,9 @@ namespace pokeAutoBuilder.Source
         public double BaseStatSpDefWeighting;
         public double BaseStatSpeWeighting;
 
-        public AutoBuilderWeightings(bool resistantAll, bool stabCoverageAll, double moveSetBalanceWeighting, 
-            double resistanceBalanceWeighting, 
-            double weaknessBalanceWeighting, double baseStatHpWeighting, double baseStatAttWeighting, 
+        public AutoBuilderWeightings(bool resistantAll, bool stabCoverageAll, double moveSetBalanceWeighting,
+            double resistanceBalanceWeighting,
+            double weaknessBalanceWeighting, double baseStatHpWeighting, double baseStatAttWeighting,
             double baseStatDefWeighting, double baseStatSpAttWeighting, double baseStatSpDefWeighting,
             double baseStatSpeWeighting)
         {
@@ -77,7 +77,7 @@ namespace pokeAutoBuilder.Source
                 double weaknessesSD = CalculateStandardDeviation(weaknesses);
                 double resistancesSD = CalculateStandardDeviation(resistances);
 
-                defenseScore = 10 - (weaknessesSD + (2 * resistancesSD) + (totalWeaknesses / totalResistances));
+                defenseScore = 10 - (weaknessesSD + 2 * resistancesSD + totalWeaknesses / totalResistances);
                 defenseScore *= weightings.ResistanceBalanceWeighting;
             }
 
@@ -110,7 +110,7 @@ namespace pokeAutoBuilder.Source
             double variance = 0;
             foreach (string type in Globals.AllTypes)
             {
-                variance += Math.Pow((typeDictionary[type] - mean), 2);
+                variance += Math.Pow(typeDictionary[type] - mean, 2);
             }
             variance /= Globals.AllTypes.Count;
 
@@ -156,27 +156,27 @@ namespace pokeAutoBuilder.Source
             }
 
             foreach (KeyValuePair<string, int> kvp in statTotals)
-            {     
+            {
 
                 switch (kvp.Key)
                 {
                     case "hp":
-                        score += (kvp.Value / 300.0) * weightings.BaseStatHpWeighting;
+                        score += kvp.Value / 300.0 * weightings.BaseStatHpWeighting;
                         break;
                     case "attack":
-                        score += (kvp.Value / 300.0) * weightings.BaseStatAttWeighting;
+                        score += kvp.Value / 300.0 * weightings.BaseStatAttWeighting;
                         break;
                     case "special-attack":
-                        score += (kvp.Value / 300.0) * weightings.BaseStatSpAttWeighting;
+                        score += kvp.Value / 300.0 * weightings.BaseStatSpAttWeighting;
                         break;
                     case "defense":
-                        score += (kvp.Value / 300.0) * weightings.BaseStatDefWeighting;
+                        score += kvp.Value / 300.0 * weightings.BaseStatDefWeighting;
                         break;
                     case "special-defense":
-                        score += (kvp.Value / 300.0) * weightings.BaseStatSpDefWeighting;
+                        score += kvp.Value / 300.0 * weightings.BaseStatSpDefWeighting;
                         break;
                     case "speed":
-                        score += (kvp.Value / 300.0) * weightings.BaseStatSpeWeighting;
+                        score += kvp.Value / 300.0 * weightings.BaseStatSpeWeighting;
                         break;
                 }
             }
@@ -185,7 +185,7 @@ namespace pokeAutoBuilder.Source
             // try to balance the att and def values according to their weightings
             //double attDiffScore = 0;
             //double defDiffScore = 0;
-            
+
             //if (statWeightings["attack"] > 0 && statWeightings["special-attack"] > 0)
             //    attDiffScore = Math.Abs((statTotals["attack"] / statWeightings["attack"]) - (statTotals["special-attack"] / statWeightings["special-attack"]));
 
@@ -307,7 +307,7 @@ namespace pokeAutoBuilder.Source
 
 
 
-        public static async Task<PokemonTeam> BuildTeamGenetic(PokemonStorage availablePokemon, AutoBuilderWeightings weightings, PokemonTeam? lockedMembers, EventCallback<int> progressCallback)
+        public static PokemonTeam BuildTeamGenetic(PokemonStorage availablePokemon, AutoBuilderWeightings weightings, PokemonTeam? lockedMembers)
         {
             if (lockedMembers == null)
             {
@@ -319,111 +319,7 @@ namespace pokeAutoBuilder.Source
                 return lockedMembers;
             }
 
-            Population population = new Population(500, new PokemonTeamChromosome(availablePokemon, weightings, lockedMembers), new PokemonTeamChromosome.FitnessFunction(), new EliteSelection());
-
-            for (int i = 0; i < 100; i++)
-            {
-                population.RunEpoch();
-                await progressCallback.InvokeAsync(i);
-            }
-
-            return ((PokemonTeamChromosome)population.BestChromosome).Team;
+            return AccordGeneticAlgorithm.SolvePokemonTeam(availablePokemon, weightings, lockedMembers);
         }
-    }
-
-    internal class PokemonTeamChromosome : ChromosomeBase
-    {
-        static Random Random = new Random();
-
-        private readonly PokemonStorage _storage;
-        private readonly PokemonTeam _lockedMembers;
-        public readonly AutoBuilderWeightings _weightings;
-
-        public PokemonTeam Team;
-
-        public PokemonTeamChromosome(PokemonStorage storage, AutoBuilderWeightings weightings, PokemonTeam lockedMembers)
-        {
-            _storage = storage;
-            _lockedMembers = lockedMembers;
-            _weightings = weightings;
-
-            Team = new PokemonTeam();
-
-            Generate();
-        }
-
-        public PokemonTeamChromosome(PokemonTeam team, PokemonStorage storage, PokemonTeam lockedMembers)
-        {
-            _storage = storage;
-            _lockedMembers = lockedMembers;
-            Team = new PokemonTeam();
-            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
-            {
-                Team[i] = team[i];
-            }
-        }
-
-        public override IChromosome Clone()
-        {
-            return new PokemonTeamChromosome(Team, _storage, _lockedMembers);
-        }
-
-        public override IChromosome CreateNew()
-        {
-            PokemonTeamChromosome chrom = new PokemonTeamChromosome(_storage, _weightings, _lockedMembers);
-            chrom.Generate();
-            return chrom;
-        }
-
-        public override void Crossover(IChromosome pair)
-        {
-            PokemonTeamChromosome? otherChrom = pair as PokemonTeamChromosome;
-            if (otherChrom == null)
-                return;
-
-            int randIdx = Random.Next(PokemonTeam.MaxTeamSize);
-            for (; randIdx < PokemonTeam.MaxTeamSize; randIdx++)
-            {
-                if (!Team.Contains(otherChrom.Team[randIdx]))
-                    Team[randIdx] = otherChrom.Team[randIdx];
-            }
-        }
-
-        public override void Generate()
-        {
-            Team = _storage.GetRandomTeam(_lockedMembers);
-        }
-
-        public override void Mutate()
-        {
-            // can't mutate if the data set is less than team size
-            if (_storage.Count <= PokemonTeam.MaxTeamSize || _lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize)
-                return;
-
-            // make sure we don't swap out any locked members
-            int randIdx = Random.Next(PokemonTeam.MaxTeamSize);
-            while (_lockedMembers[randIdx] != null)
-                randIdx = Random.Next(PokemonTeam.MaxTeamSize);
-
-            // now mutate
-            SmartPokemon randPokemon = _storage.GetRandomPokemon();
-            while (Team.Contains(randPokemon))
-            {
-                randPokemon = _storage.GetRandomPokemon();
-            }
-            Team[randIdx] = randPokemon;
-        }
-
-        public class FitnessFunction : IFitnessFunction
-        {
-            public double Evaluate(IChromosome chromosome)
-            {
-                PokemonTeamChromosome? pokeChrom = chromosome as PokemonTeamChromosome;
-                if (pokeChrom == null)
-                    return 0;
-
-                return AutoBuilder.CalculateScore(pokeChrom.Team, pokeChrom._weightings);
-            }
-        }
-    }
+    }   
 }

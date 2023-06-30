@@ -2,12 +2,12 @@
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 
-namespace pokeAutoBuilder.Source
+namespace pokeAutoBuilder.Source.Services
 {
-	public record Preferences
-	{
-		public bool DarkMode { get; init; }
-	}
+    public record Preferences
+    {
+        public bool DarkMode { get; init; }
+    }
 
     public record UserData
     {
@@ -15,8 +15,8 @@ namespace pokeAutoBuilder.Source
         public List<PokemonTeamSerializable> TeamStorage { get; init; } = new List<PokemonTeamSerializable>();
     }
 
-	public class ProfileService
-	{
+    public class ProfileService
+    {
         private readonly ILocalStorageService _localStorageService;
 
         public ProfileService(ILocalStorageService localStorageService)
@@ -26,7 +26,7 @@ namespace pokeAutoBuilder.Source
 
         // --- Preferences ---
         public async Task<Preferences> GetPreferencesAsync()
-		{
+        {
             // if they've already specified their preferences explicitly, use them
             if (await _localStorageService.ContainKeyAsync("preferences"))
                 return await _localStorageService.GetItemAsync<Preferences>("preferences");
@@ -40,12 +40,12 @@ namespace pokeAutoBuilder.Source
             };
         }
 
-		public async Task SetDarkModeAsync(bool isDarkMode)
-		{
-			Preferences prefs = await GetPreferencesAsync();
-			Preferences newPrefs = prefs
-				with
-			{ DarkMode = isDarkMode };
+        public async Task SetDarkModeAsync(bool isDarkMode)
+        {
+            Preferences prefs = await GetPreferencesAsync();
+            Preferences newPrefs = prefs
+                with
+            { DarkMode = isDarkMode };
 
             await _localStorageService.SetItemAsync("preferences", newPrefs);
         }
@@ -115,7 +115,7 @@ namespace pokeAutoBuilder.Source
                 teams.Add(await st.GetPokemonTeam());
             }
 
-            return teams;   
+            return teams;
         }
 
         public async Task AddTeam(PokemonTeam team)
@@ -135,8 +135,8 @@ namespace pokeAutoBuilder.Source
 
         public async Task RemoveTeam(PokemonTeam team, int index = -1)
         {
-			UserData userData = await GetUserDataAsync();
-			List<PokemonTeamSerializable> teams = userData.TeamStorage;
+            UserData userData = await GetUserDataAsync();
+            List<PokemonTeamSerializable> teams = userData.TeamStorage;
             PokemonTeamSerializable pts = new PokemonTeamSerializable(team);
 
             // try to find the first matching team
@@ -150,13 +150,13 @@ namespace pokeAutoBuilder.Source
                 teams.RemoveAt(index);
             }
 
-			UserData newData = userData
-				with
-			{
-				TeamStorage = teams
-			};
+            UserData newData = userData
+                with
+            {
+                TeamStorage = teams
+            };
 
-			await SetUserDataAsync(newData);
-		}
+            await SetUserDataAsync(newData);
+        }
     }
 }

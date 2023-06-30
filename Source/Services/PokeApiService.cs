@@ -4,7 +4,7 @@ using Microsoft.VisualBasic;
 using PokeApiNet;
 using System.Diagnostics;
 
-namespace pokeAutoBuilder.Source
+namespace pokeAutoBuilder.Source.Services
 {
     using Type = PokeApiNet.Type;
 
@@ -24,7 +24,7 @@ namespace pokeAutoBuilder.Source
 
         // it works but I may as well just hard code it so no longer used...
         public async Task<List<Type>> GetAllTypesAsync()
-        { 
+        {
             List<Type> pokemonTypes = new List<Type>();
 
             NamedApiResourceList<Type> allTypesPage = await ApiClient.GetNamedResourcePageAsync<Type>();
