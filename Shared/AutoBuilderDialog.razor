@@ -52,14 +52,17 @@
         </MudOverlay>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+@*        <MudButton OnClick="Cancel">Cancel</MudButton>*@
+        <MudButton Color="Color.Primary" OnClick="Submit">Close</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter]
     MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public PokemonTeam? LockedMembers { get; set; }
 
     private PokemonTeamGeneticAlgorithm GA = new PokemonTeamGeneticAlgorithm();
     private PokemonTeam Team = new PokemonTeam();
@@ -106,7 +109,7 @@
         resistanceBalanceWeighting, weaknessBalanceWeighting, baseStatHpWeighting, baseStatAttWeighting,
         baseStatDefWeighting, baseStatSpAttWeighting, baseStatSpDefWeighting, baseStatSpeWeighting);
 
-        GA.Initialize(Globals.PokemonStorage, new PokemonTeam(), weightings);
+        GA.Initialize(Globals.PokemonStorage, LockedMembers is null ? new PokemonTeam() : LockedMembers, weightings);
         GA.Run();
         //Team = /*await*/ AutoBuilder.BuildTeamGenetic(Globals.PokemonStorage, weightings, new PokemonTeam());
 
