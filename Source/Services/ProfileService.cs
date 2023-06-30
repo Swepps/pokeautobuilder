@@ -24,6 +24,35 @@ namespace pokeAutoBuilder.Source.Services
             _localStorageService = localStorageService;
         }
 
+        public async Task CheckVersion()
+        {
+            double cachedVer = 0;
+            if (await _localStorageService.ContainKeyAsync("version"))
+                cachedVer = await _localStorageService.GetItemAsync<double>("version");
+
+            if (cachedVer < Globals.Version)
+            {
+                bool dataFormatUpdate = false;
+                foreach (KeyValuePair<double, bool> entry in Globals.Versions)
+                {
+                    if (entry.Key > cachedVer && entry.Value == true)
+                    {
+                        dataFormatUpdate = true;
+                        break;
+                    }
+                }
+
+                // clear the cache if any newer versions than the cached one require format update
+                if (dataFormatUpdate)
+                {
+                    await _localStorageService.ClearAsync();
+                }
+            }
+
+            // store the current version in the cache
+            await _localStorageService.SetItemAsync("version", Globals.Version);
+        }
+
         // --- Preferences ---
         public async Task<Preferences> GetPreferencesAsync()
         {

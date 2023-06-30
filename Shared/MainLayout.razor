@@ -71,6 +71,9 @@
     {
         if (firstRender)
         {
+            // first check the version to clear cache if there has been a format update
+            await ProfileService.CheckVersion();
+
             // initialising global variables used across the app
 
             // load preferences first before the long ones
