@@ -8,7 +8,7 @@ namespace pokeAutoBuilder.Source
 	{
         public static Dictionary<double, bool> Versions = new Dictionary<double, bool>()
         {
-            { 0.1, false }
+            { 0.1, true }
         };
         public static double Version = 0.1;
         public static string Language = "en";

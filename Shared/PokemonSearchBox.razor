@@ -298,7 +298,7 @@
     }
 
     public async void OnClickRandomize()
-    {
+    {       
         NamedApiResource<Pokemon>? pokemonResource = null;
         SmartPokemonEntry? entry = Globals.NationalDex!.RandomPokemon();
         if (entry != null)
@@ -310,12 +310,15 @@
 
         if (pokemonResource != null)
         {
+            this.pokemon = null;
+            this.pokemonSearchValue = entry;
+            this.pokemonFormName = pokemonResource.Name;
+            StateHasChanged();
+
             SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
             if (pokemon != null)
             {
                 this.pokemon = pokemon;
-                this.pokemonSearchValue = entry;
-                this.pokemonFormName = pokemon.Name;
                 await Update();
             }
         }
