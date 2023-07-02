@@ -8,6 +8,9 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 
     public struct AutoBuilderWeightings
     {
+        // sum of all weightings. bools are worth 2
+        public static readonly double MaxPossibleScore = 10.0;
+
         // priorities
         public bool ResistantAll;
         public bool STABCoverageAll;
@@ -17,7 +20,8 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         public double ResistanceBalanceWeighting;
         public double WeaknessBalanceWeighting;
 
-        // base stats
+        // base stats ( total = 3.0 )
+        public double BaseStatTotalWeighting;
         public double BaseStatHpWeighting;
         public double BaseStatAttWeighting;
         public double BaseStatDefWeighting;
@@ -27,7 +31,8 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 
         public AutoBuilderWeightings(bool resistantAll, bool stabCoverageAll, double moveSetBalanceWeighting,
             double resistanceBalanceWeighting,
-            double weaknessBalanceWeighting, double baseStatHpWeighting, double baseStatAttWeighting,
+            double weaknessBalanceWeighting,
+            double baseStatTotalWeighting, double baseStatHpWeighting, double baseStatAttWeighting,
             double baseStatDefWeighting, double baseStatSpAttWeighting, double baseStatSpDefWeighting,
             double baseStatSpeWeighting)
         {
@@ -38,12 +43,37 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             ResistanceBalanceWeighting = resistanceBalanceWeighting;
             WeaknessBalanceWeighting = weaknessBalanceWeighting;
 
+            BaseStatTotalWeighting = baseStatTotalWeighting;
             BaseStatHpWeighting = baseStatHpWeighting;
             BaseStatAttWeighting = baseStatAttWeighting;
             BaseStatDefWeighting = baseStatDefWeighting;
             BaseStatSpAttWeighting = baseStatSpAttWeighting;
             BaseStatSpDefWeighting = baseStatSpDefWeighting;
             BaseStatSpeWeighting = baseStatSpeWeighting;
+        }
+
+        public double SumWeightings()
+        {
+            double sum = 0;
+
+            if (ResistantAll)
+                sum += 2.0;
+
+            if (STABCoverageAll)
+                sum += 2.0;
+
+            sum += MoveSetBalanceWeighting;
+            sum += ResistanceBalanceWeighting;
+            sum += WeaknessBalanceWeighting;
+
+            sum += 0.5 * BaseStatHpWeighting;
+            sum += 0.5 * BaseStatAttWeighting;
+            sum += 0.5 * BaseStatDefWeighting;
+            sum += 0.5 * BaseStatSpAttWeighting;
+            sum += 0.5 * BaseStatSpDefWeighting;
+            sum += 0.5 * BaseStatSpeWeighting;
+
+            return sum;
         }
     }
 
@@ -55,45 +85,164 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             if (team.CountPokemon() == 0)
                 return 0;
 
+            // scale the base stat weightings by the total weighting
+            weightings.BaseStatHpWeighting *= weightings.BaseStatTotalWeighting;
+            weightings.BaseStatAttWeighting *= weightings.BaseStatTotalWeighting;
+            weightings.BaseStatDefWeighting *= weightings.BaseStatTotalWeighting;
+            weightings.BaseStatSpAttWeighting *= weightings.BaseStatTotalWeighting;
+            weightings.BaseStatSpDefWeighting *= weightings.BaseStatTotalWeighting;
+            weightings.BaseStatSpeWeighting *= weightings.BaseStatTotalWeighting;
+
+            double maxScore = weightings.SumWeightings();
+            double scaleFactor = AutoBuilderWeightings.MaxPossibleScore / maxScore;
+
             // gather some information about the types in the team
             Dictionary<string, int> weaknesses = new Dictionary<string, int>();
             Dictionary<string, int> resistances = new Dictionary<string, int>();
-            Dictionary<string, int> coverage = new Dictionary<string, int>();
+            Dictionary<string, int> STABcoverage = new Dictionary<string, int>();
 
             double totalWeaknesses = 0;
             double totalResistances = 0;
-            double totalCoverage = 0;
+            double totalSTABCoverage = 0;
             foreach (string t in Globals.AllTypes)
             {
                 totalWeaknesses += weaknesses[t] = team.CountWeaknesses(t);
                 totalResistances += resistances[t] = team.CountResistances(t);
-                totalCoverage += coverage[t] = team.CountSTABCoverage(t);
+                totalSTABCoverage += STABcoverage[t] = team.CountSTABCoverage(t);
             }
 
-            // defense score
-            double defenseScore = 0;
+            //// defense score
+            //double defenseScore = 0;
+            //if (weightings.ResistanceBalanceWeighting > 0)
+            //{
+            //    double weaknessesSD = CalculateStandardDeviation(weaknesses);
+            //    double resistancesSD = CalculateStandardDeviation(resistances);
+
+            //    defenseScore = 10 - (weaknessesSD + 2 * resistancesSD + totalWeaknesses / totalResistances);
+            //    defenseScore *= weightings.ResistanceBalanceWeighting;
+            //}
+
+            // resistance balance score
+            double resistanceScore = 0;
             if (weightings.ResistanceBalanceWeighting > 0)
             {
-                double weaknessesSD = CalculateStandardDeviation(weaknesses);
                 double resistancesSD = CalculateStandardDeviation(resistances);
 
-                defenseScore = 10 - (weaknessesSD + 2 * resistancesSD + totalWeaknesses / totalResistances);
-                defenseScore *= weightings.ResistanceBalanceWeighting;
+                resistanceScore = 0.2 * (5 - resistancesSD);
+                resistanceScore *= weightings.ResistanceBalanceWeighting * scaleFactor;
             }
 
-            // coverage score
-            double coverageScore = 0;
-            if (weightings.STABCoverageAll /*TypeCoverageWeighting > 0*/)
+            // weaknesses score
+            double weaknessScore = 0;
+            if (weightings.WeaknessBalanceWeighting > 0)
             {
-                coverageScore = CalculateCoverageScore(coverage, totalCoverage);
-                //coverageScore *= TypeCoverageWeighting;
+                double weaknessesSD = CalculateStandardDeviation(weaknesses);
+
+                weaknessScore = 0.2 * (5 - weaknessesSD);
+                weaknessScore *= weightings.WeaknessBalanceWeighting * scaleFactor;
             }
 
-            double statsScore = CalculateStatsScore(team, weightings);
+            // STAB coverage score
+            double STABCoverageScore = 0;
+            if (weightings.STABCoverageAll)
+            {
+                STABCoverageScore = 2.0;
+                foreach (string type in Globals.AllTypes)
+                {
+                    if (STABcoverage.TryGetValue(type, out int count) && count < 1)
+                    {
+                        // normal type isn't as important
+                        if (type == "normal")
+                        {
+                            STABCoverageScore -= 0.05;
+                        }
+                        else
+                        {
+                            STABCoverageScore -= 0.2;
+                        }                        
+                    }
+                }
+                STABCoverageScore *= scaleFactor;
+            }
 
-            double score = defenseScore + coverageScore + statsScore;
+            // Resistant All score
+            double resistantAllScore = 0;
+            if (weightings.ResistantAll)
+            {
+                resistantAllScore = 2.0;
+                foreach (string type in Globals.AllTypes)
+                {
+                    if (resistances.TryGetValue(type, out int count) && count < 1)
+                    {
+                        // normal type isn't as important
+                        if (type == "normal")
+                        {
+                            resistantAllScore -= 0.05;
+                        }
+                        else
+                        {
+                            resistantAllScore -= 0.2;
+                        }
+                    }
+                }
+                resistantAllScore *= scaleFactor;
+            }
+
+            // base stat scores
+            double statScore = 0;
+            if (weightings.BaseStatTotalWeighting > 0)
+            {
+                // collect stat info
+                
+                Dictionary<string, int> statTotals = new Dictionary<string, int>();
+
+                foreach (SmartPokemon? pokemon in team)
+                {
+                    if (pokemon == null)
+                        continue;
+
+                    foreach (PokemonStat stat in pokemon.Stats)
+                    {
+                        if (statTotals.ContainsKey(stat.Stat.Name))
+                            statTotals[stat.Stat.Name] += stat.BaseStat;
+                        else
+                            statTotals[stat.Stat.Name] = stat.BaseStat;
+                    }
+                }
+
+                foreach (KeyValuePair<string, int> kvp in statTotals)
+                {
+                    switch (kvp.Key)
+                    {
+                        case "hp":
+                            statScore += kvp.Value / 600.0 * weightings.BaseStatHpWeighting;
+                            break;
+                        case "attack":
+                            statScore += kvp.Value / 600.0 * weightings.BaseStatAttWeighting;
+                            break;
+                        case "special-attack":
+                            statScore += kvp.Value / 600.0 * weightings.BaseStatSpAttWeighting;
+                            break;
+                        case "defense":
+                            statScore += kvp.Value / 600.0 * weightings.BaseStatDefWeighting;
+                            break;
+                        case "special-defense":
+                            statScore += kvp.Value / 600.0 * weightings.BaseStatSpDefWeighting;
+                            break;
+                        case "speed":
+                            statScore += kvp.Value / 600.0 * weightings.BaseStatSpeWeighting;
+                            break;
+                    }
+                }
+
+                statScore *= scaleFactor;
+            }
+
+            double score = resistanceScore + weaknessScore + STABCoverageScore + resistantAllScore + statScore;
             score *= team.CountPokemon() / (double)PokemonTeam.MaxTeamSize;
 
+            // scale it back to a num between 0 and 1
+            score /= AutoBuilderWeightings.MaxPossibleScore;
             return score;
         }
 

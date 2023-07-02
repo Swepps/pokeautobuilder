@@ -225,5 +225,10 @@ namespace pokeAutoBuilder.Source
 
             return coverage;
         }
+
+        public void SortById()
+        {
+            Sort((a, b) => a.Id.CompareTo(b.Id));
+        }
     }
 }

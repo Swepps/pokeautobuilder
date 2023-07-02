@@ -12,7 +12,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         public int GenerationsNumber => _ga != null ? _ga.GenerationsNumber : 0;
         public bool IsRunning => _timer != null;
 
-        public void Initialize(PokemonStorage storage, PokemonTeam lockedMembers, AutoBuilderWeightings weightings)
+        public void Initialize(int populationsize, PokemonStorage storage, PokemonTeam lockedMembers, AutoBuilderWeightings weightings)
         {
             Stop();
             Fitness = new PokemonTeamFitness(weightings);
@@ -23,9 +23,11 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             var crossover = new OrderedCrossover();
             var mutation = new ReverseSequenceMutation();
             var selection = new RouletteWheelSelection();
-            var population = new Population(100, 500, chromosome);
+            var population = new Population(populationsize, populationsize, chromosome);
 
             _ga = new GeneticAlgorithm(population, Fitness, selection, crossover, mutation);
+            //_ga.CrossoverProbability = 1.0f;
+            _ga.MutationProbability = 0.2f;
         }
 
         public void Run()
