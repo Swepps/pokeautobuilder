@@ -145,7 +145,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-gIVbkO5TuAuzibzYwUdOAiFu6A4OPKWMNzASKJ\/x6nQ=",
+      "hash": "sha256-0KcgP1J\/Ij5riBsQMJ\/Mci\/tpmPGgt4vfMESdb\/esgE=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -189,7 +189,7 @@
       "url": "_framework\/Microsoft.AspNetCore.Components.Authorization.dll"
     },
     {
-      "hash": "sha256-5lz1jwU1tIU7Cgll\/+1+yifgBsVEXBJhxBshSHiy+E4=",
+      "hash": "sha256-PJQ7DG+GiJGtm46OTVYyxZjcozJmrwF+HgE5C3LtbAk=",
       "url": "_framework\/Microsoft.AspNetCore.Components.dll"
     },
     {
@@ -285,7 +285,7 @@
       "url": "_framework\/Microsoft.JSInterop.WebAssembly.dll"
     },
     {
-      "hash": "sha256-vG8RpEIAx5WaAA4N9S1QuZXW1zWJcavkAeaoOL32mtk=",
+      "hash": "sha256-2n6js6ISQxnEz+USSDIcnxsJhXRNDo0HdsMPDrOQQ40=",
       "url": "_framework\/MudBlazor.dll"
     },
     {
@@ -301,7 +301,7 @@
       "url": "_framework\/PokeApiNet.dll"
     },
     {
-      "hash": "sha256-x0h74unFBVSLVZ1TQDcPlcF8+mjerkdNrJaivMWtLWM=",
+      "hash": "sha256-XkpSSzzU72uhXBwnKFYV8Zyo0v4IkwhJvCUJciyCEG8=",
       "url": "_framework\/pokeAutoBuilder.dll"
     },
     {
@@ -509,5 +509,5 @@
       "url": "_content\/MudBlazor\/MudBlazor.min.js"
     }
   ],
-  "version": "IHqeKTJW"
+  "version": "XpfSjg7a"
 };
