@@ -1,59 +1,119 @@
-﻿@using pokeAutoBuilder.Source.TeamGeneration;
+﻿@inject SessionService SessionService
+@inject NavigationManager NavigationManager
+
+@using pokeAutoBuilder.Shared.Panes
+@using pokeAutoBuilder.Source.Services;
+@using pokeAutoBuilder.Source.TeamGeneration;
 @using pokeAutoBuilder.Shared.Cards
 
 <MudDialog>
     <DialogContent>
-        <MudText Typo="Typo.body1">The controls below are used for setting the parameters used for generating a Pokémon team</MudText>
-        <MudGrid>
-            <MudItem xs="3">
-                <MudCheckBox T="bool" @bind-Checked="resistantAll" Label="Prioritise having a resistant Pokémon for all types"/>
-            </MudItem>
-            <MudItem xs="3">
-                <MudCheckBox T="bool" @bind-Checked="stabCoverageAll" Label="Prioritise having STAB coverage against all types" />
-            </MudItem>
-            <MudItem xs="6">
-                <MudSlider @bind-Value="moveSetBalanceWeighting" Min="0" Max="1" Step="0.05">Balance Pokémon move types</MudSlider>
-            </MudItem>
-            <MudItem xs="6">
-                <MudSlider @bind-Value="resistanceBalanceWeighting" Min="0" Max="1" Step="0.05">Balance team resistances</MudSlider>
-            </MudItem>
-            <MudItem xs="6">
-                <MudSlider @bind-Value="weaknessBalanceWeighting" Min="0" Max="1" Step="0.05">Balance team weaknesses</MudSlider>
-            </MudItem>
-            <MudItem xs="12">
-                <MudStack>
-                    <MudText Typo="Typo.body2">Base Stat Weightings</MudText>
-                    <MudStack Row="true">
-                        <MudSlider @bind-Value="baseStatHpWeighting" Min="0" Max="1" Step="0.05" Vertical="true">HP</MudSlider>
-                        <MudSlider @bind-Value="baseStatAttWeighting" Min="0" Max="1" Step="0.05" Vertical="true">Attack</MudSlider>
-                        <MudSlider @bind-Value="baseStatDefWeighting" Min="0" Max="1" Step="0.05" Vertical="true">Defense</MudSlider>
-                        <MudSlider @bind-Value="baseStatSpAttWeighting" Min="0" Max="1" Step="0.05" Vertical="true">Sp. Attack</MudSlider>
-                        <MudSlider @bind-Value="baseStatSpDefWeighting" Min="0" Max="1" Step="0.05" Vertical="true">Sp. Defense</MudSlider>
-                        <MudSlider @bind-Value="baseStatSpeWeighting" Min="0" Max="1" Step="0.05" Vertical="true">Speed</MudSlider>
-                    </MudStack>
-                </MudStack>
-            </MudItem>
-        </MudGrid>
-        <MudButton OnClick="OnClickGenerate">Generate</MudButton>
-        <MudButton OnClick="OnClickStop">Stop</MudButton>
+        <MudStack AlignItems="AlignItems.Start">
+            <MudText Typo="Typo.caption">The controls below are used for setting the parameters used for generating a Pokémon team</MudText>
 
-        <div class="justify-center gap-1 align-content-center mud-height-full mud-width-full">
-		@foreach (SmartPokemon? p in Team)
-		{
-			@if (p is not null)
-			{
-				<PokemonMiniCard Pokemon="p" />
-			}
-		}
-	    </div>
+            <MudDivider DividerType="DividerType.FullWidth" />
 
-        <MudOverlay Visible="Generating" DarkBackground="true" Absolute="true">
+            <MudText Typo="Typo.h6">Balance Weightings</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudCheckBox T="bool" @bind-Checked="resistantAll" Label="Prioritise having a resistant Pokémon for all types"/>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudCheckBox T="bool" @bind-Checked="stabCoverageAll" Label="Prioritise having STAB coverage against all types" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudSlider @bind-Value="moveSetBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance Pokémon move types</MudSlider>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudSlider @bind-Value="resistanceBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance team resistances</MudSlider>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudSlider @bind-Value="weaknessBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance team weaknesses</MudSlider>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudDivider DividerType="DividerType.FullWidth" />
+                    <MudText Typo="Typo.h6">Stat Weightings</MudText>
+                    <MudSlider @bind-Value="baseStatTotalWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05"></MudSlider>
+                    <MudGrid>
+                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatHpWeighting"    Size="Size.Medium" Min="0" Max="1" Step="0.05">HP</MudSlider>           </MudItem>
+                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatAttWeighting"   Size="Size.Medium" Min="0" Max="1" Step="0.05">Attack</MudSlider>       </MudItem>
+                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatDefWeighting"   Size="Size.Medium" Min="0" Max="1" Step="0.05">Defense</MudSlider>      </MudItem>
+                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatSpAttWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Sp. Attack</MudSlider>   </MudItem>
+                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatSpDefWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Sp. Defense</MudSlider>  </MudItem>
+                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatSpeWeighting"   Size="Size.Medium" Min="0" Max="1" Step="0.05">Speed</MudSlider>        </MudItem>
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+
+            <MudStack Row="true">
+                @if (Generating)
+                {                    
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" OnClick="OnClickStop">Stop</MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="OnClickGenerate">Generate</MudButton>
+                }
+                <MudButton Disabled="Generating" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickReset">Reset</MudButton>
+                <MudSpacer />
+                <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10"/>
+                <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
+                <MudButton Disabled="@(Generating || BestTeam.IsEmpty)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Primary" OnClick="OnClickLoadIntoEditor">Load Into Editor</MudButton>
+            </MudStack>
+
+            @if (Generating)
+            {
+                <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
+            }
+
+            <MudDivider DividerType="DividerType.FullWidth" />
+
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudGrid Justify="Justify.SpaceEvenly">
+                        @foreach (SmartPokemon? p in BestTeam)
+                        {
+                            @if (p is not null)
+                            {
+                                <MudItem xs="4" md="2">
+                                    <MudPaper>
+                                        <PokemonCard Pokemon="p" />
+                                    </MudPaper>
+                                </MudItem>
+                            }
+                            else
+                            {
+                                <MudItem xs="4" md="2">
+                                    <MudSkeleton Height="100px"></MudSkeleton>
+                                </MudItem>
+                            }
+                        }
+                    </MudGrid>
+                </MudItem>
+                @if (!BestTeam.IsEmpty)
+                {
+                    <MudItem xs="12">
+                        <PokemonTeamStatsChartPane Team="@BestTeam" />
+                    </MudItem>                
+                    <MudItem xs="12">
+                        <PokemonTeamDefensePane Team="@BestTeam" />
+                    </MudItem>                
+                    <MudItem xs="12">
+                        <PokemonTeamCoveragePane Team="@BestTeam" />
+                    </MudItem>
+                }
+            </MudGrid>
+
+            <MudText>@GABestChromFitness</MudText>
+
+@*        <MudOverlay Visible="Generating" DarkBackground="true" Absolute="true">
             <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Class="my-7" />
-        </MudOverlay>
+        </MudOverlay>*@
+        </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+@*        <MudButton OnClick="Cancel">Cancel</MudButton>*@
+        <MudButton Color="Color.Primary" OnClick="Submit">Close</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -61,11 +121,21 @@
     [CascadingParameter]
     MudDialogInstance? MudDialog { get; set; }
 
+    [Parameter]
+    public PokemonTeam? LockedMembers { get; set; }
+
     private PokemonTeamGeneticAlgorithm GA = new PokemonTeamGeneticAlgorithm();
-    private PokemonTeam Team = new PokemonTeam();
+    private PokemonTeam BestTeam = new PokemonTeam();
 
     private bool Generating = false;
+    private int GenerationsRan { get; set; } = 0;
     private int ProgressValue { get; set; } = 0;
+
+    private int NumGenerations = 50;
+    private int PopulationSize = 200;
+
+    private double? GABestChromFitness = 0;
+    private double BestOverallFitness = 0;
 
     public bool resistantAll = true;
     public bool stabCoverageAll = true;
@@ -75,12 +145,13 @@
     public double weaknessBalanceWeighting = 1.0;
 
     // base stats
-    public double baseStatHpWeighting = 1.0;
-    public double baseStatAttWeighting = 1.0;
-    public double baseStatDefWeighting = 1.0;
-    public double baseStatSpAttWeighting = 1.0;
-    public double baseStatSpDefWeighting = 1.0;
-    public double baseStatSpeWeighting = 1.0;
+    public double baseStatTotalWeighting = 1.0;
+    public double baseStatHpWeighting = 0.5;
+    public double baseStatAttWeighting = 0.5;
+    public double baseStatDefWeighting = 0.5;
+    public double baseStatSpAttWeighting = 0.5;
+    public double baseStatSpDefWeighting = 0.5;
+    public double baseStatSpeWeighting = 0.5;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -91,35 +162,65 @@
         }
     }
 
-    public void UpdateProgress(int stepsDone)
-    {
-        ProgressValue = stepsDone;
-        StateHasChanged();
-    }
-
-    public /*async Task*/ void OnClickGenerate()
+    public void OnClickGenerate()
     {
         Generating = true;
+        GenerationsRan = 0;
         ProgressValue = 0;
+        BestOverallFitness = 0;
 
         AutoBuilderWeightings weightings = new AutoBuilderWeightings(resistantAll, stabCoverageAll, moveSetBalanceWeighting,
-        resistanceBalanceWeighting, weaknessBalanceWeighting, baseStatHpWeighting, baseStatAttWeighting,
+        resistanceBalanceWeighting, weaknessBalanceWeighting, baseStatTotalWeighting, baseStatHpWeighting, baseStatAttWeighting,
         baseStatDefWeighting, baseStatSpAttWeighting, baseStatSpDefWeighting, baseStatSpeWeighting);
 
-        GA.Initialize(Globals.PokemonStorage, new PokemonTeam(), weightings);
+        GA.Initialize(PopulationSize, Globals.PokemonStorage, LockedMembers is null ? new PokemonTeam() : LockedMembers, weightings);
         GA.Run();
-        //Team = /*await*/ AutoBuilder.BuildTeamGenetic(Globals.PokemonStorage, weightings, new PokemonTeam());
 
+        StateHasChanged();
     }
 
     public void OnClickStop()
     {
+        GA.Stop();
 
+        Generating = false;
+        StateHasChanged();
     }
 
+    public void OnClickReset()
+    {
+        BestTeam = new PokemonTeam();
+        StateHasChanged();
+    }
+
+    public async Task OnClickLoadIntoEditor()
+    {
+        await SessionService.SetGlobalTeam(BestTeam);
+        MudDialog!.Close(DialogResult.Ok(BestTeam));
+    }
+
+    // called after each generation is completed
     void HandleGenerationRan()
     {
-        Team = GA.BestChromosome.GetTeam();
+        PokemonTeam GeneratedTeam = GA.BestChromosome.GetTeam();
+        GABestChromFitness = GA.BestChromosome.Fitness;        
+
+        if (GABestChromFitness > BestOverallFitness)
+        {
+            BestTeam = GeneratedTeam;
+            BestOverallFitness = (double)GABestChromFitness;
+        }
+
+        GenerationsRan++;
+
+        if (GenerationsRan % 5 == 0)
+        {
+            ProgressValue = GenerationsRan;
+            if (ProgressValue >= NumGenerations)
+            {
+                OnClickStop();
+            }
+        }
 
         StateHasChanged();
     }

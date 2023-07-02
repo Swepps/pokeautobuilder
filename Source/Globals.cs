@@ -8,9 +8,10 @@ namespace pokeAutoBuilder.Source
 	{
         public static Dictionary<double, bool> Versions = new Dictionary<double, bool>()
         {
-            { 0.1, false }
+            { 0.1, true },
+            { 0.2, false },
         };
-        public static double Version = 0.1;
+        public static double Version = 0.2;
         public static string Language = "en";
         public static MudThemeProvider? MudThemeProvider;
         public static SmartPokedex? NationalDex;

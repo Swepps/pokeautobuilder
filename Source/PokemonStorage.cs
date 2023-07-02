@@ -25,17 +25,8 @@ namespace pokeAutoBuilder.Source
 
             // generate the random members and stick into an array for later
             Random rand = new Random();
-            SmartPokemon[] randomMembers = new SmartPokemon[PokemonTeam.MaxTeamSize - lockedMembers.CountPokemon()];
-            for (int i = 0; i < randomMembers.Length; i++)
-            {
-                SmartPokemon randPokemon = this[rand.Next(0, Count)];
-                while (lockedMembers.Contains(randPokemon) || randomMembers.Contains(randPokemon))
-                {
-                    randPokemon = this[rand.Next(0, Count)];
-                }
-
-                randomMembers[i] = randPokemon;
-            }
+            int numOfRandMembers = PokemonTeam.MaxTeamSize - lockedMembers.CountPokemon();
+            List<SmartPokemon> randomMembers = this.OrderBy(p => rand.Next()).Take(numOfRandMembers).ToList();
 
             // create a new team using lockedMembers and random members
             PokemonTeam newTeam = new PokemonTeam();
@@ -46,7 +37,7 @@ namespace pokeAutoBuilder.Source
                 {
                     newTeam[i] = lockedMembers[i];
                 }
-                else if (randIdx < randomMembers.Length)
+                else if (randIdx < randomMembers.Count)
                 {
                     newTeam[i] = randomMembers[randIdx];
                     randIdx++;
