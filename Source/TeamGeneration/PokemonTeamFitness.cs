@@ -15,7 +15,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         {
             PokemonTeam team = (chromosome as PokemonTeamChromosome)!.GetTeam();
 
-            double fitness = (AutoBuilder.CalculateScore(team, _weightings) / 30.0);
+            double fitness = AutoBuilder.CalculateScore(team, _weightings);
 
             // duplicates in a team don't qualify as a valid team
             if (fitness < 0 || team.ContainsDuplicates())

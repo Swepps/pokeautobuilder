@@ -36,7 +36,12 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 
         public override IChromosome Clone()
         {
-            var clone = base.Clone() as PokemonTeamChromosome;
+            var clone = new PokemonTeamChromosome(_storage, _lockedMembers);
+            var genes = GetGenes();
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                clone.ReplaceGene(i, new Gene((SmartPokemon?)genes[i].Value));
+            }
             clone!.Score = Score;
 
             return clone;
@@ -45,21 +50,14 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         public PokemonTeam GetTeam()
         {
             var genes = GetGenes();
-            List<SmartPokemon> smartPokemonList = new List<SmartPokemon>();
-            foreach (var gene in genes)
-            {
-                smartPokemonList.Add((gene.Value as SmartPokemon)!);
-            }
-            
-            // sort them into pokedex entry order to make comparisons easier
-            smartPokemonList.Sort((a, b) => a.Id.CompareTo(b.Id));
 
-            // now put them into a team
+            // put into a new team then sort it
             PokemonTeam team = new PokemonTeam();
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
-                team[i] = smartPokemonList[i];
+                team[i] = genes[i].Value as SmartPokemon;
             }
+            team.SortById();
 
             return team;
         }

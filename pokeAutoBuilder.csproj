@@ -8,10 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Application\**" />
     <Compile Remove="archive\**" />
+    <Compile Remove="blazorWebAssemblyApp\**" />
+    <Content Remove="Application\**" />
     <Content Remove="archive\**" />
+    <Content Remove="blazorWebAssemblyApp\**" />
+    <EmbeddedResource Remove="Application\**" />
     <EmbeddedResource Remove="archive\**" />
+    <EmbeddedResource Remove="blazorWebAssemblyApp\**" />
+    <None Remove="Application\**" />
     <None Remove="archive\**" />
+    <None Remove="blazorWebAssemblyApp\**" />
   </ItemGroup>
 
   <ItemGroup>
