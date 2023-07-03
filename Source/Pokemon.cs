@@ -268,6 +268,21 @@ namespace pokeAutoBuilder.Source
             }
         }
 
+        public List<PokemonMove> SearchAvailableMoves(string searchTerm)
+        {
+            List<PokemonMove> results = Moves.Where(move => move.Move.Name.Contains(searchTerm)).OrderBy(move => move.Move.Name).ToList();
+            return results;
+        }
+
+        public PokemonMove? GetSelectedMoveResource(int index)
+        {
+            if (index < 0 || index >= PokemonMoveset.MaxMovesetSize) return null;
+            if (SelectedMoves[index] is null) return null;
+
+            Move move = SelectedMoves[index]!;
+            return Moves.Find(m => m.Move.Name == move.Name);
+        }
+
         public double GetResistance(string typeName)
         {
             if (Multipliers.Defense.TryGetValue(typeName, out double attEff))

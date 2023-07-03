@@ -228,7 +228,18 @@ namespace pokeAutoBuilder.Source
 
         public void SortById()
         {
-            Sort((a, b) => a.Id.CompareTo(b.Id));
+            // order any non null members into a new list
+            List<SmartPokemon?> team = this.Where(p => p is not null).OrderBy(p => p!.Id).ToList();
+
+            // now empty this team and refill with sorted list
+            Clear();
+            for (int i = 0; i < MaxTeamSize; ++i)
+            {
+                if (i < team.Count)
+                    Add(team[i]);
+                else
+                    Add(null);
+            }
         }
     }
 }

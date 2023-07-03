@@ -4,11 +4,11 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 {
     public class PokemonTeamGeneticAlgorithm
     {
-        GeneticAlgorithm _ga;
-        Timer _timer;
-        public event Action GenerationRan;
-        public PokemonTeamFitness Fitness { get; private set; }
-        public PokemonTeamChromosome BestChromosome => _ga != null ? _ga.BestChromosome as PokemonTeamChromosome : null;
+        GeneticAlgorithm? _ga;
+        Timer? _timer;
+        public event Action? GenerationRan;
+        public PokemonTeamFitness? Fitness { get; private set; }
+        public PokemonTeamChromosome? BestChromosome => _ga != null ? _ga.BestChromosome as PokemonTeamChromosome : null;
         public int GenerationsNumber => _ga != null ? _ga.GenerationsNumber : 0;
         public bool IsRunning => _timer != null;
 
@@ -38,6 +38,9 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 // to start a new generation each 1 microsecond.
                 _timer = new Timer(new TimerCallback(_ =>
                 {
+                    if (_ga is null)
+                        return;
+
                     _ga.Termination = new GenerationNumberTermination(_ga.GenerationsNumber + 1);
                     if (_ga.GenerationsNumber > 0)
                         _ga.Resume();
@@ -50,7 +53,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 
         public void Stop()
         {
-            if (IsRunning)
+            if (IsRunning && _timer is not null)
             {
                 _timer.Dispose();
                 _timer = null;

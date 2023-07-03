@@ -60,7 +60,7 @@
 	List<string[]> coverageRows = new List<string[]>();
 
 	// when component is initialised
-	protected override async Task OnInitializedAsync()
+	protected override void OnInitialized()
 	{
 		foreach (string t in Globals.AllTypes)
 		{
