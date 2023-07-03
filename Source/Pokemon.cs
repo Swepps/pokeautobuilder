@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using PokeApiNet;
 using pokeAutoBuilder.Source.Services;
 using System.Collections.ObjectModel;
+using System.Data;
 
 namespace pokeAutoBuilder.Source
 {
@@ -18,6 +19,11 @@ namespace pokeAutoBuilder.Source
         {
             Defense = new Dictionary<string, double>();
             Attack = new Dictionary<string, double>();
+        }
+
+        public void Clear()
+        {
+            Defense.Clear(); Attack.Clear();
         }
     }
 
@@ -79,7 +85,7 @@ namespace pokeAutoBuilder.Source
                 string moveName = SelectedMoves[i];
                 if (!string.IsNullOrEmpty(moveName))
                 {
-                    sp.SelectMove(i, await PokeApiService.Instance!.GetMoveAsync(moveName));
+                    await sp.SelectMove(i, await PokeApiService.Instance!.GetMoveAsync(moveName));
                 }
             }
 
@@ -188,6 +194,8 @@ namespace pokeAutoBuilder.Source
 
         private void UpdateMultipliers()
         {
+            Multipliers.Clear();
+
             foreach (Type type in LoadedTypes)
             {
                 // get lists of type name to check effectivenesses
@@ -295,7 +303,7 @@ namespace pokeAutoBuilder.Source
             }
         }
 
-        public bool IsCoveredBySTAB(string typeName)
+        public bool IsTypeCoveredBySTAB(string typeName)
         {
             if (Multipliers.Attack.TryGetValue(typeName, out double defEff))
             {
@@ -305,6 +313,11 @@ namespace pokeAutoBuilder.Source
             {
                 return false;
             }
+        }
+
+        public bool IsTypeCoveredByMove(string typeName)
+        {
+            return SelectedMoves.HasCoverageAgainst(typeName);
         }
 
         public bool SelectAbility(string abilityName)
@@ -318,11 +331,11 @@ namespace pokeAutoBuilder.Source
             return false;
         }
 
-        public bool SelectMove(int index, Move? move)
+        public async Task<bool> SelectMove(int index, Move? move)
         {
             if (index >= 0 && index < PokemonMoveset.MaxMovesetSize)
             {
-                SelectedMoves[index] = move;
+                await SelectedMoves.SetAt(index, move);
                 return true;
             }
             return false;
@@ -394,7 +407,7 @@ namespace pokeAutoBuilder.Source
             List<string> ret = new List<string>();
             foreach (string type in Globals.AllTypes)
             {
-                if (IsCoveredBySTAB(type))
+                if (IsTypeCoveredBySTAB(type))
                     ret.Add(type);
             }
 

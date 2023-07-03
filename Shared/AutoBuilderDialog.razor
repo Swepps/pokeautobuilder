@@ -143,7 +143,7 @@
     private int ProgressValue { get; set; } = 0;
 
     private int NumGenerations = 50;
-    private int PopulationSize = 200;
+    private int PopulationSize = 250;
 
     private double? GABestChromFitness = 0;
     private double BestOverallFitness = 0;
@@ -151,9 +151,9 @@
     public bool resistantAll = true;
     public bool stabCoverageAll = true;
 
-    public double moveSetBalanceWeighting = 1.0;
+    public double moveSetBalanceWeighting = 0.0;
     public double resistanceBalanceWeighting = 1.0;
-    public double weaknessBalanceWeighting = 1.0;
+    public double weaknessBalanceWeighting = 0.5;
 
     // base stats
     public double baseStatTotalWeighting = 1.0;

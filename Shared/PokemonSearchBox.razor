@@ -310,11 +310,10 @@
                     Globals.PokemonStorage.Insert(idx, pokemon);
                     await ProfileService.UpdatePokemonStorageAsync();
 
-                    this.pokemon = pokemon;
-
-                    await OnUpdated.InvokeAsync();
+                    this.pokemon = pokemon;                    
                 }
             }
+            await OnUpdated.InvokeAsync();
             StateHasChanged();
         }
     }

@@ -215,9 +215,7 @@ namespace pokeAutoBuilder.Source
                 SmartPokemon? p = this[i];
                 if (p == null) continue;
 
-                if (p.Multipliers.Attack.TryGetValue(typeName, out double value)
-                    &&
-                    value > 1.0)
+                if (p.IsTypeCoveredBySTAB(typeName))
                 {
                     coverage++;
                 }
@@ -226,7 +224,24 @@ namespace pokeAutoBuilder.Source
             return coverage;
         }
 
-        public void SortById()
+		public int CountMoveCoverage(string typeName)
+		{
+			int coverage = 0;
+			for (int i = 0; i < MaxTeamSize; i++)
+			{
+				SmartPokemon? p = this[i];
+				if (p == null) continue;
+
+				if (p.IsTypeCoveredByMove(typeName))
+				{
+					coverage++;
+				}
+			}
+
+			return coverage;
+		}
+
+		public void SortById()
         {
             // order any non null members into a new list
             List<SmartPokemon?> team = this.Where(p => p is not null).OrderBy(p => p!.Id).ToList();
