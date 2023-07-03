@@ -5,7 +5,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
     public class AccordGeneticAlgorithm
     {
 
-        public static PokemonTeam SolvePokemonTeam(PokemonStorage availablePokemon, AutoBuilderWeightings weightings, PokemonTeam? lockedMembers)
+        public static PokemonTeam SolvePokemonTeam(PokemonStorage availablePokemon, AutoBuilderWeightings weightings, PokemonTeam lockedMembers)
         {
             Population population = new Population(500, new PokemonTeamChromosome(availablePokemon, weightings, lockedMembers), new PokemonTeamChromosome.FitnessFunction(), new EliteSelection());
 

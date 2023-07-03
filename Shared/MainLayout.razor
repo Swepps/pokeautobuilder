@@ -75,8 +75,7 @@
             await ProfileService.CheckVersion();
 
             // initialising global variables used across the app
-
-            // load preferences first before the long ones
+            // load preferences first before the slow ones
             Preferences prefs = await ProfileService.GetPreferencesAsync();
             isDarkMode = prefs.DarkMode;
 

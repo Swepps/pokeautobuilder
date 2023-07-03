@@ -100,6 +100,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             Dictionary<string, int> weaknesses = new Dictionary<string, int>();
             Dictionary<string, int> resistances = new Dictionary<string, int>();
             Dictionary<string, int> STABcoverage = new Dictionary<string, int>();
+            Dictionary<string, int> movecoverage = new Dictionary<string, int>();
 
             double totalWeaknesses = 0;
             double totalResistances = 0;
@@ -109,6 +110,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 totalWeaknesses += weaknesses[t] = team.CountWeaknesses(t);
                 totalResistances += resistances[t] = team.CountResistances(t);
                 totalSTABCoverage += STABcoverage[t] = team.CountSTABCoverage(t);
+                movecoverage[t] = team.CountMoveCoverage(t);
             }
 
             //// defense score
@@ -140,6 +142,16 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 
                 weaknessScore = 0.2 * (5 - weaknessesSD);
                 weaknessScore *= weightings.WeaknessBalanceWeighting * scaleFactor;
+            }
+
+            // move coverage balance score
+            double moveBalanceScore = 0;
+            if (weightings.WeaknessBalanceWeighting > 0)
+            {
+                double moveBalanceSD = CalculateStandardDeviation(movecoverage);
+
+                moveBalanceScore = 0.2 * (5 - moveBalanceSD);
+                moveBalanceScore *= weightings.MoveSetBalanceWeighting * scaleFactor;
             }
 
             // STAB coverage score
@@ -238,7 +250,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 statScore *= scaleFactor;
             }
 
-            double score = resistanceScore + weaknessScore + STABCoverageScore + resistantAllScore + statScore;
+            double score = resistanceScore + weaknessScore + moveBalanceScore + STABCoverageScore + resistantAllScore + statScore;
             score *= team.CountPokemon() / (double)PokemonTeam.MaxTeamSize;
 
             // scale it back to a num between 0 and 1

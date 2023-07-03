@@ -57,7 +57,29 @@ else
 			var parameters = new DialogParameters();
 			parameters.Add("Pokemon", Pokemon);
 
-			DialogService.Show<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
+			var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
+			var result = await dialog.Result;
+
+			if (!result.Canceled && result.Data is SmartPokemon)
+			{
+				// replace old pokemon with updated version
+				SmartPokemon? pokemon = result.Data as SmartPokemon;
+				if (pokemon is not null)
+				{
+					int idx = Globals.PokemonStorage.IndexOf(Pokemon!);
+					if (idx >= 0)
+					{
+						Globals.PokemonStorage.RemoveAt(idx);
+						Globals.PokemonStorage.Insert(idx, pokemon);
+						await ProfileService.UpdatePokemonStorageAsync();
+
+						Pokemon = pokemon;
+
+						await OnUpdated.InvokeAsync();
+					}
+				}
+				StateHasChanged();
+			}
 		}
 	}
 }

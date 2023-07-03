@@ -1,24 +1,54 @@
-﻿@using pokeAutoBuilder.Shared.Cards
+﻿@inject PokeApiService PokeApiService
+
+@using PokeApiNet;
+@using pokeAutoBuilder.Shared.Cards
 @using pokeAutoBuilder.Shared.Panes
+@using pokeAutoBuilder.Source.Services;
 
 <MudDialog>
     <DialogContent>
-        <MudGrid>
-            <MudItem xs="12" sm="4">
-                <MudPaper Class="py-2">
-                    <PokemonCard Pokemon="@Pokemon" />
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" sm="8">
-                <PokemonStatsChartPane Pokemon="@Pokemon" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <PokemonDefensePane Pokemon="@Pokemon" />
-            </MudItem>
-            <MudItem xs="12" sm="6">
-                <PokemonCoveragePane Pokemon="@Pokemon" />
-            </MudItem>
-        </MudGrid>
+        @if (Pokemon is not null)
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudPaper Class="py-2">
+                        <PokemonCard Pokemon="@Pokemon" />
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudStack>
+                        <MudSelect Disabled="@(Pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
+                            @foreach (PokemonAbility a in Pokemon.Abilities)
+                            {
+                                <MudSelectItem Value="@a.Ability.Name" />
+                            }
+                        </MudSelect>
+                        <MudDivider DividerType="DividerType.FullWidth"/>
+                        <MudAutocomplete T="PokemonMove" Label="Move 1" @bind-Value="Move1" SearchFunc="@SearchAvailableMoves"
+                                         ResetValueOnEmptyText="true" MaxItems="null"
+                                         CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString"/>
+                        <MudAutocomplete T="PokemonMove" Label="Move 2" @bind-Value="Move2" SearchFunc="@SearchAvailableMoves"
+                                         ResetValueOnEmptyText="true" MaxItems="null"
+                                         CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
+                        <MudAutocomplete T="PokemonMove" Label="Move 3" @bind-Value="Move3" SearchFunc="@SearchAvailableMoves"
+                                         ResetValueOnEmptyText="true" MaxItems="null"
+                                         CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
+                        <MudAutocomplete T="PokemonMove" Label="Move 4" @bind-Value="Move4" SearchFunc="@SearchAvailableMoves"
+                                         ResetValueOnEmptyText="true" MaxItems="null"
+                                         CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="12" sm="8" lg="4">
+                    <PokemonStatsChartPane Pokemon="@Pokemon" />
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="4">
+                    <PokemonDefensePane Pokemon="@Pokemon" />
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="4">
+                    <PokemonCoveragePane Pokemon="@Pokemon" />
+                </MudItem>
+            </MudGrid>
+        }
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -33,6 +63,112 @@
     [Parameter]
     public SmartPokemon? Pokemon { get; set; }
 
-    void Submit() => MudDialog!.Close(DialogResult.Ok(true));
+    // Selected Ability
+    private string pokemonAbilityName = "";
+    public string PokemonAbilityName { 
+        get { return pokemonAbilityName; }
+        set
+        {
+            pokemonAbilityName = value;
+            if (Pokemon is not null)
+                Pokemon.SelectAbility(value);
+        } 
+    }
+
+    // Selected Moves
+    private PokemonMove? move1;
+    public PokemonMove? Move1
+    {
+        get { return move1; }
+        set
+        {
+            move1 = value;
+            SelectMove(0, value);
+        }
+    }
+    private PokemonMove? move2;
+    public PokemonMove? Move2
+    {
+        get { return move2; }
+        set
+        {
+            move2 = value;
+            SelectMove(1, value);
+        }
+    }
+    private PokemonMove? move3;
+    public PokemonMove? Move3
+    {
+        get { return move3; }
+        set
+        {
+            move3 = value;
+            SelectMove(2, value);
+        }
+    }
+    private PokemonMove? move4;
+    public PokemonMove? Move4
+    {
+        get { return move4; }
+        set
+        {
+            move4 = value;
+            SelectMove(3, value);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Pokemon is null)
+            return;
+
+        pokemonAbilityName = Pokemon.SelectedAbility.Ability.Name;
+        move1 = Pokemon.GetSelectedMoveResource(0);
+        move2 = Pokemon.GetSelectedMoveResource(1);
+        move3 = Pokemon.GetSelectedMoveResource(2);
+        move4 = Pokemon.GetSelectedMoveResource(3);
+    }
+
+    private async Task<IEnumerable<PokemonMove>> SearchAvailableMoves(string value)
+    {
+        // return an empty list if somehow this card's pokemon param is null
+        if (Pokemon is null)
+            return new List<PokemonMove>();
+
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return Pokemon.Moves.OrderBy(m => m.Move.Name);
+
+        // search the pokedex in a background thread
+        return await Task.Run(() => Pokemon.SearchAvailableMoves(value.ToLower()));
+    }
+
+    // need to fetch the move from the API before we can stick it into the pokemon
+    public async void SelectMove(int index, PokemonMove? move)
+    {
+        if (Pokemon is null)
+            return;
+
+        if (move is null)
+        {
+            await Pokemon.SelectMove(index, null);
+            StateHasChanged();
+            return;
+        }
+
+        Move? loadedMove = await PokeApiService.GetMoveAsync(move.Move.Name);
+        if (loadedMove is not null)
+        {
+            await Pokemon.SelectMove(index, loadedMove);
+            StateHasChanged();
+        }
+    }
+
+    private string MoveToString(PokemonMove move)
+    {
+        return move.Move.Name;
+    }
+
+    void Submit() => MudDialog!.Close(DialogResult.Ok(Pokemon));
     void Cancel() => MudDialog!.Cancel();
 }

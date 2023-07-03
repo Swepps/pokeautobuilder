@@ -45,21 +45,32 @@
                 </MudItem>
             </MudGrid>
 
-            <MudStack Row="true">
-                @if (Generating)
-                {                    
-                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" OnClick="OnClickStop">Stop</MudButton>
-                }
-                else
-                {
-                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="OnClickGenerate">Generate</MudButton>
-                }
-                <MudButton Disabled="Generating" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickReset">Reset</MudButton>
-                <MudSpacer />
-                <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10"/>
-                <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
-                <MudButton Disabled="@(Generating || BestTeam.IsEmpty)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Primary" OnClick="OnClickLoadIntoEditor">Load Into Editor</MudButton>
-            </MudStack>
+            @*<MudStack Row="true">*@
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudStack Row="true">
+                    @if (Generating)
+                    {                    
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" OnClick="OnClickStop">Stop</MudButton>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="OnClickGenerate">Generate</MudButton>
+                    }
+                        <MudButton Disabled="Generating" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickReset">Reset</MudButton>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10"/>
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudButton Disabled="@(Generating || BestTeam.IsEmpty)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Primary" OnClick="OnClickLoadIntoEditor">Load Into Editor</MudButton>
+                </MudItem>
+            </MudGrid>
+            @*</MudStack>*@
 
             @if (Generating)
             {
@@ -132,7 +143,7 @@
     private int ProgressValue { get; set; } = 0;
 
     private int NumGenerations = 50;
-    private int PopulationSize = 200;
+    private int PopulationSize = 250;
 
     private double? GABestChromFitness = 0;
     private double BestOverallFitness = 0;
@@ -140,9 +151,9 @@
     public bool resistantAll = true;
     public bool stabCoverageAll = true;
 
-    public double moveSetBalanceWeighting = 1.0;
+    public double moveSetBalanceWeighting = 0.0;
     public double resistanceBalanceWeighting = 1.0;
-    public double weaknessBalanceWeighting = 1.0;
+    public double weaknessBalanceWeighting = 0.5;
 
     // base stats
     public double baseStatTotalWeighting = 1.0;
@@ -153,7 +164,7 @@
     public double baseStatSpDefWeighting = 0.5;
     public double baseStatSpeWeighting = 0.5;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
@@ -202,6 +213,9 @@
     // called after each generation is completed
     void HandleGenerationRan()
     {
+        if (GA.BestChromosome is null)
+            return;
+
         PokemonTeam GeneratedTeam = GA.BestChromosome.GetTeam();
         GABestChromFitness = GA.BestChromosome.Fitness;        
 

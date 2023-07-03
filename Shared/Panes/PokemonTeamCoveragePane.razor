@@ -1,5 +1,5 @@
-﻿<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
-	<MudText Typo="Typo.h6">Team Coverage</MudText>
+﻿<MudPaper Class="mud-width-full pa-2 overflow-x-auto">
+	<MudText Typo="Typo.h6" Align="Align.Center">Team Coverage</MudText>
 	<MudSimpleTable Style="width: 100%;" Dense="true" Elevation="0">
 		<thead>
 			<tr>
@@ -20,7 +20,7 @@
 				<tr>
 					@foreach (string val in row)
 					{
-						<td class="table-row px-1 py-1" style="width: 5%;">
+						<td class="table-row px-1 py-1" style="width: 5%; min-width: 20px;">
 							@if (int.TryParse(val, out int result))
 							{
 								@if (result == 0)
@@ -60,7 +60,7 @@
 	List<string[]> coverageRows = new List<string[]>();
 
 	// when component is initialised
-	protected override async Task OnInitializedAsync()
+	protected override void OnInitialized()
 	{
 		foreach (string t in Globals.AllTypes)
 		{
@@ -79,13 +79,22 @@
 		coverageRows.Clear();
 
 		string[] stabMoveCoverage = new string[Globals.AllTypes.Count + 1];
-		stabMoveCoverage[0] = "STAB Moves";
+		stabMoveCoverage[0] = "STAB";
 		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
 		{
 			stabMoveCoverage[i] = Team.CountSTABCoverage(typeHeaders[i]).ToString();
 		}
 
 		coverageRows.Add(stabMoveCoverage);
+
+		string[] moveCoverage = new string[Globals.AllTypes.Count + 1];
+		moveCoverage[0] = "Moves";
+		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
+		{
+			moveCoverage[i] = Team.CountMoveCoverage(typeHeaders[i]).ToString();
+		}
+
+		coverageRows.Add(moveCoverage);
 	}
 
 	private string GetRowColour(string rowName)

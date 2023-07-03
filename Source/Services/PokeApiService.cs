@@ -171,7 +171,22 @@ namespace pokeAutoBuilder.Source.Services
             }
         }
 
-        public async Task<List<Type>> GetPokemonTypesAsync(Pokemon pokemon)
+		public async Task<Type?> GetTypeAsync(string typeName)
+		{
+			try
+			{
+				Type type = await ApiClient.GetResourceAsync<Type>(typeName);
+
+				return type;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+				return null;
+			}
+		}
+
+		public async Task<List<Type>> GetPokemonTypesAsync(Pokemon pokemon)
         {
             List<Type> types = new List<Type>();
 

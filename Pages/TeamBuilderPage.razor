@@ -52,6 +52,8 @@
             <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see stats.</MudText>
         }
     </MudStack>
+
+    <PageFooter />
 }
 
 @code {
@@ -102,6 +104,24 @@
         SessionData session = await SessionService.GetSessionDataAsync();
         PokemonSearchLocation = (SearchLocation)session.PokemonSearchLocation;
         Team = await session.GlobalTeam.GetPokemonTeam();
+
+        // if the storage has updated any pokemon the changes need to be reflected here
+        if (PokemonSearchLocation == SearchLocation.PokemonStorage)
+        {
+            // arrgh this is a bit shit but not sure how else to approach it at the moment
+            // ... we're just going to find a pokemon in storage with a matching name
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                SmartPokemon? pokemon = Team[i];
+                if (pokemon is not null)
+                {
+                    SmartPokemon? foundPokemon = Globals.PokemonStorage.Find(p => p.Name == pokemon.Name);
+                    if (foundPokemon is not null)
+                        Team[i] = foundPokemon;
+                }
+            }
+        }
+
         TeamName = Team.Name;
     }
 
