@@ -145,7 +145,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-0KcgP1J\/Ij5riBsQMJ\/Mci\/tpmPGgt4vfMESdb\/esgE=",
+      "hash": "sha256-K2pkqPInX0qGSVNYKpdIMa4bVZSJmzxgnXMDrIaRhGU=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -301,7 +301,7 @@
       "url": "_framework\/PokeApiNet.dll"
     },
     {
-      "hash": "sha256-XkpSSzzU72uhXBwnKFYV8Zyo0v4IkwhJvCUJciyCEG8=",
+      "hash": "sha256-QHaE98qdnhVLWno8iqEI8SxwtPfoXnGjgt4\/87Nx6G8=",
       "url": "_framework\/pokeAutoBuilder.dll"
     },
     {
@@ -509,5 +509,5 @@
       "url": "_content\/MudBlazor\/MudBlazor.min.js"
     }
   ],
-  "version": "XpfSjg7a"
+  "version": "nDl89TTD"
 };
