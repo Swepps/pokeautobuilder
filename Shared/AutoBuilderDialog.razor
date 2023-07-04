@@ -82,12 +82,27 @@
             <MudGrid>
                 <MudItem xs="12">
                     <MudGrid Justify="Justify.SpaceEvenly">
-                        @foreach (SmartPokemon? p in BestTeam)
+                        @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
                         {
+                            SmartPokemon? p = null;
+                            bool locked = false;
+                            if (LockedMembers is not null && LockedMembers[i] is not null)
+                            {
+                                p = LockedMembers[i];
+                                locked = true;
+                            }
+
+                            if (!locked)
+                                p = BestTeam[i];
+
                             @if (p is not null)
                             {
                                 <MudItem xs="4" md="2">
                                     <MudPaper>
+                                        @if (locked)
+                                        {
+                                            <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
+                                        }
                                         <PokemonCard Pokemon="p" />
                                     </MudPaper>
                                 </MudItem>
@@ -115,11 +130,8 @@
                 }
             </MudGrid>
 
-            <MudText>@GABestChromFitness</MudText>
+            @*<MudText>@GABestChromFitness</MudText>*@
 
-@*        <MudOverlay Visible="Generating" DarkBackground="true" Absolute="true">
-            <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Class="my-7" />
-        </MudOverlay>*@
         </MudStack>
     </DialogContent>
     <DialogActions>
@@ -239,6 +251,14 @@
         StateHasChanged();
     }
 
-    void Submit() => MudDialog!.Close(DialogResult.Ok(true));
-    void Cancel() => MudDialog!.Cancel();
+    void Submit() 
+    {
+        GA.Stop();
+        MudDialog!.Close(DialogResult.Ok(true)); 
+    }
+    void Cancel() 
+    { 
+        GA.Stop();
+        MudDialog!.Cancel(); 
+    }
 }

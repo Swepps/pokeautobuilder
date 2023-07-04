@@ -13,7 +13,7 @@
     @if (!UseStorage)
     {
         <MudAutocomplete T="SmartPokemonEntry" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@SearchPokedex"
-                    ResetValueOnEmptyText="true"
+                         ResetValueOnEmptyText="true" Disabled="Locked"
                     CoerceText="true" CoerceValue="false" />
 
         @if (PokemonSearchValue is not null)
@@ -32,21 +32,21 @@
             @if (pokemon is not null)
             {
                 <PokemonCard Pokemon="pokemon" IsNameDisplayed="false" />
-                @*            <MudSelect Disabled="@(pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
-    @foreach (PokemonAbility a in pokemon.Abilities)
-    {
-    <MudSelectItem Value="@a.Ability.Name" />
-    }
-    </MudSelect>*@
+                @if (Team is not null)
+                {
+                    <MudToggleIconButton @bind-Toggled="@Locked"
+                            Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Dark"
+                            ToggledIcon="@Icons.Material.Filled.Lock" ToggledColor="@Color.Primary" />
+                }
                 <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
                     <MudTooltip Text="Details">
                         <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
                     </MudTooltip>
                     <MudTooltip Text="Add To Storage">
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
+                        <MudIconButton Disabled="@Globals.PokemonStorage.Contains(pokemon)" Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
                     </MudTooltip>
                     <MudTooltip Text="Randomize">
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
+                        <MudIconButton Disabled="Locked" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
                     </MudTooltip>
                 </MudButtonGroup>
             }
@@ -63,12 +63,18 @@
     else
     {
         <MudAutocomplete T="SmartPokemon" Label="Pokémon" @bind-Value="Pokemon" SearchFunc="@SearchStorage"
-                         ResetValueOnEmptyText="true"
+                         ResetValueOnEmptyText="true" Disabled="Locked"
                          CoerceText="true" CoerceValue="false" MaxItems="null"/>
 
         @if (pokemon is not null)
         {
             <PokemonCard Pokemon="pokemon" IsNameDisplayed="false" />
+            @if (Team is not null)
+            {
+                <MudToggleIconButton @bind-Toggled="@Locked"
+                    Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Dark"
+                    ToggledIcon="@Icons.Material.Filled.Lock" ToggledColor="@Color.Primary" />
+            }
             <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
                 <MudTooltip Text="Details">
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
@@ -151,6 +157,18 @@
         {
             pokemonAbilityName = value;
             OnChangeAbility(value);
+        }
+    }
+
+    // only relevant if this search box is part of a team
+    private bool locked = false;
+    public bool Locked
+    {
+        get { return locked; }
+        set
+        {
+            locked = value;
+            OnUpdated.InvokeAsync();
         }
     }
 

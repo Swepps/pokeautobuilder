@@ -1,4 +1,5 @@
 ﻿using Accord.MachineLearning;
+using Accord.Math.Distances;
 using Accord.Math.Random;
 using Newtonsoft.Json;
 using PokeApiNet;
@@ -135,7 +136,8 @@ namespace pokeAutoBuilder.Source
         public Multipliers Multipliers { get; init; }
         public List<string> Resistances { get; init; }
         public List<string> Weaknesses { get; init; }
-        public List<string> Coverage { get; init; }
+        public List<string> STABCoverage { get; init; }
+        public List<string> MoveCoverage { get; init; }
 
         public static async Task<SmartPokemon> BuildSmartPokemonAsync(Pokemon basePokemon)
         {
@@ -181,15 +183,117 @@ namespace pokeAutoBuilder.Source
             LoadedSpecies = loadedSpecies;
             LoadedTypes = loadedTypes;
             Generation = generation;
-            Multipliers = new Multipliers();
-            UpdateMultipliers();
 
             // smart variables that make this pokemon class more useful
             SelectedAbility = Abilities[0];
             SelectedMoves = new PokemonMoveset();
-            Resistances = GetDefenseResistList();
+			Multipliers = new Multipliers();
+			UpdateMultipliers(); // needs to be done before lists can be generated but after ability is selected
+			Resistances = GetDefenseResistList();
             Weaknesses = GetDefenseWeakList();
-            Coverage = GetCoverageList();
+            STABCoverage = GetSTABCoverageList();
+            MoveCoverage = GetMoveCoverageList();
+        }
+
+        public List<PokemonMove> SearchAvailableMoves(string searchTerm)
+        {
+            List<PokemonMove> results = Moves.Where(move => move.Move.Name.Contains(searchTerm)).OrderBy(move => move.Move.Name).ToList();
+            return results;
+        }
+
+        public PokemonMove? GetSelectedMoveResource(int index)
+        {
+            if (index < 0 || index >= PokemonMoveset.MaxMovesetSize) return null;
+            if (SelectedMoves[index] is null) return null;
+
+            Move move = SelectedMoves[index]!;
+            return Moves.Find(m => m.Move.Name == move.Name);
+        }
+
+        public double GetResistance(string typeName)
+        {
+            if (Multipliers.Defense.TryGetValue(typeName, out double attEff))
+            {
+                return attEff;
+            }
+            else
+            {
+                return 1.0;
+            }
+        }
+
+        public bool IsTypeCoveredBySTAB(string typeName)
+        {
+            if (Multipliers.Attack.TryGetValue(typeName, out double defEff))
+            {
+                return defEff >= 2.0;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool IsTypeCoveredByMove(string typeName)
+        {
+            return SelectedMoves.HasCoverageAgainst(typeName);
+        }
+
+        public bool SelectAbility(string abilityName)
+        {
+            PokemonAbility? ab = Abilities.Where( a => a.Ability.Name == abilityName ).FirstOrDefault();
+            if (ab != null )
+            {
+                SelectedAbility = ab;
+                UpdateMultipliers();
+                return true;
+            }
+            return false;
+        }
+
+        public async Task<bool> SelectMove(int index, Move? move)
+        {
+            if (index >= 0 && index < PokemonMoveset.MaxMovesetSize)
+            {
+                await SelectedMoves.SetAt(index, move);
+                return true;
+            }
+            return false;
+        }
+
+        public int GetBaseStat(string statName)
+        {
+            PokemonStat? stat = Stats.Find(x => x.Stat.Name == statName);
+            if (stat == null)
+                return -1;
+
+            return stat.BaseStat;
+        }
+
+        public double[] GetBaseStatsArray()
+        {
+            double[] stats = new double[6];
+
+            // make sure we're getting the correct stat in each position
+            stats[0] = GetBaseStat("hp");
+            stats[1] = GetBaseStat("attack");
+            stats[2] = GetBaseStat("special-attack");
+            stats[3] = GetBaseStat("defense");
+            stats[4] = GetBaseStat("special-defense");
+            stats[5] = GetBaseStat("speed");
+
+            return stats;
+        }
+
+        public int GetBaseStatsTotal()
+        {
+            int total = 0;
+            foreach (PokemonStat stat in Stats)
+            {
+                total += stat.BaseStat;
+            }
+
+            return total;
         }
 
         private void UpdateMultipliers()
@@ -274,106 +378,183 @@ namespace pokeAutoBuilder.Source
                     }
                 }
             }
-        }
 
-        public List<PokemonMove> SearchAvailableMoves(string searchTerm)
-        {
-            List<PokemonMove> results = Moves.Where(move => move.Move.Name.Contains(searchTerm)).OrderBy(move => move.Move.Name).ToList();
-            return results;
-        }
-
-        public PokemonMove? GetSelectedMoveResource(int index)
-        {
-            if (index < 0 || index >= PokemonMoveset.MaxMovesetSize) return null;
-            if (SelectedMoves[index] is null) return null;
-
-            Move move = SelectedMoves[index]!;
-            return Moves.Find(m => m.Move.Name == move.Name);
-        }
-
-        public double GetResistance(string typeName)
-        {
-            if (Multipliers.Defense.TryGetValue(typeName, out double attEff))
+            // now we've got multipliers for the types we need to check for any abilties which affect them
+            switch (SelectedAbility.Ability.Name)
             {
-                return attEff;
-            }
-            else
-            {
-                return 1.0;
-            }
-        }
+                // Dry Skin makes a pokemon immune to water attacks
+                case "dry-skin":
+                    Multipliers.Defense["water"] = 0;
+                    break;
 
-        public bool IsTypeCoveredBySTAB(string typeName)
-        {
-            if (Multipliers.Attack.TryGetValue(typeName, out double defEff))
-            {
-                return defEff >= 2.0;
-            }
-            else
-            {
-                return false;
-            }
-        }
+                // Earth Eater makes a pokemon immune to ground attacks
+                case "earth-eater":
+                    Multipliers.Defense["ground"] = 0;
+                    break;
 
-        public bool IsTypeCoveredByMove(string typeName)
-        {
-            return SelectedMoves.HasCoverageAgainst(typeName);
-        }
+				// Filter reduces super effective attacks by 25%
+				case "filter":
+                    foreach (KeyValuePair<string, double> kvp in Multipliers.Defense)
+                    {
+						if (kvp.Value >= 2.0)
+                        {
+                            Multipliers.Defense[kvp.Key] = kvp.Value * 0.75;
+                        }
+					}					
+					break;
 
-        public bool SelectAbility(string abilityName)
-        {
-            PokemonAbility? ab = Abilities.Where( a => a.Ability.Name == abilityName ).FirstOrDefault();
-            if (ab != null )
-            {
-                SelectedAbility = ab;
-                return true;
-            }
-            return false;
-        }
+				// Flash Fire makes a pokemon immune to fire attacks
+				case "flash-fire":
+					Multipliers.Defense["fire"] = 0;
+					break;
 
-        public async Task<bool> SelectMove(int index, Move? move)
-        {
-            if (index >= 0 && index < PokemonMoveset.MaxMovesetSize)
-            {
-                await SelectedMoves.SetAt(index, move);
-                return true;
-            }
-            return false;
-        }
+				// Fluffy makes a pokemon take double damage from fire attacks
+				case "fluffy":
+					if (Multipliers.Defense.ContainsKey("fire"))
+					{
+						Multipliers.Defense["fire"] = Multipliers.Defense["fire"] * 2.0;
+					}
+					else
+					{
+						Multipliers.Defense["fire"] = 2.0;
+					}
+					break;
 
-        public int GetBaseStat(string statName)
-        {
-            PokemonStat? stat = Stats.Find(x => x.Stat.Name == statName);
-            if (stat == null)
-                return -1;
+				// heatproof makes a pokemon take half damage from fire attacks
+				case "heatproof":
+					if (Multipliers.Defense.ContainsKey("fire"))
+					{
+						Multipliers.Defense["fire"] = Multipliers.Defense["fire"] * 0.5;
+					}
+					else
+					{
+						Multipliers.Defense["fire"] = 0.5;
+					}
+					break;
 
-            return stat.BaseStat;
-        }
+				// Levitate makes a pokemon immune to ground attacks
+				case "levitate":
+					Multipliers.Defense["ground"] = 0;
+					break;
 
-        public double[] GetBaseStatsArray()
-        {
-            double[] stats = new double[6];
+				// Lightning rod makes a pokemon immune to electric attacks
+				case "lightning-rod":
+					Multipliers.Defense["electric"] = 0;
+					break;
 
-            // make sure we're getting the correct stat in each position
-            stats[0] = GetBaseStat("hp");
-            stats[1] = GetBaseStat("attack");
-            stats[2] = GetBaseStat("special-attack");
-            stats[3] = GetBaseStat("defense");
-            stats[4] = GetBaseStat("special-defense");
-            stats[5] = GetBaseStat("speed");
+				// Motor Drive makes a pokemon immune to electric attacks
+				case "motor-drive":
+					Multipliers.Defense["electric"] = 0;
+                    break;
 
-            return stats;
-        }
+				// Prism Armor reduces super effective attacks by 25%
+				case "prism-armor":
+					foreach (KeyValuePair<string, double> kvp in Multipliers.Defense)
+					{
+						if (kvp.Value >= 2.0)
+						{
+							Multipliers.Defense[kvp.Key] = kvp.Value * 0.75;
+						}
+					}
+					break;
 
-        public int GetBaseStatsTotal()
-        {
-            int total = 0;
-            foreach (PokemonStat stat in Stats)
-            {
-                total += stat.BaseStat;
-            }
+				// purifying sale makes a pokemon take half damage from ghost attacks
+				case "purifying-salt":
+					if (Multipliers.Defense.ContainsKey("ghost"))
+					{
+						Multipliers.Defense["ghost"] = Multipliers.Defense["ghost"] * 0.5;
+					}
+					else
+					{
+						Multipliers.Defense["ghost"] = 0.5;
+					}
+					break;
 
-            return total;
+				// Sap Sipper makes a pokemon immune to grass attacks
+				case "sap-sipper":
+					Multipliers.Defense["grass"] = 0;
+					break;
+
+
+				// Solid Rock reduces super effective attacks by 25%
+				case "solid-rock":
+					foreach (KeyValuePair<string, double> kvp in Multipliers.Defense)
+					{
+						if (kvp.Value >= 2.0)
+						{
+							Multipliers.Defense[kvp.Key] = kvp.Value * 0.75;
+						}
+					}
+					break;
+
+				// Storm drain makes a pokemon immune to water attacks
+				case "storm-drain":
+					Multipliers.Defense["water"] = 0;
+					break;
+
+				// thick fat makes a pokemon take half damage from fire and ice attacks
+				case "thick-fat":
+					if (Multipliers.Defense.ContainsKey("fire"))
+					{
+						Multipliers.Defense["fire"] = Multipliers.Defense["fire"] * 0.5;
+					}
+					else
+					{
+						Multipliers.Defense["fire"] = 0.5;
+					}
+					if (Multipliers.Defense.ContainsKey("ice"))
+					{
+						Multipliers.Defense["ice"] = Multipliers.Defense["ice"] * 0.5;
+					}
+					else
+					{
+						Multipliers.Defense["ice"] = 0.5;
+					}
+					break;
+
+				// Volt absorb makes a pokemon immune to electric attacks
+				case "volt-absorb":
+					Multipliers.Defense["electric"] = 0;
+					break;
+
+				// water absorb makes a pokemon immune to water attacks
+				case "water-absorb":
+					Multipliers.Defense["water"] = 0;
+					break;
+
+				// water bubble makes a pokemon take half damage from fire attacks
+				case "water-bubble":
+					if (Multipliers.Defense.ContainsKey("fire"))
+					{
+						Multipliers.Defense["fire"] = Multipliers.Defense["fire"] * 0.5;
+					}
+					else
+					{
+						Multipliers.Defense["fire"] = 0.5;
+					}
+					break;
+
+				// Well-baked body makes a pokemon immune to fire attacks
+				case "well-baked-body":
+					Multipliers.Defense["fire"] = 0;
+					break;
+
+                // wonder guard makes a pokemon immune to all types which aren't super-effective
+                case "wonder-guard":
+					foreach (string type in Globals.AllTypes)
+					{
+						if (Multipliers.Defense.ContainsKey(type))
+						{
+							if (Multipliers.Defense[type] <= 1.0)
+                                Multipliers.Defense[type] = 0;
+						}
+                        else
+                        {
+							Multipliers.Defense[type] = 0;
+						}
+					}
+					break;
+			}
         }
 
         private List<string> GetDefenseResistList()
@@ -402,12 +583,24 @@ namespace pokeAutoBuilder.Source
             return ret;
         }
 
-        private List<string> GetCoverageList()
+        private List<string> GetSTABCoverageList()
         {
             List<string> ret = new List<string>();
             foreach (string type in Globals.AllTypes)
             {
                 if (IsTypeCoveredBySTAB(type))
+                    ret.Add(type);
+            }
+
+            return ret;
+        }
+
+        private List<string> GetMoveCoverageList()
+        {
+            List<string> ret = new List<string>();
+            foreach (string type in Globals.AllTypes)
+            {
+                if (IsTypeCoveredByMove(type))
                     ret.Add(type);
             }
 

@@ -130,7 +130,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             {
                 double resistancesSD = CalculateStandardDeviation(resistances);
 
-                resistanceScore = 0.2 * (5 - resistancesSD);
+                resistanceScore = 0.2 * ((4 + (totalResistances/50.0)) - resistancesSD);
                 resistanceScore *= weightings.ResistanceBalanceWeighting * scaleFactor;
             }
 
@@ -140,7 +140,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             {
                 double weaknessesSD = CalculateStandardDeviation(weaknesses);
 
-                weaknessScore = 0.2 * (5 - weaknessesSD);
+                weaknessScore = 0.2 * ((5 - (totalWeaknesses / 50.0)) - weaknessesSD);
                 weaknessScore *= weightings.WeaknessBalanceWeighting * scaleFactor;
             }
 
