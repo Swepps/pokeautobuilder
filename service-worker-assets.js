@@ -1,32 +1,48 @@
 ﻿self.assetsManifest = {
   "assets": [
     {
-      "hash": "sha256-+4RgJQxFQ0KV\/XnDj8f+0a6KsfbT7GICRSf9HzGhNNY=",
+      "hash": "sha256-m2se5u+fnxhhJ3FuhnxBuxlE0SdM\/yDQPFweF1e6Akk=",
       "url": "css\/loading.css"
     },
     {
-      "hash": "sha256-4mWsDy3aHl36ZbGt8zByK7Pvd4kRUoNgTYzRnwmPHwg=",
-      "url": "favicon-def.png"
+      "hash": "sha256-LIWGQHB1M8Peo95gLyF7c5DRkvcW5CMzz\/2Ro5lP5Hs=",
+      "url": "favicon-old.png"
     },
     {
-      "hash": "sha256-LIWGQHB1M8Peo95gLyF7c5DRkvcW5CMzz\/2Ro5lP5Hs=",
+      "hash": "sha256-65SnpKdEtU\/xW0qwqD80AR4LgSbjns63XvN4lcf8WhY=",
       "url": "favicon.png"
     },
     {
-      "hash": "sha256-DbpQaq68ZSb5IoPosBErM1QWBfsbTxpJqhU0REi6wP4=",
-      "url": "icon-192-def.png"
+      "hash": "sha256-Go5c7rR4mxcEjnXwKvrKESOU1vic+pfeQZGWRy4PSDw=",
+      "url": "icon-192-old.png"
     },
     {
-      "hash": "sha256-Go5c7rR4mxcEjnXwKvrKESOU1vic+pfeQZGWRy4PSDw=",
+      "hash": "sha256-EqLNT0UQu32+JDhzOlssYMMIoXc8m5No1HJjFokW60E=",
       "url": "icon-192.png"
     },
     {
-      "hash": "sha256-oEo6d+KqX5fjxTiZk\/w9NB3Mi0+ycS5yLwCKwr4IkbA=",
-      "url": "icon-512-def.png"
+      "hash": "sha256-ossokXnYcZfHx7DvgXMGcBp0D5Yh7ewPsW9\/Ig9qNow=",
+      "url": "icon-512-old.png"
     },
     {
-      "hash": "sha256-ossokXnYcZfHx7DvgXMGcBp0D5Yh7ewPsW9\/Ig9qNow=",
+      "hash": "sha256-7VbRCTJj9i4VmH4CZJwpx8XfdVxspyoZwzNYXYynd4E=",
       "url": "icon-512.png"
+    },
+    {
+      "hash": "sha256-tOFtqMNHm7Jj5C7Ld6oUf2cPK6ya+IRpVAkWHIRm8ns=",
+      "url": "icon-double.svg"
+    },
+    {
+      "hash": "sha256-7a5CImT1YX1mKfQMWIU0wZI1+kdipqWwD1d\/MVjAjjY=",
+      "url": "icon-single.svg"
+    },
+    {
+      "hash": "sha256-OpQzHEIFU+lpoVqy1uWG5\/vNH4+J6xhHQOoSrWgjMHs=",
+      "url": "icon-small.svg"
+    },
+    {
+      "hash": "sha256-ROhfZYnkJK6Ni73oka9zdo0cRkPXbu0n4oxSDWx3Jm4=",
+      "url": "icon.svg"
     },
     {
       "hash": "sha256-X+EKlZR1vX8QPhycVqSMO0qF9VjInfhZZvRj4PoqCPQ=",
@@ -101,7 +117,7 @@
       "url": "img\/Type-Water.png"
     },
     {
-      "hash": "sha256-86vYR6YBqWYbYSaihSXVGpyatBJeYzx3hRhk79qpThk=",
+      "hash": "sha256-I4YDgqWOYyCEd9erqSZccN5O4XDCHdT9kxNBTEmSMy8=",
       "url": "index.html"
     },
     {
@@ -145,7 +161,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-NKLD8g9UiNfuTWYOu3as8JBybobX8v83vxmcfFY380Y=",
+      "hash": "sha256-SpjoLs8hpf7Jkh9U40GzHiQB\/eDoDNxqTR+NGveyscY=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -301,7 +317,7 @@
       "url": "_framework\/PokeApiNet.dll"
     },
     {
-      "hash": "sha256-0af3s90LLIHwU54e6f8Q6Kd+GomytOw+kjrDWqBpf8w=",
+      "hash": "sha256-7u1kDo6GbNypkwUHNnGuVibkdLlvTpKikXZ6+vc\/dlY=",
       "url": "_framework\/pokeAutoBuilder.dll"
     },
     {
@@ -509,5 +525,5 @@
       "url": "_content\/MudBlazor\/MudBlazor.min.js"
     }
   ],
-  "version": "oYztqbZU"
+  "version": "FO6f\/PRI"
 };

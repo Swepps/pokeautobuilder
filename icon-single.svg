@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="250.399" cy="131.779" r="237.199" id="gradient-5" gradientTransform="matrix(0.654782, 0, 0, 0.654782, 91.407623, 89.706299)">
+      <stop offset="0" style="stop-color: rgba(224, 26, 26, 1)"/>
+      <stop offset="1" style="stop-color: rgba(133, 15, 15, 1)"/>
+    </radialGradient>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="250.358" cy="368.779" r="237.199" id="gradient-4" gradientTransform="matrix(0.654782, 0, 0, 0.654782, 91.408257, 89.706467)">
+      <stop offset="0" style="stop-color: rgba(255, 255, 255, 1)"/>
+      <stop offset="1" style="stop-color: rgba(204, 204, 204, 1)"/>
+    </radialGradient>
+  </defs>
+  <g style="" transform="matrix(1.017598, 0, 0, 1.017598, -9.678328, -9.162892)">
+    <g transform="matrix(0.940939, 0, 0, 0.940939, 19.564613, 20.577578)">
+      <path d="M 105.848 448.813 L 51.945 394.91 L 94.156 323.767 L 176.992 406.603 L 105.848 448.813 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 450.62 393.584 L 396.716 447.487 L 325.574 405.276 L 408.409 322.441 L 450.62 393.584 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 49.058 102.477 L 102.962 48.573 L 174.104 90.785 L 91.269 173.619 L 49.058 102.477 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 397.9 48.311 L 451.802 102.213 L 409.592 173.356 L 326.758 90.521 L 397.9 48.311 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 213.067 3.141 L 289.298 3.141 L 309.755 83.293 L 192.61 83.293 L 213.067 3.141 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 496.041 210.374 L 496.041 286.605 L 415.888 307.062 L 415.888 189.915 L 496.041 210.374 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 4.162 286.058 L 4.162 209.827 L 84.315 189.37 L 84.315 306.516 L 4.162 286.058 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 288.857 493.788 L 212.626 493.788 L 192.169 413.635 L 309.315 413.635 L 288.857 493.788 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+    </g>
+    <path d="M 410.678 98.218 C 410.678 184.125 341.037 253.767 255.131 253.767 C 169.223 253.767 100.051 184.125 100.051 98.218 L 410.678 98.218 Z" style="fill: url(#gradient-5); stroke-width: 35px; stroke: rgb(27, 27, 27);" transform="matrix(-1, 0, 0, -1, 510.729, 351.984968)"/>
+    <path d="M 410.652 253.402 C 410.652 339.308 341.011 408.95 255.104 408.95 C 169.196 408.95 100.024 339.308 100.024 253.402 L 410.652 253.402 Z" style="fill: url(#gradient-4); stroke-width: 35px; stroke: rgb(27, 27, 27);"/>
+    <ellipse style="fill: rgb(255, 255, 255); stroke-width: 29px; stroke: rgb(27, 27, 27);" cx="255.104" cy="253.402" rx="39.942" ry="39.942"/>
+  </g>
+</svg>
