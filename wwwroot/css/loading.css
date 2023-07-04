@@ -64,3 +64,48 @@
     transform: translate(50px, 0);
   }
 }
+
+.loading-spin2 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -50px;
+    margin-left: -50px;
+    width: 100px;
+    height: 100px;
+}
+
+#big-spinner {
+    animation: rotate 6s infinite linear;
+    position: relative;
+    top: 30px;
+    left: 0px;
+}
+
+#small-spinner {
+    animation: rotate-inverse 4.5s infinite linear;
+    position: relative;
+    top: -120px;
+    left: 68px;
+    width: 75px;
+}
+
+@keyframes rotate
+{
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+@keyframes rotate-inverse {
+    from {
+        transform: rotate(324deg);
+    }
+
+    to {
+        transform: rotate(-35deg);
+    }
+}

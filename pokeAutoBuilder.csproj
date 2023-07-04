@@ -11,15 +11,19 @@
     <Compile Remove="Application\**" />
     <Compile Remove="archive\**" />
     <Compile Remove="blazorWebAssemblyApp\**" />
+    <Compile Remove="FileStore\**" />
     <Content Remove="Application\**" />
     <Content Remove="archive\**" />
     <Content Remove="blazorWebAssemblyApp\**" />
+    <Content Remove="FileStore\**" />
     <EmbeddedResource Remove="Application\**" />
     <EmbeddedResource Remove="archive\**" />
     <EmbeddedResource Remove="blazorWebAssemblyApp\**" />
+    <EmbeddedResource Remove="FileStore\**" />
     <None Remove="Application\**" />
     <None Remove="archive\**" />
     <None Remove="blazorWebAssemblyApp\**" />
+    <None Remove="FileStore\**" />
   </ItemGroup>
 
   <ItemGroup>
