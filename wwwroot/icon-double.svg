@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="250.399" cy="131.779" r="237.199" id="gradient-5" gradientTransform="matrix(0.434413, 0, 0, 0.434413, 56.499462, 227.195435)">
+      <stop offset="0" style="stop-color: rgba(224, 26, 26, 1)"/>
+      <stop offset="1" style="stop-color: rgba(133, 15, 15, 1)"/>
+    </radialGradient>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="250.358" cy="368.779" r="237.199" id="gradient-4" gradientTransform="matrix(0.434413, 0, 0, 0.434413, 56.499599, 227.195068)">
+      <stop offset="0" style="stop-color: rgba(255, 255, 255, 1)"/>
+      <stop offset="1" style="stop-color: rgba(204, 204, 204, 1)"/>
+    </radialGradient>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="250.399" cy="131.779" r="237.199" id="gradient-1" gradientTransform="matrix(0.311403, 0, 0, 0.311403, 291.053101, 57.271488)">
+      <stop offset="0" style="stop-color: rgba(224, 26, 26, 1)"/>
+      <stop offset="1" style="stop-color: rgba(133, 15, 15, 1)"/>
+    </radialGradient>
+    <radialGradient gradientUnits="userSpaceOnUse" cx="250.358" cy="368.779" r="237.199" id="gradient-2" gradientTransform="matrix(0.311403, 0, 0, 0.311403, 291.054077, 57.272102)">
+      <stop offset="0" style="stop-color: rgba(255, 255, 255, 1)"/>
+      <stop offset="1" style="stop-color: rgba(204, 204, 204, 1)"/>
+    </radialGradient>
+  </defs>
+  <g transform="matrix(0.906307, 0.422618, -0.422618, 0.906307, 157.641083, -38.19521)">
+    <g transform="matrix(0.624263, 0, 0, 0.624263, 8.835148, 181.331711)">
+      <path d="M 105.848 448.813 L 51.945 394.91 L 94.156 323.767 L 176.992 406.603 L 105.848 448.813 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 450.62 393.584 L 396.716 447.487 L 325.574 405.276 L 408.409 322.441 L 450.62 393.584 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 49.058 102.477 L 102.962 48.573 L 174.104 90.785 L 91.269 173.619 L 49.058 102.477 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 397.9 48.311 L 451.802 102.213 L 409.592 173.356 L 326.758 90.521 L 397.9 48.311 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 213.067 3.141 L 289.298 3.141 L 309.755 83.293 L 192.61 83.293 L 213.067 3.141 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 496.041 210.374 L 496.041 286.605 L 415.888 307.062 L 415.888 189.915 L 496.041 210.374 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 4.162 286.058 L 4.162 209.827 L 84.315 189.37 L 84.315 306.516 L 4.162 286.058 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+      <path d="M 288.857 493.788 L 212.626 493.788 L 192.169 413.635 L 309.315 413.635 L 288.857 493.788 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); stroke-width: 30px; fill: rgb(88, 88, 88);"/>
+    </g>
+    <g>
+      <path d="M 268.318 232.842 C 268.318 289.837 222.115 336.041 165.121 336.041 C 108.126 336.041 62.234 289.837 62.234 232.842 L 268.318 232.842 Z" style="fill: url(#gradient-5); stroke: rgb(27, 27, 27); stroke-width: 25px;" transform="matrix(-1, 0, 0, -1, 330.55203, 568.882991)"/>
+      <path d="M 268.301 335.798 C 268.301 392.792 222.098 438.996 165.103 438.996 C 108.108 438.996 62.216 392.792 62.216 335.798 L 268.301 335.798 Z" style="fill: url(#gradient-4); stroke: rgb(27, 27, 27); stroke-width: 25px;"/>
+      <ellipse style="fill: rgb(255, 255, 255); stroke: rgb(27, 27, 27); stroke-width: 25px;" cx="165.103" cy="335.798" rx="26.499" ry="26.499"/>
+    </g>
+  </g>
+  <path d="M 329.711 189.911 L 329.711 236.75 L 268.565 249.319 L 268.565 177.34 L 329.711 189.911 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); fill: rgb(88, 88, 88); stroke-width: 20px;" transform="matrix(-0.707107, 0.707107, -0.707107, -0.707107, 661.507263, 152.653732)"/>
+  <g transform="matrix(1, 0, 0, 1, -4.675306, 36.623234)">
+    <g style="" transform="matrix(0.810128, 0, 0, 0.810128, 70.846138, 0.741079)">
+      <path d="M 442.893 61.32 C 442.893 102.176 409.774 135.296 368.918 135.296 C 328.062 135.296 295.164 102.176 295.164 61.32 L 442.893 61.32 Z" style="stroke: rgb(27, 27, 27); fill: url(#gradient-1); stroke-width: 30.8593px;" transform="matrix(-1, 0, 0, -1, 738.057045, 196.615988)"/>
+      <path d="M 442.881 135.123 C 442.881 175.978 409.761 209.099 368.905 209.099 C 328.049 209.099 295.152 175.978 295.152 135.123 L 442.881 135.123 Z" style="stroke: rgb(27, 27, 27); fill: url(#gradient-2); stroke-width: 30.8593px;"/>
+    </g>
+    <ellipse style="fill: rgb(255, 255, 255); stroke: rgb(27, 27, 27); stroke-width: 25px;" cx="369.814" cy="110.416" rx="21.044" ry="21.044"/>
+  </g>
+  <path d="M 422.206 210.114 L 422.206 256.953 L 361.06 269.522 L 361.06 197.543 L 422.206 210.114 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); fill: rgb(88, 88, 88); stroke-width: 20px;" transform="matrix(0.258819, 0.965926, -0.965926, 0.258819, 515.846069, -205.198593)"/>
+  <path d="M 482.206 145.439 L 482.206 192.278 L 421.059 204.847 L 421.059 132.868 L 482.206 145.439 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); fill: rgb(88, 88, 88); stroke-width: 20px;" transform="matrix(0.965926, 0.258819, -0.258819, 0.965926, 59.09251, -111.137375)"/>
+  <path d="M 460.387 59.725 L 460.387 106.564 L 399.241 119.133 L 399.241 47.154 L 460.387 59.725 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); fill: rgb(88, 88, 88); stroke-width: 20px;" transform="matrix(0.707107, -0.707107, 0.707107, 0.707107, 67.098282, 328.276581)"/>
+  <path d="M 371.556 36.348 L 371.556 83.187 L 310.41 95.756 L 310.41 23.777 L 371.556 36.348 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); fill: rgb(88, 88, 88); stroke-width: 20px;" transform="matrix(-0.258819, -0.965926, 0.965926, -0.258819, 371.505859, 404.599518)"/>
+  <path d="M 307.66 101.802 L 307.66 148.642 L 246.514 161.211 L 246.514 89.231 L 307.66 101.802 Z" style="paint-order: fill; stroke: rgb(27, 27, 27); fill: rgb(88, 88, 88); stroke-width: 20px;" transform="matrix(-0.965926, -0.258819, 0.258819, -0.965926, 512.322937, 317.890564)"/>
+</svg>

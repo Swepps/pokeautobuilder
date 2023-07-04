@@ -23,7 +23,7 @@
                 <MudTextField @bind-Value="TeamName" Label="Team Name" Variant="Variant.Text"></MudTextField>
                 <MudButton Disabled="@(Team!.IsEmpty)" OnClick="OnClickAddTeamToStorage" Color="Color.Info" StartIcon="@Icons.Material.Filled.Save" Size="Size.Medium" Variant="Variant.Filled" Class="ml-4">Save</MudButton>
             </MudItem>
-        </MudGrid>
+		</MudGrid>
         <MudGrid Justify="Justify.SpaceEvenly">
             @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
