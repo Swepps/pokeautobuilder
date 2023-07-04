@@ -39,13 +39,13 @@
 						{
 							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
 								<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" />
-								@if (Pokemon.GetResistance(t) == 2.0)
+								@if (Pokemon.GetResistance(t) <= 2.0)
 								{
-									<MudText Typo="Typo.caption">2x</MudText>
+									<MudText Typo="Typo.caption">@(Pokemon.GetResistance(t))x</MudText>
 								}
 								else
 								{
-									<MudText Typo="Typo.caption" Style="font-weight: bold;">4x</MudText>
+									<MudText Typo="Typo.caption" Style="font-weight: bold;">@(Pokemon.GetResistance(t))x</MudText>
 								}
 							</MudStack>
 						}
