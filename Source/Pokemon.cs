@@ -296,6 +296,34 @@ namespace pokeAutoBuilder.Source
             return total;
         }
 
+        public int CountTotalCoverage()
+        {
+            int count = 0;
+            foreach (string type in Globals.AllTypes)
+            {
+                if (IsTypeCoveredBySTAB(type) || IsTypeCoveredByMove(type))
+                    count++;
+            }
+
+            return count;
+        }
+
+        public int CountTotalResistances()
+        {
+            int count = 0;
+            foreach (string type in Globals.AllTypes)
+            {
+                if (Multipliers.Defense.TryGetValue(type, out double value)
+                    &&
+                    value < 1.0)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
         private void UpdateMultipliers()
         {
             Multipliers.Clear();
