@@ -8,15 +8,18 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 
     public struct AutoBuilderWeightings
     {
-        // sum of all weightings. bools are worth 2
-        public static readonly double MaxPossibleScore = 10.0;
+        // sum of all weightings. some bools are worth 2
+        public static readonly double MaxPossibleScore = 13.0;
 
         // priorities
         public bool ResistantAll;
         public bool STABCoverageAll;
+        public bool CoverageOnOffensive;
+        public bool ResistancesOnDefensive;
 
         // balance weightings
         public double MoveSetBalanceWeighting;
+        public double StabBalanceWeighting;
         public double ResistanceBalanceWeighting;
         public double WeaknessBalanceWeighting;
 
@@ -29,17 +32,21 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         public double BaseStatSpDefWeighting;
         public double BaseStatSpeWeighting;
 
-        public AutoBuilderWeightings(bool resistantAll, bool stabCoverageAll, double moveSetBalanceWeighting,
-            double resistanceBalanceWeighting,
-            double weaknessBalanceWeighting,
-            double baseStatTotalWeighting, double baseStatHpWeighting, double baseStatAttWeighting,
-            double baseStatDefWeighting, double baseStatSpAttWeighting, double baseStatSpDefWeighting,
-            double baseStatSpeWeighting)
+        public AutoBuilderWeightings(
+            bool resistantAll, bool stabCoverageAll, bool coverageOnOffensive, bool resistancesOnDefensive,
+            double moveSetBalanceWeighting, double stabBalanceWeighting,
+            double resistanceBalanceWeighting, double weaknessBalanceWeighting,
+            double baseStatTotalWeighting, 
+            double baseStatHpWeighting, double baseStatAttWeighting, double baseStatDefWeighting, 
+            double baseStatSpAttWeighting, double baseStatSpDefWeighting, double baseStatSpeWeighting)
         {
             ResistantAll = resistantAll;
             STABCoverageAll = stabCoverageAll;
+            CoverageOnOffensive = coverageOnOffensive;
+            ResistancesOnDefensive = resistancesOnDefensive;
 
             MoveSetBalanceWeighting = moveSetBalanceWeighting;
+            StabBalanceWeighting = stabBalanceWeighting;
             ResistanceBalanceWeighting = resistanceBalanceWeighting;
             WeaknessBalanceWeighting = weaknessBalanceWeighting;
 
@@ -62,7 +69,14 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             if (STABCoverageAll)
                 sum += 2.0;
 
+            if (CoverageOnOffensive)
+                sum += 1.0;
+
+            if (ResistancesOnDefensive)
+                sum += 1.0;
+
             sum += MoveSetBalanceWeighting;
+            sum += StabBalanceWeighting;
             sum += ResistanceBalanceWeighting;
             sum += WeaknessBalanceWeighting;
 
@@ -113,46 +127,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 movecoverage[t] = team.CountMoveCoverage(t);
             }
 
-            //// defense score
-            //double defenseScore = 0;
-            //if (weightings.ResistanceBalanceWeighting > 0)
-            //{
-            //    double weaknessesSD = CalculateStandardDeviation(weaknesses);
-            //    double resistancesSD = CalculateStandardDeviation(resistances);
-
-            //    defenseScore = 10 - (weaknessesSD + 2 * resistancesSD + totalWeaknesses / totalResistances);
-            //    defenseScore *= weightings.ResistanceBalanceWeighting;
-            //}
-
-            // resistance balance score
-            double resistanceScore = 0;
-            if (weightings.ResistanceBalanceWeighting > 0)
-            {
-                double resistancesSD = CalculateStandardDeviation(resistances);
-
-                resistanceScore = 0.2 * ((4 + (totalResistances/50.0)) - resistancesSD);
-                resistanceScore *= weightings.ResistanceBalanceWeighting * scaleFactor;
-            }
-
-            // weaknesses score
-            double weaknessScore = 0;
-            if (weightings.WeaknessBalanceWeighting > 0)
-            {
-                double weaknessesSD = CalculateStandardDeviation(weaknesses);
-
-                weaknessScore = 0.2 * ((5 - (totalWeaknesses / 50.0)) - weaknessesSD);
-                weaknessScore *= weightings.WeaknessBalanceWeighting * scaleFactor;
-            }
-
-            // move coverage balance score
-            double moveBalanceScore = 0;
-            if (weightings.WeaknessBalanceWeighting > 0)
-            {
-                double moveBalanceSD = CalculateStandardDeviation(movecoverage);
-
-                moveBalanceScore = 0.2 * (5 - moveBalanceSD);
-                moveBalanceScore *= weightings.MoveSetBalanceWeighting * scaleFactor;
-            }
+            // --- calculate the scores ---
 
             // STAB coverage score
             double STABCoverageScore = 0;
@@ -171,7 +146,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                         else
                         {
                             STABCoverageScore -= 0.2;
-                        }                        
+                        }
                     }
                 }
                 STABCoverageScore *= scaleFactor;
@@ -200,57 +175,75 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 resistantAllScore *= scaleFactor;
             }
 
+            // offensive pokemon have good coverage score
+            double coverageOnOffensiveScore = 0;
+            if (weightings.CoverageOnOffensive)
+            {
+                coverageOnOffensiveScore = CalculateCoverageScore(team) * scaleFactor;
+            }
+
+            // defensive pokemon have good resistances score
+            double resistancesOnDefensiveScore = 0;
+            if (weightings.ResistancesOnDefensive)
+            {
+                resistancesOnDefensiveScore = CalculateResistancesScore(team) * scaleFactor;
+            }
+
+            // resistance balance score
+            double resistanceScore = 0;
+            if (weightings.ResistanceBalanceWeighting > 0)
+            {
+                double resistancesSD = CalculateStandardDeviation(resistances);
+
+                resistanceScore = 0.2 * ((4 + (totalResistances/50.0)) - resistancesSD);
+                resistanceScore *= weightings.ResistanceBalanceWeighting * scaleFactor;
+            }
+
+            // weaknesses balance score
+            double weaknessScore = 0;
+            if (weightings.WeaknessBalanceWeighting > 0)
+            {
+                double weaknessesSD = CalculateStandardDeviation(weaknesses);
+
+                weaknessScore = 0.2 * ((5 - (totalWeaknesses / 50.0)) - weaknessesSD);
+                weaknessScore *= weightings.WeaknessBalanceWeighting * scaleFactor;
+            }
+
+            // move coverage balance score
+            double moveBalanceScore = 0;
+            if (weightings.MoveSetBalanceWeighting > 0)
+            {
+                double moveBalanceSD = CalculateStandardDeviation(movecoverage);
+
+                moveBalanceScore = 0.2 * (5 - moveBalanceSD);
+                moveBalanceScore *= weightings.MoveSetBalanceWeighting * scaleFactor;
+            }
+
+            // STAB coverage balance score
+            double stabBalanceScore = 0;
+            if (weightings.StabBalanceWeighting > 0)
+            {
+                double stabBalanceSD = CalculateStandardDeviation(STABcoverage);
+
+                stabBalanceScore = 0.2 * (5 - stabBalanceSD);
+                stabBalanceScore *= weightings.StabBalanceWeighting * scaleFactor;
+            }
+
             // base stat scores
             double statScore = 0;
             if (weightings.BaseStatTotalWeighting > 0)
             {
-                // collect stat info
-                
-                Dictionary<string, int> statTotals = new Dictionary<string, int>();
-
-                foreach (SmartPokemon? pokemon in team)
-                {
-                    if (pokemon == null)
-                        continue;
-
-                    foreach (PokemonStat stat in pokemon.Stats)
-                    {
-                        if (statTotals.ContainsKey(stat.Stat.Name))
-                            statTotals[stat.Stat.Name] += stat.BaseStat;
-                        else
-                            statTotals[stat.Stat.Name] = stat.BaseStat;
-                    }
-                }
-
-                foreach (KeyValuePair<string, int> kvp in statTotals)
-                {
-                    switch (kvp.Key)
-                    {
-                        case "hp":
-                            statScore += kvp.Value / 600.0 * weightings.BaseStatHpWeighting;
-                            break;
-                        case "attack":
-                            statScore += kvp.Value / 600.0 * weightings.BaseStatAttWeighting;
-                            break;
-                        case "special-attack":
-                            statScore += kvp.Value / 600.0 * weightings.BaseStatSpAttWeighting;
-                            break;
-                        case "defense":
-                            statScore += kvp.Value / 600.0 * weightings.BaseStatDefWeighting;
-                            break;
-                        case "special-defense":
-                            statScore += kvp.Value / 600.0 * weightings.BaseStatSpDefWeighting;
-                            break;
-                        case "speed":
-                            statScore += kvp.Value / 600.0 * weightings.BaseStatSpeWeighting;
-                            break;
-                    }
-                }
+                statScore = CalculateStatsScore(team, weightings);
 
                 statScore *= scaleFactor;
             }
 
-            double score = resistanceScore + weaknessScore + moveBalanceScore + STABCoverageScore + resistantAllScore + statScore;
+            // sum all the scores
+            double score = STABCoverageScore + resistantAllScore +
+                coverageOnOffensiveScore + resistancesOnDefensiveScore +
+                resistanceScore + weaknessScore + moveBalanceScore + stabBalanceScore +
+                statScore;
+
             score *= team.CountPokemon() / (double)PokemonTeam.MaxTeamSize;
 
             // scale it back to a num between 0 and 1
@@ -278,28 +271,8 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             return Math.Sqrt(variance);
         }
 
-        private static double CalculateCoverageScore(Dictionary<string, int> typeDictionary, double totalCoverage)
-        {
-            double score = 5.0 + Math.Sqrt(totalCoverage);
-            double scoreForType = score / Globals.AllTypes.Count;
-
-            // give up to 10 points for having at least 1 coverage of each type
-            foreach (string type in Globals.AllTypes)
-            {
-                if (!typeDictionary.ContainsKey(type))
-                    score -= scoreForType;
-            }
-
-            // deduct points for having a spread of coverage with high variance
-            score -= CalculateStandardDeviation(typeDictionary);
-
-            return score;
-        }
-
         private static double CalculateStatsScore(PokemonTeam team, AutoBuilderWeightings weightings)
         {
-            double score = 0;
-
             Dictionary<string, int> statTotals = new Dictionary<string, int>();
 
             foreach (SmartPokemon? pokemon in team)
@@ -316,54 +289,80 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 }
             }
 
+            double statScore = 0;
             foreach (KeyValuePair<string, int> kvp in statTotals)
             {
-
                 switch (kvp.Key)
                 {
                     case "hp":
-                        score += kvp.Value / 300.0 * weightings.BaseStatHpWeighting;
+                        statScore += kvp.Value / 600.0 * weightings.BaseStatHpWeighting;
                         break;
                     case "attack":
-                        score += kvp.Value / 300.0 * weightings.BaseStatAttWeighting;
+                        statScore += kvp.Value / 600.0 * weightings.BaseStatAttWeighting;
                         break;
                     case "special-attack":
-                        score += kvp.Value / 300.0 * weightings.BaseStatSpAttWeighting;
+                        statScore += kvp.Value / 600.0 * weightings.BaseStatSpAttWeighting;
                         break;
                     case "defense":
-                        score += kvp.Value / 300.0 * weightings.BaseStatDefWeighting;
+                        statScore += kvp.Value / 600.0 * weightings.BaseStatDefWeighting;
                         break;
                     case "special-defense":
-                        score += kvp.Value / 300.0 * weightings.BaseStatSpDefWeighting;
+                        statScore += kvp.Value / 600.0 * weightings.BaseStatSpDefWeighting;
                         break;
                     case "speed":
-                        score += kvp.Value / 300.0 * weightings.BaseStatSpeWeighting;
+                        statScore += kvp.Value / 600.0 * weightings.BaseStatSpeWeighting;
                         break;
                 }
             }
 
-            // --- commented this out because it didn't work very well and was unnecessary computation time
-            // try to balance the att and def values according to their weightings
-            //double attDiffScore = 0;
-            //double defDiffScore = 0;
-
-            //if (statWeightings["attack"] > 0 && statWeightings["special-attack"] > 0)
-            //    attDiffScore = Math.Abs((statTotals["attack"] / statWeightings["attack"]) - (statTotals["special-attack"] / statWeightings["special-attack"]));
-
-            //if (statWeightings["defense"] > 0 && statWeightings["special-defense"] > 0)
-            //    defDiffScore = Math.Abs((statTotals["defense"] / statWeightings["defense"]) - (statTotals["special-defense"] / statWeightings["special-defense"]));
-
-            //attDiffScore /= 100;
-            //attDiffScore = Math.Sqrt(attDiffScore);
-
-            //defDiffScore /= 100;
-            //defDiffScore = Math.Sqrt(defDiffScore);
-
-            //score -= attDiffScore + defDiffScore;
-
-            return score;
+            return statScore;
         }
 
+        private static double CalculateCoverageScore(PokemonTeam team)
+        {
+            double coverageScore = 0;
+
+            foreach (SmartPokemon? p in team)
+            {
+                if (p is null)
+                    continue;
+
+                int countCoverage = p.CountTotalCoverage();
+                double totalOffStats = p.GetBaseStat("attack") + p.GetBaseStat("special-attack") + p.GetBaseStat("speed");
+                double totalDefStats = p.GetBaseStat("hp") + p.GetBaseStat("defense") + p.GetBaseStat("special-defense");
+                double offensiveFactor = totalOffStats / totalDefStats;
+
+                coverageScore += ((offensiveFactor * countCoverage) + (10.0 / offensiveFactor)) / 150.0;
+            }
+
+            if (coverageScore > 1.0)
+                coverageScore = 1.0;
+
+            return coverageScore;
+        }
+
+        private static double CalculateResistancesScore(PokemonTeam team)
+        {
+            double resistancesScore = 0;
+
+            foreach (SmartPokemon? p in team)
+            {
+                if (p is null)
+                    continue;
+
+                int countResistances = p.CountTotalResistances();
+                double totalOffStats = p.GetBaseStat("attack") + p.GetBaseStat("special-attack") + p.GetBaseStat("speed");
+                double totalDefStats = p.GetBaseStat("hp") + p.GetBaseStat("defense") + p.GetBaseStat("special-defense");
+                double defensiveFactor = totalDefStats / totalOffStats;
+
+                resistancesScore += ((defensiveFactor * countResistances) + (10.0 / defensiveFactor)) / 150.0;
+            }
+
+            if (resistancesScore > 1.0)
+                resistancesScore = 1.0;
+
+            return resistancesScore;
+        }
 
 
         public static PokemonTeam BuildTeam(PokemonStorage availablePokemon, PokemonTeam? lockedMembers, AutoBuilderWeightings weightings)

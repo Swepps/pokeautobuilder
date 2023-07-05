@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using MudBlazor;
 using pokeAutoBuilder.Source.Services;
+using Toolbelt.Blazor.Extensions.DependencyInjection;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -38,5 +39,6 @@ builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddHttpClient<PokeApiService>();
+builder.Services.AddPWAUpdater();
 
 await builder.Build().RunAsync();

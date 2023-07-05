@@ -10,12 +10,12 @@
         @if (Pokemon is not null)
         {
             <MudGrid>
-                <MudItem xs="12" sm="4">
+                <MudItem xs="12" sm="4" lg="2">
                     <MudPaper Class="py-2">
                         <PokemonCard Pokemon="@Pokemon" />
                     </MudPaper>
                 </MudItem>
-                <MudItem xs="12" sm="8">
+                <MudItem xs="12" sm="8" lg="4">
                     <MudStack>
                         <MudSelect Disabled="@(Pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
                             @foreach (PokemonAbility a in Pokemon.Abilities)
@@ -38,13 +38,13 @@
                                          CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
                     </MudStack>
                 </MudItem>
-                <MudItem xs="12" sm="6" lg="4">
-                    <PokemonDefensePane Pokemon="@Pokemon" />
+                <MudItem xs="12" sm="6" lg="3">
+                    <MudStack>
+                        <PokemonDefensePane Pokemon="@Pokemon" />
+                        <PokemonCoveragePane Pokemon="@Pokemon" />
+                    </MudStack>                    
                 </MudItem>
-                <MudItem xs="12" sm="6" lg="4">
-                    <PokemonCoveragePane Pokemon="@Pokemon" />
-                </MudItem>
-                <MudItem xs="12" sm="6" lg="4">
+                <MudItem xs="12" sm="6" lg="3">
                     <PokemonStatsChartPane Pokemon="@Pokemon" />
                 </MudItem>
             </MudGrid>

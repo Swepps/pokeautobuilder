@@ -14,33 +14,34 @@
             <MudDivider DividerType="DividerType.FullWidth" />
 
             <MudText Typo="Typo.h6">Balance Weightings</MudText>
-            <MudGrid>
+            <MudGrid Spacing="2">
                 <MudItem xs="12" md="6">
-                    <MudCheckBox T="bool" @bind-Checked="resistantAll" Label="Prioritise having a resistant Pokémon for all types"/>
+                    <MudStack Class="pt-4">
+                        <MudCheckBox T="bool" @bind-Checked="resistantAll" Label="Prioritise having a resistant Pokémon for all types" />
+                        <MudCheckBox T="bool" @bind-Checked="stabCoverageAll" Label="Prioritise having STAB coverage against all types" />
+                        <MudCheckBox T="bool" @bind-Checked="coverageOnOffensive" Label="Coverage more important on offensive Pokémon" />
+                        <MudCheckBox T="bool" @bind-Checked="resistancesOnDefensive" Label="Resistances more important on defensive Pokémon" />
+                    </MudStack>
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudCheckBox T="bool" @bind-Checked="stabCoverageAll" Label="Prioritise having STAB coverage against all types" />
-                </MudItem>
-                <MudItem xs="6">
-                    <MudSlider @bind-Value="moveSetBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance Pokémon move types</MudSlider>
-                </MudItem>
-                <MudItem xs="6">
-                    <MudSlider @bind-Value="resistanceBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance team resistances</MudSlider>
-                </MudItem>
-                <MudItem xs="6">
-                    <MudSlider @bind-Value="weaknessBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance team weaknesses</MudSlider>
+                    <MudStack>
+                        <MudSlider @bind-Value="moveSetBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance Move Coverage</MudSlider>
+                        <MudSlider @bind-Value="stabBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance STAB Coverage</MudSlider>
+                        <MudSlider @bind-Value="resistanceBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance Resistances</MudSlider>
+                        <MudSlider @bind-Value="weaknessBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Balance Weaknesses</MudSlider>
+                    </MudStack>
                 </MudItem>
                 <MudItem xs="12">
-                    <MudDivider DividerType="DividerType.FullWidth" />
+                    <MudDivider DividerType="DividerType.FullWidth" Class="my-2"/>
                     <MudText Typo="Typo.h6">Stat Weightings</MudText>
-                    <MudSlider @bind-Value="baseStatTotalWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05"></MudSlider>
+                    <MudSlider @bind-Value="baseStatTotalWeighting" Size="Size.Large" Min="0" Max="1" Step="0.05"></MudSlider>
                     <MudGrid>
-                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatHpWeighting"    Size="Size.Medium" Min="0" Max="1" Step="0.05">HP</MudSlider>           </MudItem>
-                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatAttWeighting"   Size="Size.Medium" Min="0" Max="1" Step="0.05">Attack</MudSlider>       </MudItem>
-                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatDefWeighting"   Size="Size.Medium" Min="0" Max="1" Step="0.05">Defense</MudSlider>      </MudItem>
-                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatSpAttWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Sp. Attack</MudSlider>   </MudItem>
-                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatSpDefWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05">Sp. Defense</MudSlider>  </MudItem>
-                        <MudItem xs="6" md="4" lg="2"><MudSlider @bind-Value="baseStatSpeWeighting"   Size="Size.Medium" Min="0" Max="1" Step="0.05">Speed</MudSlider>        </MudItem>
+                        <MudItem xs="6" sm="4" md="2"><MudSlider @bind-Value="baseStatHpWeighting"    Size="Size.Small" Min="0" Max="1" Step="0.05">HP</MudSlider>           </MudItem>
+                        <MudItem xs="6" sm="4" md="2"><MudSlider @bind-Value="baseStatAttWeighting"   Size="Size.Small" Min="0" Max="1" Step="0.05">Attack</MudSlider>       </MudItem>
+                        <MudItem xs="6" sm="4" md="2"><MudSlider @bind-Value="baseStatDefWeighting"   Size="Size.Small" Min="0" Max="1" Step="0.05">Defense</MudSlider>      </MudItem>
+                        <MudItem xs="6" sm="4" md="2"><MudSlider @bind-Value="baseStatSpAttWeighting" Size="Size.Small" Min="0" Max="1" Step="0.05">Sp. Attack</MudSlider>   </MudItem>
+                        <MudItem xs="6" sm="4" md="2"><MudSlider @bind-Value="baseStatSpDefWeighting" Size="Size.Small" Min="0" Max="1" Step="0.05">Sp. Defense</MudSlider>  </MudItem>
+                        <MudItem xs="6" sm="4" md="2"><MudSlider @bind-Value="baseStatSpeWeighting"   Size="Size.Small" Min="0" Max="1" Step="0.05">Speed</MudSlider>        </MudItem>
                     </MudGrid>
                 </MudItem>
             </MudGrid>
@@ -118,14 +119,8 @@
                 </MudItem>
                 @if (!BestTeam.IsEmpty)
                 {
-                    <MudItem xs="12">
-                        <PokemonTeamStatsChartPane Team="@BestTeam" />
-                    </MudItem>                
-                    <MudItem xs="12">
-                        <PokemonTeamDefensePane Team="@BestTeam" />
-                    </MudItem>                
-                    <MudItem xs="12">
-                        <PokemonTeamCoveragePane Team="@BestTeam" />
+                    <MudItem xs="12" >
+                        <StatsTeamPanel Team="BestTeam" />
                     </MudItem>
                 }
             </MudGrid>
@@ -162,13 +157,16 @@
 
     public bool resistantAll = true;
     public bool stabCoverageAll = true;
+    public bool coverageOnOffensive = true;
+    public bool resistancesOnDefensive = true;
 
     public double moveSetBalanceWeighting = 0.0;
+    public double stabBalanceWeighting = 1.0;
     public double resistanceBalanceWeighting = 1.0;
     public double weaknessBalanceWeighting = 0.5;
 
     // base stats
-    public double baseStatTotalWeighting = 1.0;
+    public double baseStatTotalWeighting = 0.75;
     public double baseStatHpWeighting = 0.5;
     public double baseStatAttWeighting = 0.5;
     public double baseStatDefWeighting = 0.5;
@@ -192,9 +190,12 @@
         ProgressValue = 0;
         BestOverallFitness = 0;
 
-        AutoBuilderWeightings weightings = new AutoBuilderWeightings(resistantAll, stabCoverageAll, moveSetBalanceWeighting,
-        resistanceBalanceWeighting, weaknessBalanceWeighting, baseStatTotalWeighting, baseStatHpWeighting, baseStatAttWeighting,
-        baseStatDefWeighting, baseStatSpAttWeighting, baseStatSpDefWeighting, baseStatSpeWeighting);
+        AutoBuilderWeightings weightings = new AutoBuilderWeightings(
+            resistantAll, stabCoverageAll, coverageOnOffensive, resistancesOnDefensive, 
+            moveSetBalanceWeighting, stabBalanceWeighting,
+            resistanceBalanceWeighting, weaknessBalanceWeighting, 
+            baseStatTotalWeighting, baseStatHpWeighting, baseStatAttWeighting,
+            baseStatDefWeighting, baseStatSpAttWeighting, baseStatSpDefWeighting, baseStatSpeWeighting);
 
         GA.Initialize(PopulationSize, Globals.PokemonStorage, LockedMembers is null ? new PokemonTeam() : LockedMembers, weightings);
         GA.Run();

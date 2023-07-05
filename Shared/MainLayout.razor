@@ -4,12 +4,14 @@
 @inject PokeApiService PokeApiService
 
 @using PokeApiNet
+@using Toolbelt.Blazor.PWA.Updater
 @using pokeAutoBuilder.Source.Services;
 
 <MudThemeProvider @ref="@Globals.MudThemeProvider" @bind-IsDarkMode="@isDarkMode" />
 <MudDialogProvider FullWidth="true"
                    MaxWidth="MaxWidth.ExtraExtraLarge" />
 <MudSnackbarProvider />
+<PWAUpdater Text="A new version of Poké Autobuilder is available." ButtonCaption="UPDATE"/>
 
 <MudLayout>
     <MudAppBar Elevation="1">
