@@ -3,14 +3,14 @@
 
 <MudPaper Style="background: var(--mud-palette-background)" Elevation="4">
 	<MudGrid Class="pa-4" Justify="Justify.Center">
-		<MudItem xs="12" sm="12" md="10" lg="8">
+		<MudItem xs="12" sm="12" md="6" lg="6">
+			<MudStack>
+				<PokemonTeamDefensePane Team="@Team" />
+				<PokemonTeamCoveragePane Team="@Team" />
+			</MudStack>
+		</MudItem>
+		<MudItem xs="12" sm="12" md="6" lg="6">
 			<PokemonTeamStatsChartPane Team="@Team"/>
-		</MudItem>
-		<MudItem xs="12" sm="12" md="12" lg="6">
-			<PokemonTeamDefensePane Team="@Team" />
-		</MudItem>
-		<MudItem xs="12" sm="12" md="12" lg="6">
-			<PokemonTeamCoveragePane Team="@Team" />
 		</MudItem>
 	</MudGrid>
 </MudPaper>
