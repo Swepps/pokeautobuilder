@@ -117,7 +117,7 @@
       "url": "img\/Type-Water.png"
     },
     {
-      "hash": "sha256-\/ljIRosHVYHNEKmYEvWbYqu5O4RKV7vZt4oF7My\/gAQ=",
+      "hash": "sha256-FqU16UQlGwcLj8j9rQd25kLol6Oe1W1ki9otDafg1Zg=",
       "url": "index.html"
     },
     {
@@ -541,5 +541,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "zNxpH0iv"
+  "version": "+N7eGO8Y"
 };
