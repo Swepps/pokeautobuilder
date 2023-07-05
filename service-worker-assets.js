@@ -117,7 +117,7 @@
       "url": "img\/Type-Water.png"
     },
     {
-      "hash": "sha256-I4YDgqWOYyCEd9erqSZccN5O4XDCHdT9kxNBTEmSMy8=",
+      "hash": "sha256-\/ljIRosHVYHNEKmYEvWbYqu5O4RKV7vZt4oF7My\/gAQ=",
       "url": "index.html"
     },
     {
@@ -127,6 +127,10 @@
     {
       "hash": "sha256-paIeuWnSzjeLGITWkk4p3rcejUsZWCJGPeOK9UhWXtg=",
       "url": "sample-data\/weather.json"
+    },
+    {
+      "hash": "sha256-r79awFecI73fwWhQ+3Sdudz4ZkJmy3pjT3FQO7wqBj4=",
+      "url": "pokeAutoBuilder.styles.css"
     },
     {
       "hash": "sha256-lOCs45frNf+D7me6lKLgUhRCdt4VwHCp9H6Ct+YWzfs=",
@@ -161,7 +165,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-SpjoLs8hpf7Jkh9U40GzHiQB\/eDoDNxqTR+NGveyscY=",
+      "hash": "sha256-cCoKh0bjxFCB+c5QRrcr9zifG63UAbntQzii5XKwMi8=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -317,7 +321,7 @@
       "url": "_framework\/PokeApiNet.dll"
     },
     {
-      "hash": "sha256-7u1kDo6GbNypkwUHNnGuVibkdLlvTpKikXZ6+vc\/dlY=",
+      "hash": "sha256-JIXniI+\/s5l26pksH9qgu5jNsNm+Di5YlT7ds7+5c3s=",
       "url": "_framework\/pokeAutoBuilder.dll"
     },
     {
@@ -425,7 +429,7 @@
       "url": "_framework\/System.ObjectModel.dll"
     },
     {
-      "hash": "sha256-\/78YruGiBbu6+FkC8H3S+sIX+7SoaYF\/2OA14Pwl5Ak=",
+      "hash": "sha256-xmU6twyBysr2IGQFKUBQN60wy70bEAAgaVHKyYKiIck=",
       "url": "_framework\/System.Private.CoreLib.dll"
     },
     {
@@ -441,7 +445,7 @@
       "url": "_framework\/System.Private.Xml.Linq.dll"
     },
     {
-      "hash": "sha256-n9hojzVIWJbZRJurrkAZVi1FGaetjPzJphVDMBbFw2I=",
+      "hash": "sha256-g537lSPAKz+qQC4rr16M4g3jvVM1z0aOsF0QYtqMiKs=",
       "url": "_framework\/System.Runtime.dll"
     },
     {
@@ -501,16 +505,20 @@
       "url": "_framework\/System.Xml.Linq.dll"
     },
     {
+      "hash": "sha256-T7yFVqCOYgREYAL7QwUb7v9ywwi5tBozK3GNtZpOvPU=",
+      "url": "_framework\/Toolbelt.Blazor.PWA.Updater.dll"
+    },
+    {
+      "hash": "sha256-DxofLJKW1Sj5Qu96c+V9\/S+RVDPmQjiif3pcechU5GU=",
+      "url": "_framework\/Toolbelt.Blazor.PWA.Updater.Service.dll"
+    },
+    {
       "hash": "sha256-G5Ga+uCOkVHxSiBJsnj1MOcAOxo5GUbq6mFEUmBp5nQ=",
       "url": "appsettings.Development.json"
     },
     {
       "hash": "sha256-G5Ga+uCOkVHxSiBJsnj1MOcAOxo5GUbq6mFEUmBp5nQ=",
       "url": "appsettings.json"
-    },
-    {
-      "hash": "sha256-92Gbnh5j25DdffY4Qa60hMIPTsPzecFNOmeq2L2gIRg=",
-      "url": "pokeAutoBuilder.styles.css"
     },
     {
       "hash": "sha256-ufwN9wIcw3DmyXTJUOSibX\/BdZCBQRXyD5\/Ho\/+sh0E=",
@@ -523,7 +531,15 @@
     {
       "hash": "sha256-tUWo7g42bWaYCpaMaLEgcGlHEFLeQulWJPXYkbancCY=",
       "url": "_content\/MudBlazor\/MudBlazor.min.js"
+    },
+    {
+      "hash": "sha256-FusWOhPOKkLq10+x\/UFtqpm\/7B66OiSZdnFf1FsNKa8=",
+      "url": "_content\/Toolbelt.Blazor.PWA.Updater.Service\/script.min.js"
+    },
+    {
+      "hash": "sha256-CcbCAQysifGy37NQeQFm7ToIaHhq+ULV5MMf7PuLdXs=",
+      "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "FO6f\/PRI"
+  "version": "zNxpH0iv"
 };
