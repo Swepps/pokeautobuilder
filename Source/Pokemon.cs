@@ -141,19 +141,15 @@ namespace pokeAutoBuilder.Source
 
         public static async Task<SmartPokemon> BuildSmartPokemonAsync(Pokemon basePokemon)
         {
-            PokemonSpecies? species = await PokeApiService.Instance!.GetPokemonSpeciesAsync(basePokemon.Species.Name);
-            if (species is null)
-                throw new Exception("Could not load species information from " + basePokemon.Name);
+            PokemonSpecies? species = await PokeApiService.Instance!.GetPokemonSpeciesAsync(basePokemon.Species.Name) ?? throw new Exception("Could not load species information from " + basePokemon.Name);
 
-            List<Type> types = await PokeApiService.Instance!.GetPokemonTypesAsync(basePokemon);
+			List<Type> types = await PokeApiService.Instance!.GetPokemonTypesAsync(basePokemon);
             if (types.Count == 0)
                 throw new Exception("Could not load type information from " + basePokemon.Name);
 
-            Generation? generation = await PokeApiService.Instance!.GetGenerationAsync(species);
-            if (generation is null)
-                throw new Exception("Could not load generation information from " + species.Name);
+            Generation? generation = await PokeApiService.Instance!.GetGenerationAsync(species) ?? throw new Exception("Could not load generation information from " + species.Name);
 
-            return new SmartPokemon(basePokemon, species, types, generation);
+			return new SmartPokemon(basePokemon, species, types, generation);
         }
 
 
