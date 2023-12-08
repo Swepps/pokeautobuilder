@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using Accord.Math;
 using PokeApiNet;
 using pokeAutoBuilder.Source.Services;
 using System.Collections.ObjectModel;
@@ -12,19 +12,32 @@ namespace pokeAutoBuilder.Source
     public class SmartPokemonEntry
     {
         public int Id { get; set; }
-        public PokemonSpecies Species { get; set; }
+        public string Name {
+            get => SpeciesResource.Name;
+        }
+        private NamedApiResource<PokemonSpecies> SpeciesResource { get; set; }
+        private PokemonSpecies? Species;
 
-        public SmartPokemonEntry(int Id, PokemonSpecies Species) 
+        public SmartPokemonEntry(int Id, NamedApiResource<PokemonSpecies> Species) 
         {
             this.Id = Id;
-            this.Species = Species;
+            this.SpeciesResource = Species;
         }
 
-        public List<NamedApiResource<Pokemon>> GetAllVarieties()
+        public async Task<PokemonSpecies> GetSpecies()
         {
+            Species ??= await PokeApiService.Instance!.GetPokemonSpeciesAsync(SpeciesResource.Name);
+
+            return Species ?? throw new Exception($"Could not load pokemon species: {SpeciesResource.Name}");
+		}
+
+        public async Task<List<NamedApiResource<Pokemon>>> GetAllVarieties()
+        {
+            if (Species == null) await GetSpecies();
+
             List<NamedApiResource<Pokemon>> varieties = new List<NamedApiResource<Pokemon>>();
 
-            foreach (PokemonSpeciesVariety variety in Species.Varieties)
+            foreach (PokemonSpeciesVariety variety in Species!.Varieties)
             {
                 varieties.Add(variety.Pokemon);
             }
@@ -34,7 +47,7 @@ namespace pokeAutoBuilder.Source
 
         public override string ToString()
         {
-            return StringUtils.FirstCharToUpper(Species.Name);
+            return StringUtils.FirstCharToUpper(SpeciesResource.Name);
         }
     }
 
@@ -48,17 +61,14 @@ namespace pokeAutoBuilder.Source
             SetPokedex(pokedex);
         }
 
-        public async void SetPokedex(Pokedex pokedex)
+        public void SetPokedex(Pokedex pokedex)
         {
             this.Clear();
-            var tasks = pokedex.PokemonEntries.Select(async entry =>
+            
+            foreach (var entry in pokedex.PokemonEntries)
             {
-                PokemonSpecies? species = await PokeApiService.Instance!.GetPokemonSpeciesAsync(entry);
-                if (species != null)
-                    Add(new SmartPokemonEntry(entry.EntryNumber, species));
-            });
-
-            await Task.WhenAll(tasks);
+                Add(new SmartPokemonEntry(entry.EntryNumber, entry.PokemonSpecies));
+			}
 
             // make sure the list is in Pokedex entry order
             Sort((a, b) => a.Id.CompareTo(b.Id));
@@ -66,19 +76,19 @@ namespace pokeAutoBuilder.Source
 
         public bool RemovePokemon(string speciesName)
         {
-            SmartPokemonEntry? entry = this.FirstOrDefault(entry => entry.Species.Name == speciesName);
+            SmartPokemonEntry? entry = this.FirstOrDefault(entry => entry.Name == speciesName);
             if (entry == null) return false;
             return Remove(entry);
         }
 
         public SmartPokemonEntry? FindPokemon(string speciesName)
         {
-            return this.Where(entry => entry.Species.Name.Equals(speciesName)).FirstOrDefault();
+            return this.Where(entry => entry.Name.Equals(speciesName)).FirstOrDefault();
         }
 
         public List<SmartPokemonEntry> SearchPokedex(string searchTerm)
         {
-            List<SmartPokemonEntry> results = this.Where(entry => entry.Species.Name.Contains(searchTerm)).OrderBy(e => e.Species.Name).ToList();
+            List<SmartPokemonEntry> results = this.Where(entry => entry.Name.Contains(searchTerm)).OrderBy(e => e.Name).ToList();
             return results;
         }
 

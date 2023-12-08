@@ -11,8 +11,10 @@ namespace pokeAutoBuilder.Source.Services
 
     public record UserData
     {
-        public List<SmartPokemonSerializable> Storage { get; init; } = new List<SmartPokemonSerializable>();
-        public List<PokemonTeamSerializable> TeamStorage { get; init; } = new List<PokemonTeamSerializable>();
+        public List<SmartPokemonSerializable> OLD_Storage { get; init; } = new List<SmartPokemonSerializable>();
+        public List<PokemonTeamSerializable> OLD_TeamStorage { get; init; } = new List<PokemonTeamSerializable>();
+        public List<SmartPokemon> Storage { get; init; } = new List<SmartPokemon>();
+        public List<PokemonTeam> TeamStorage { get; init; } = new List<PokemonTeam>();
     }
 
     public class ProfileService
@@ -101,8 +103,9 @@ namespace pokeAutoBuilder.Source.Services
             UserData newdata = userData
                 with
             {
-                Storage = Globals.PokemonStorage.GetSerializableList()
-            };
+                //OLD_Storage = Globals.PokemonStorage.GetSerializableList(),
+                Storage = Globals.PokemonStorage
+			};
 
             await SetUserDataAsync(newdata);
         }
@@ -112,20 +115,20 @@ namespace pokeAutoBuilder.Source.Services
             UserData userData = await GetUserDataAsync();
 
             // creates a list of null pokemon with same size as the stored list
-            List<SmartPokemon?> pokemonList = new List<SmartPokemon?>(new SmartPokemon?[userData.Storage.Count]);
+            //List<SmartPokemon?> pokemonList = new List<SmartPokemon?>(new SmartPokemon?[userData.OLD_Storage.Count]);
 
-            // get the pokemon from the API using the list of serialised pokemon in the storage
-            // may not load them in the order they were saved
-            var getStorageTasks = userData.Storage.Select(async (pokemon, index) =>
-            {
-                SmartPokemon? sp = await pokemon.GetSmartPokemon();
-                if (sp is not null)
-                    pokemonList[index] = sp;
-            });
-            await Task.WhenAll(getStorageTasks);
+            //// get the pokemon from the API using the list of serialised pokemon in the storage
+            //// may not load them in the order they were saved
+            //var getStorageTasks = userData.Storage.Select(async (pokemon, index) =>
+            //{
+            //    SmartPokemon? sp = await pokemon.GetSmartPokemon();
+            //    if (sp is not null)
+            //        pokemonList[index] = sp;
+            //});
+            //await Task.WhenAll(getStorageTasks);
 
             // add any successful deserialisations into global storage
-            foreach (SmartPokemon? pokemon in pokemonList)
+            foreach (SmartPokemon? pokemon in userData.Storage)
             {
                 if (pokemon is null) continue;
 
@@ -136,22 +139,32 @@ namespace pokeAutoBuilder.Source.Services
         public async Task<List<PokemonTeam>> FetchTeamStorage()
         {
             UserData userData = await GetUserDataAsync();
-            List<PokemonTeamSerializable> serializedTeams = userData.TeamStorage;
-            List<PokemonTeam> teams = new List<PokemonTeam>();
+            //List<PokemonTeamSerializable> serializedTeams = userData.OLD_TeamStorage;
+            //List<PokemonTeam> teams = new List<PokemonTeam>();
 
-            foreach (PokemonTeamSerializable st in serializedTeams)
-            {
-                teams.Add(await st.GetPokemonTeam());
-            }
+            //foreach (PokemonTeamSerializable st in serializedTeams)
+            //{
+            //    teams.Add(await st.GetPokemonTeam());
+            //}
 
-            return teams;
+            //return teams;
+            return userData.TeamStorage;
         }
 
         public async Task AddTeam(PokemonTeam team)
         {
             UserData userData = await GetUserDataAsync();
-            List<PokemonTeamSerializable> teams = userData.TeamStorage;
-            teams.Add(new PokemonTeamSerializable(team));
+            //List<PokemonTeamSerializable> teams = userData.OLD_TeamStorage;
+            //teams.Add(new PokemonTeamSerializable(team));
+
+            //UserData newData = userData
+            //    with
+            //{
+            //    OLD_TeamStorage = teams
+            //};
+
+            List<PokemonTeam> teams = userData.TeamStorage;
+            teams.Add(team);
 
             UserData newData = userData
                 with
@@ -165,13 +178,12 @@ namespace pokeAutoBuilder.Source.Services
         public async Task RemoveTeam(PokemonTeam team, int index = -1)
         {
             UserData userData = await GetUserDataAsync();
-            List<PokemonTeamSerializable> teams = userData.TeamStorage;
-            PokemonTeamSerializable pts = new PokemonTeamSerializable(team);
+            List<PokemonTeam> teams = userData.TeamStorage;
 
             // try to find the first matching team
             if (index == -1)
             {
-                index = teams.IndexOf(pts);
+                index = teams.IndexOf(team);
             }
 
             if (index >= 0)

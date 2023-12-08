@@ -22,15 +22,15 @@
             </MoreItemsTemplate>
         </MudAutocomplete>
 
-        @if (PokemonSearchValue is not null)
-        {
-            <div style="height: 50px">
-                @if (PokemonSearchValue.Species.Varieties.Count > 1)
+    @if (PokemonSearchValue is not null)
+    {
+        <div style="height: 50px">
+            @if (pokemonSearchValueVarieties.Count > 1)
                 {
                     <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonFormName">
-                        @foreach (PokemonSpeciesVariety v in PokemonSearchValue.Species.Varieties)
+                        @foreach (var v in pokemonSearchValueVarieties)
                         {
-                            <MudSelectItem Value="@v.Pokemon.Name" />
+                            <MudSelectItem Value="@v.Name" />
                         }
                     </MudSelect>
                 }
@@ -58,7 +58,7 @@
             }
             else if (errorFetchingPokemon)
             {
-                <MudText Typo="Typo.caption">Error Fetching @PokemonSearchValue.Species.Name from API</MudText>
+                <MudText Typo="Typo.caption">Error Fetching @PokemonSearchValue.Name from API</MudText>
             }
             else
             {
@@ -126,6 +126,7 @@
         }
     }
 
+    private List<NamedApiResource<Pokemon>> pokemonSearchValueVarieties = new();
     // the string which holds the last valid search result from the search bar
     private SmartPokemonEntry? pokemonSearchValue;
     public SmartPokemonEntry? PokemonSearchValue { 
@@ -246,8 +247,10 @@
         }
         else
         {
+            pokemonSearchValueVarieties.Clear();
+            pokemonSearchValueVarieties = await entry.GetAllVarieties();
             // simultaneously get the default pokemon and generation from this species
-            pokemon = await PokeApiService.GetPokemonAsync(entry.Species.Varieties[0].Pokemon.Name);
+            pokemon = await PokeApiService.GetPokemonAsync(pokemonSearchValueVarieties[0].Name);
             if (pokemon is not null)
             {
                 pokemonFormName = pokemon.Name;
@@ -349,7 +352,7 @@
         if (entry != null)
         {
             Random rand = new Random();
-            List<NamedApiResource<Pokemon>> varieties = entry.GetAllVarieties();
+            List<NamedApiResource<Pokemon>> varieties = await entry.GetAllVarieties();
             pokemonResource = varieties[rand.Next(varieties.Count)];
         }
 

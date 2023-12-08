@@ -103,7 +103,7 @@
     {
         SessionData session = await SessionService.GetSessionDataAsync();
         PokemonSearchLocation = (SearchLocation)session.PokemonSearchLocation;
-        Team = await session.GlobalTeam.GetPokemonTeam();
+        Team = session.GlobalTeam;
 
         // if the storage has updated any pokemon the changes need to be reflected here
         if (PokemonSearchLocation == SearchLocation.PokemonStorage)

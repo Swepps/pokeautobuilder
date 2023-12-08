@@ -1,11 +1,11 @@
 ﻿using Accord.MachineLearning;
 using Accord.Math.Distances;
 using Accord.Math.Random;
-using Newtonsoft.Json;
 using PokeApiNet;
 using pokeAutoBuilder.Source.Services;
 using System.Collections.ObjectModel;
 using System.Data;
+using System.Text.Json.Serialization;
 
 namespace pokeAutoBuilder.Source
 {
@@ -190,6 +190,50 @@ namespace pokeAutoBuilder.Source
             STABCoverage = GetSTABCoverageList();
             MoveCoverage = GetMoveCoverageList();
         }
+
+        [JsonConstructor]
+        public SmartPokemon(int Id, string Name, int? BaseExperience, int Height, bool IsDefault,
+            int Order, int Weight, List<PokemonAbility> Abilities, List<NamedApiResource<PokemonForm>> Forms,
+            List<VersionGameIndex> GameIndicies, List<PokemonHeldItem> HeldItems, string LocationAreaEncounters,
+            List<PokemonMove> Moves, List<PokemonPastTypes> PastTypes, PokemonSprites Sprites, 
+            NamedApiResource<PokemonSpecies> Species, List<PokemonStat> Stats, List<PokemonType> Types,
+            PokemonSpecies LoadedSpecies, List<Type> LoadedTypes, Generation Generation,
+            PokemonAbility SelectedAbility, PokemonMoveset SelectedMoves, List<string> Resistances,
+            List<string> Weaknesses, List<string> STABCoverage, List<string> MoveCoverage)
+        {
+            // pokemon member variables
+			this.Id = Id;
+			this.Name = Name;
+			this.BaseExperience = BaseExperience;
+			this.Height = Height;
+			this.IsDefault = IsDefault;
+			this.Order = Order;
+			this.Weight = Weight;
+			this.Abilities = Abilities;
+			this.Forms = Forms;
+			this.GameIndicies = GameIndicies;
+			this.HeldItems = HeldItems;
+			this.LocationAreaEncounters = LocationAreaEncounters;
+			this.Moves = Moves;
+			this.PastTypes = PastTypes;
+			this.Sprites = Sprites;
+			this.Species = Species;
+			this.Stats = Stats;
+			this.Types = Types;
+
+            // smart pokemon member variables
+            this.LoadedSpecies = LoadedSpecies;
+            this.LoadedTypes = LoadedTypes;
+			this.Generation = Generation;
+            this.SelectedAbility = SelectedAbility;
+            this.SelectedMoves = SelectedMoves;
+			this.Multipliers = new Multipliers();
+			UpdateMultipliers(); 
+            this.Resistances = Resistances;
+            this.Weaknesses = Weaknesses;
+            this.STABCoverage = STABCoverage;
+            this.MoveCoverage = MoveCoverage;
+		}
 
         public List<PokemonMove> SearchAvailableMoves(string searchTerm)
         {
