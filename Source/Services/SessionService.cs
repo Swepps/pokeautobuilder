@@ -4,7 +4,7 @@ namespace pokeAutoBuilder.Source.Services
 {
     public record SessionData
     {
-        public PokemonTeamSerializable GlobalTeam { get; init; } = new PokemonTeamSerializable();
+        public PokemonTeam GlobalTeam { get; init; } = new ();
         public int PokemonSearchLocation { get; init; } = 0;
     }
 
@@ -34,12 +34,11 @@ namespace pokeAutoBuilder.Source.Services
         public async Task SetGlobalTeam(PokemonTeam team)
         {
             SessionData session = await GetSessionDataAsync();
-            PokemonTeamSerializable pokemonTeamSerializable = new PokemonTeamSerializable(team);
 
             SessionData newSession = session
                 with
             {
-                GlobalTeam = pokemonTeamSerializable
+                GlobalTeam = team
             };
 
             await SetSessionDataAsync(newSession);
@@ -49,7 +48,7 @@ namespace pokeAutoBuilder.Source.Services
         {
             SessionData sessionData = await GetSessionDataAsync();
 
-            return await sessionData.GlobalTeam.GetPokemonTeam();
+            return sessionData.GlobalTeam;
         }
 
         public async Task SetPokemonSearchLocationAsync(int val)

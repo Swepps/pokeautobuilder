@@ -49,7 +49,7 @@
         if (entry != null)
         {
             Random rand = new Random();
-            List<NamedApiResource<Pokemon>> varieties = entry.GetAllVarieties();
+            List<NamedApiResource<Pokemon>> varieties = await entry.GetAllVarieties();
             pokemonResource = varieties[rand.Next(varieties.Count)];
         }
 
@@ -82,7 +82,7 @@
         if (entry != null)
         {
             Random rand = new Random();
-            List<NamedApiResource<Pokemon>> varieties = entry.GetAllVarieties();
+            List<NamedApiResource<Pokemon>> varieties = await entry.GetAllVarieties();
             pokemonResource = varieties[rand.Next(varieties.Count)];
         }
 

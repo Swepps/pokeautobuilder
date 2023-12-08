@@ -10,8 +10,9 @@ namespace pokeAutoBuilder.Source
         {
             { 0.1, true },
             { 0.2, false },
+            { 1.0, true },
         };
-        public static double Version = 0.2;
+        public static double Version = 1.0;
         public static string Language = "en";
         public static MudThemeProvider? MudThemeProvider;
         public static SmartPokedex? NationalDex;
