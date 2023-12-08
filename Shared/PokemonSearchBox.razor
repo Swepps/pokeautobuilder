@@ -14,7 +14,13 @@
     {
         <MudAutocomplete T="SmartPokemonEntry" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@SearchPokedex"
                          ResetValueOnEmptyText="true" Disabled="Locked"
-                    CoerceText="true" CoerceValue="false" />
+                    CoerceText="true" CoerceValue="false" >
+            <MoreItemsTemplate>
+                <MudText Align="Align.Center" Class="px-4 py-1">
+                    Only the first 10 items are shown
+                </MudText>
+            </MoreItemsTemplate>
+        </MudAutocomplete>
 
         @if (PokemonSearchValue is not null)
         {
