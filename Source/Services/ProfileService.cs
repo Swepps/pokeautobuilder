@@ -11,8 +11,6 @@ namespace pokeAutoBuilder.Source.Services
 
     public record UserData
     {
-        public List<SmartPokemonSerializable> OLD_Storage { get; init; } = new List<SmartPokemonSerializable>();
-        public List<PokemonTeamSerializable> OLD_TeamStorage { get; init; } = new List<PokemonTeamSerializable>();
         public List<SmartPokemon> Storage { get; init; } = new List<SmartPokemon>();
         public List<PokemonTeam> TeamStorage { get; init; } = new List<PokemonTeam>();
     }
@@ -26,15 +24,16 @@ namespace pokeAutoBuilder.Source.Services
             _localStorageService = localStorageService;
         }
 
-        public async Task CheckVersion()
+        public async Task<bool> CheckVersion()
         {
+            bool dataFormatUpdate = false;
             double cachedVer = 0;
             if (await _localStorageService.ContainKeyAsync("version"))
                 cachedVer = await _localStorageService.GetItemAsync<double>("version");
 
             if (cachedVer < Globals.Version)
             {
-                bool dataFormatUpdate = false;
+                
                 foreach (KeyValuePair<double, bool> entry in Globals.Versions)
                 {
                     if (entry.Key > cachedVer && entry.Value == true)
@@ -53,6 +52,8 @@ namespace pokeAutoBuilder.Source.Services
 
             // store the current version in the cache
             await _localStorageService.SetItemAsync("version", Globals.Version);
+
+            return dataFormatUpdate;
         }
 
         // --- Preferences ---
@@ -103,7 +104,6 @@ namespace pokeAutoBuilder.Source.Services
             UserData newdata = userData
                 with
             {
-                //OLD_Storage = Globals.PokemonStorage.GetSerializableList(),
                 Storage = Globals.PokemonStorage
 			};
 
@@ -114,20 +114,6 @@ namespace pokeAutoBuilder.Source.Services
         {
             UserData userData = await GetUserDataAsync();
 
-            // creates a list of null pokemon with same size as the stored list
-            //List<SmartPokemon?> pokemonList = new List<SmartPokemon?>(new SmartPokemon?[userData.OLD_Storage.Count]);
-
-            //// get the pokemon from the API using the list of serialised pokemon in the storage
-            //// may not load them in the order they were saved
-            //var getStorageTasks = userData.Storage.Select(async (pokemon, index) =>
-            //{
-            //    SmartPokemon? sp = await pokemon.GetSmartPokemon();
-            //    if (sp is not null)
-            //        pokemonList[index] = sp;
-            //});
-            //await Task.WhenAll(getStorageTasks);
-
-            // add any successful deserialisations into global storage
             foreach (SmartPokemon? pokemon in userData.Storage)
             {
                 if (pokemon is null) continue;
@@ -139,29 +125,12 @@ namespace pokeAutoBuilder.Source.Services
         public async Task<List<PokemonTeam>> FetchTeamStorage()
         {
             UserData userData = await GetUserDataAsync();
-            //List<PokemonTeamSerializable> serializedTeams = userData.OLD_TeamStorage;
-            //List<PokemonTeam> teams = new List<PokemonTeam>();
-
-            //foreach (PokemonTeamSerializable st in serializedTeams)
-            //{
-            //    teams.Add(await st.GetPokemonTeam());
-            //}
-
-            //return teams;
             return userData.TeamStorage;
         }
 
         public async Task AddTeam(PokemonTeam team)
         {
             UserData userData = await GetUserDataAsync();
-            //List<PokemonTeamSerializable> teams = userData.OLD_TeamStorage;
-            //teams.Add(new PokemonTeamSerializable(team));
-
-            //UserData newData = userData
-            //    with
-            //{
-            //    OLD_TeamStorage = teams
-            //};
 
             List<PokemonTeam> teams = userData.TeamStorage;
             teams.Add(team);

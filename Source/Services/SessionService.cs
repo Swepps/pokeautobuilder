@@ -1,65 +1,70 @@
 ﻿using Blazored.SessionStorage;
+using static pokeAutoBuilder.Pages.TeamBuilderPage;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace pokeAutoBuilder.Source.Services
-{
-    public record SessionData
-    {
-        public PokemonTeam GlobalTeam { get; init; } = new ();
-        public int PokemonSearchLocation { get; init; } = 0;
-    }
-
+{ 
     public class SessionService
     {
         private readonly ISessionStorageService _sessionStorageService;
+
+        public event Action OnTeamChange;
+
+        // global variables
+        private static readonly string POKEMON_TEAM_KEY = "pokemon_team";
+        private static readonly string SEARCH_LOCATION_KEY = "search_location";
+
+        private PokemonTeam _pokemonTeam = new(); 
+        public PokemonTeam Team 
+        {
+            get => _pokemonTeam;
+            set
+            {
+                _pokemonTeam = value;
+                _ = SetTeamAsync(value);
+            }
+        }
+
+        private SearchLocation _searchLoc = 0;
+        public SearchLocation SearchLocation
+        {
+            get => _searchLoc;
+            set
+            {
+                _searchLoc = value;
+                _ = SetSearchLocationAsync(value);
+            }
+        }
 
         public SessionService(ISessionStorageService sessionStorageService)
         {
             _sessionStorageService = sessionStorageService;
         }
 
-        public async Task<SessionData> GetSessionDataAsync()
+        public async Task LoadSessionStorage()
         {
-            if (await _sessionStorageService.ContainKeyAsync("session"))
-                return await _sessionStorageService.GetItemAsync<SessionData>("session");
+            var taskPokemonTeam = _sessionStorageService.GetItemAsync<PokemonTeam>(POKEMON_TEAM_KEY);
 
+            await Task.WhenAll(taskPokemonTeam.AsTask());
 
-            return new SessionData();
+            _pokemonTeam = taskPokemonTeam.Result;
         }
 
-        private async Task SetSessionDataAsync(SessionData data)
+        public async Task ClearSessionDataAsync()
         {
-            await _sessionStorageService.SetItemAsync("session", data);
+            await _sessionStorageService.ClearAsync();
         }
 
-        public async Task SetGlobalTeam(PokemonTeam team)
+        public async Task SetTeamAsync(PokemonTeam team)
         {
-            SessionData session = await GetSessionDataAsync();
-
-            SessionData newSession = session
-                with
-            {
-                GlobalTeam = team
-            };
-
-            await SetSessionDataAsync(newSession);
+            OnTeamChange?.Invoke();
+            await _sessionStorageService.SetItemAsync(POKEMON_TEAM_KEY, team);
         }
 
-        public async Task<PokemonTeam> FetchGlobalTeam()
-        {
-            SessionData sessionData = await GetSessionDataAsync();
 
-            return sessionData.GlobalTeam;
-        }
-
-        public async Task SetPokemonSearchLocationAsync(int val)
+        public async Task SetSearchLocationAsync(SearchLocation location)
         {
-            SessionData session = await GetSessionDataAsync();
-            SessionData newSession = session
-                with
-            {
-                PokemonSearchLocation = val
-            };
-            await _sessionStorageService.SetItemAsync("session", newSession);
+            await _sessionStorageService.SetItemAsync(SEARCH_LOCATION_KEY, location);
         }
     }
 }

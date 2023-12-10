@@ -22,7 +22,7 @@
 	</MudStack>
 	<MudDivider DividerType="DividerType.FullWidth" />
 	<div class="justify-center gap-1 align-content-center mud-height-full mud-width-full">
-		@foreach (SmartPokemon? p in Team!)
+		@foreach (SmartPokemon? p in Team!.Pokemon)
 		{
 			@if (p is not null)
 			{
@@ -59,7 +59,7 @@
 
 	public async void OnClickLoadInEditor()
 	{
-		await SessionService.SetGlobalTeam(Team!);
+		await SessionService.SetTeamAsync(Team!);
 		NavigationManager.NavigateTo(NavigationManager.BaseUri + "/");
 	}
 

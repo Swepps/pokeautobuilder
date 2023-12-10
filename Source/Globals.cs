@@ -16,7 +16,6 @@ namespace pokeAutoBuilder.Source
         public static string Language = "en";
         public static MudThemeProvider? MudThemeProvider;
         public static SmartPokedex? NationalDex;
-		public static PokemonTeam PokemonTeam = new PokemonTeam();
 		public static PokemonStorage PokemonStorage = new PokemonStorage();
 
         // ah f*ck it... I'm just gonna hard code the type names in instead
@@ -41,5 +40,6 @@ namespace pokeAutoBuilder.Source
             "steel",
             "fairy"
         };
+        public static List<Type> LoadedTypes = new();
     }
 }

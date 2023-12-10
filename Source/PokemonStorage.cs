@@ -33,13 +33,13 @@ namespace pokeAutoBuilder.Source
             int randIdx = 0;
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
-                if (lockedMembers[i] != null)
+                if (lockedMembers.Pokemon[i] != null)
                 {
-                    newTeam[i] = lockedMembers[i];
+                    newTeam.Pokemon[i] = lockedMembers.Pokemon[i];
                 }
                 else if (randIdx < randomMembers.Count)
                 {
-                    newTeam[i] = randomMembers[randIdx];
+                    newTeam.Pokemon[i] = randomMembers[randIdx];
                     randIdx++;
                 }
             }
@@ -52,17 +52,6 @@ namespace pokeAutoBuilder.Source
             Random rand = new Random();
             SmartPokemon randPokemon = this[rand.Next(0, Count)];
             return randPokemon;
-        }
-
-        public List<SmartPokemonSerializable> GetSerializableList()
-        {
-            List<SmartPokemonSerializable> smartPokemonSerializables = new List<SmartPokemonSerializable>();
-            foreach (SmartPokemon sp in this)
-            {
-                smartPokemonSerializables.Add(new SmartPokemonSerializable(sp));
-            }
-
-            return smartPokemonSerializables;
         }
     }
 }

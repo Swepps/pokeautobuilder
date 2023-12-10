@@ -45,7 +45,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 Team = new PokemonTeam();
                 for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
                 {
-                    Team[i] = team[i];
+                    Team.Pokemon[i] = team.Pokemon[i];
                 }
             }
 
@@ -70,8 +70,8 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 int randIdx = Random.Next(PokemonTeam.MaxTeamSize);
                 for (; randIdx < PokemonTeam.MaxTeamSize; randIdx++)
                 {
-                    if (!Team.Contains(otherChrom.Team[randIdx]))
-                        Team[randIdx] = otherChrom.Team[randIdx];
+                    if (!Team.Pokemon.Contains(otherChrom.Team.Pokemon[randIdx]))
+                        Team.Pokemon[randIdx] = otherChrom.Team.Pokemon[randIdx];
                 }
             }
 
@@ -88,16 +88,16 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 
                 // make sure we don't swap out any locked members
                 int randIdx = Random.Next(PokemonTeam.MaxTeamSize);
-                while (_lockedMembers[randIdx] != null)
+                while (_lockedMembers.Pokemon[randIdx] != null)
                     randIdx = Random.Next(PokemonTeam.MaxTeamSize);
 
                 // now mutate
                 SmartPokemon randPokemon = _storage.GetRandomPokemon();
-                while (Team.Contains(randPokemon))
+                while (Team.Pokemon.Contains(randPokemon))
                 {
                     randPokemon = _storage.GetRandomPokemon();
                 }
-                Team[randIdx] = randPokemon;
+                Team.Pokemon[randIdx] = randPokemon;
             }
 
             public class FitnessFunction : IFitnessFunction

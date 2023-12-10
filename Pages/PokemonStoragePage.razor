@@ -11,22 +11,22 @@
 <MudText Typo="Typo.h6">Pokémon Storage</MudText>
 <MudPaper Height="calc(100vh - 140px)" Class="pa-1" Style="position: relative; overflow:hidden; background: var(--mud-palette-background)" Elevation="0" Square="true">
     <MudDrawerContainer Class="mud-height-full">
-        <MudDrawer @bind-Open="@openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent" Width="200px">
+        <MudDrawer @bind-Open="@_openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent" Width="200px">
             <MudPaper Class="d-flex flex-column justify-start gap-1 align-content-center mud-height-full py-2 px-1 mb-2 ml-n1"  Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
                 <MudText Typo="Typo.h6" Align="Align.Center">Pokémon Picker</MudText>
-                <PokemonSearchBox @ref="_pokemonCard" OnUpdated="Update" />
+                <PokemonSearchBox @ref="_pokemonCard"/>
                 <MudStack Row="true" AlignItems="AlignItems.Center">
-                    <MudToggleIconButton @bind-Toggled="@deleteMode"
+                    <MudToggleIconButton @bind-Toggled="@_deleteMode"
                                          Icon="@Icons.Material.Filled.DeleteOutline" Color="@Color.Success" Title="Enable Delete Mode"
                                          ToggledIcon="@Icons.Material.Filled.Delete" ToggledColor="@Color.Error" ToggledTitle="Disable Delete Mode" />
-                    <MudText Typo="Typo.body1">@(deleteMode ? "Disable Delete Mode" : "Enable Delete Mode")</MudText>
+                    <MudText Typo="Typo.body1">@(_deleteMode ? "Disable Delete Mode" : "Enable Delete Mode")</MudText>
                 </MudStack>
             </MudPaper>
         </MudDrawer>
         <div class="d-flex justify-center gap-0 align-content-start mud-height-full">
-            <StorageBox @ref="_storageBox" DeleteMode="@deleteMode"/>
+            <StorageBox @ref="_storageBox" DeleteMode="@_deleteMode"/>
             <MudPaper Square="true" Elevation="0" Class="d-flex justify-center align-center mud-height-full cursor-pointer mx-0" @onclick="ToggleOpenAddPokemonDrawer">
-                <MudIcon Icon="@(openAddPokemonDrawer ? @Icons.Material.Filled.KeyboardArrowRight : @Icons.Material.Filled.KeyboardArrowLeft)" />
+                <MudIcon Icon="@(_openAddPokemonDrawer ? @Icons.Material.Filled.KeyboardArrowRight : @Icons.Material.Filled.KeyboardArrowLeft)" />
             </MudPaper>
         </div>
     </MudDrawerContainer>
@@ -35,11 +35,11 @@
 <PageFooter />
 
 @code {
-    StorageBox? _storageBox;
-    PokemonSearchBox? _pokemonCard;
+    private StorageBox? _storageBox;
+    private PokemonSearchBox? _pokemonCard;
 
-    bool openAddPokemonDrawer = true;
-    bool deleteMode = false;
+    private bool _openAddPokemonDrawer = true;
+    private bool _deleteMode = false;
 
     protected async override Task OnInitializedAsync()
     {
@@ -58,14 +58,14 @@
             SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
             if (pokemon != null && _pokemonCard is not null)
             {
-                _pokemonCard.Pokemon = pokemon;
+                _pokemonCard._Pokemon = pokemon;
             }
         }
     }
 
     public void ToggleOpenAddPokemonDrawer()
     {
-        openAddPokemonDrawer = !openAddPokemonDrawer;
+        _openAddPokemonDrawer = !_openAddPokemonDrawer;
     }
 
     private async void Update()
@@ -101,7 +101,7 @@
     {
         if (_pokemonCard is not null)
         {
-            SmartPokemon? pokemon = _pokemonCard.Pokemon;
+            SmartPokemon? pokemon = _pokemonCard._Pokemon;
             if (pokemon is not null)
             {
                 Globals.PokemonStorage.Add(pokemon);

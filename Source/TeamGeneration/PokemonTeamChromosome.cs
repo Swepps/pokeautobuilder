@@ -41,14 +41,14 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
-                ReplaceGene(i, new Gene(randomTeam[i]));
+                ReplaceGene(i, new Gene(randomTeam.Pokemon[i]));
             }
         }
 
         public Gene GenerateGene(int geneIndex)
         {
             // we don't want to replace locked members
-            if (_lockedMembers[geneIndex] is not null)
+            if (_lockedMembers.Pokemon[geneIndex] is not null)
             {
                 return GetGene(geneIndex);
             }
@@ -70,7 +70,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 // replace genes with new genes if they're not locked
                 for (int i = startIndex; i < Math.Min(genes.Length, m_length); i++)
                 {
-                    if (_lockedMembers[i] is null)
+                    if (_lockedMembers.Pokemon[i] is null)
                     {
                         m_genes[i] = new Gene(genes[i].Value);
                     }
@@ -105,7 +105,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             PokemonTeam team = new PokemonTeam();
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
-                team[i] = genes[i].Value as SmartPokemon;
+                team.Pokemon[i] = genes[i].Value as SmartPokemon;
             }
 
             // don't want to sort anymore because it messes up locked pokemon
@@ -173,10 +173,10 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             }
 
             // don't want to replace locked members
-            if (_lockedMembers[index] is null)
+            if (_lockedMembers.Pokemon[index] is null)
                 m_genes[index] = gene;
             else
-                m_genes[index] = new Gene(_lockedMembers[index]);
+                m_genes[index] = new Gene(_lockedMembers.Pokemon[index]);
 
             Fitness = null;
         }

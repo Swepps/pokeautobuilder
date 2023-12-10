@@ -87,14 +87,14 @@
                         {
                             SmartPokemon? p = null;
                             bool locked = false;
-                            if (LockedMembers is not null && LockedMembers[i] is not null)
+                            if (LockedMembers is not null && LockedMembers.Pokemon[i] is not null)
                             {
-                                p = LockedMembers[i];
+                                p = LockedMembers.Pokemon[i];
                                 locked = true;
                             }
 
                             if (!locked)
-                                p = BestTeam[i];
+                                p = BestTeam.Pokemon[i];
 
                             @if (p is not null)
                             {
@@ -219,7 +219,7 @@
 
     public async Task OnClickLoadIntoEditor()
     {
-        await SessionService.SetGlobalTeam(BestTeam);
+        await SessionService.SetTeamAsync(BestTeam);
         MudDialog!.Close(DialogResult.Ok(BestTeam));
     }
 

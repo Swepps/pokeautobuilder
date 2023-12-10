@@ -275,7 +275,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         {
             Dictionary<string, int> statTotals = new Dictionary<string, int>();
 
-            foreach (SmartPokemon? pokemon in team)
+            foreach (SmartPokemon? pokemon in team.Pokemon)
             {
                 if (pokemon == null)
                     continue;
@@ -322,7 +322,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         {
             double coverageScore = 0;
 
-            foreach (SmartPokemon? p in team)
+            foreach (SmartPokemon? p in team.Pokemon)
             {
                 if (p is null)
                     continue;
@@ -345,7 +345,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         {
             double resistancesScore = 0;
 
-            foreach (SmartPokemon? p in team)
+            foreach (SmartPokemon? p in team.Pokemon)
             {
                 if (p is null)
                     continue;
@@ -388,7 +388,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 // this is inefficient but the lists will always be small so should be pretty quick
                 foreach (SmartPokemon entry in remainingTeamCombination)
                 {
-                    foreach (SmartPokemon? pokemon in lockedMembers)
+                    foreach (SmartPokemon? pokemon in lockedMembers.Pokemon)
                     {
                         if (entry == pokemon)
                             continue;
@@ -400,13 +400,13 @@ namespace pokeAutoBuilder.Source.TeamGeneration
                 int combinIdx = 0;
                 for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
                 {
-                    if (lockedMembers[i] != null)
+                    if (lockedMembers.Pokemon[i] != null)
                     {
-                        newTeam[i] = lockedMembers[i];
+                        newTeam.Pokemon[i] = lockedMembers.Pokemon[i];
                     }
                     else if (combinIdx < remainingTeamCombination.Length)
                     {
-                        newTeam[i] = remainingTeamCombination[combinIdx];
+                        newTeam.Pokemon[i] = remainingTeamCombination[combinIdx];
                         combinIdx++;
                     }
                 }
