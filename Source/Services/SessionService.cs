@@ -60,6 +60,14 @@ namespace pokeAutoBuilder.Source.Services
             OnTeamChange?.Invoke();
             await _sessionStorageService.SetItemAsync(POKEMON_TEAM_KEY, team);
         }
+        public async Task SetTeamPokemon(int index, SmartPokemon? pokemon)
+        {
+            if (index < 0 || index >= Team.Pokemon.Count)
+                return;
+
+            Team.Pokemon[index] = pokemon;
+            await SetTeamAsync(Team);
+        }
 
 
         public async Task SetSearchLocationAsync(SearchLocation location)

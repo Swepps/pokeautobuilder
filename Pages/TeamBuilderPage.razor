@@ -50,7 +50,7 @@
     <MudText Typo="Typo.h6">Pokémon Team Stats</MudText>
     @if (!Session.Team.IsEmpty)
     {
-        <StatsTeamPanel />
+        <StatsTeamPanel Team="Session.Team"/>
     }
     else
     {

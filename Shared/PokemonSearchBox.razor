@@ -239,7 +239,8 @@
 
         if (Session.Team is not null && PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
         {
-            Session.Team.Pokemon[PokemonTeamIndex] = _Pokemon;
+            // this function call will trigger OnTeamChanged event
+            Session.SetTeamPokemon(PokemonTeamIndex, _Pokemon);
         }
 
         if (before != _pokemon)
