@@ -6,17 +6,14 @@ namespace pokeAutoBuilder.Source
 
     public class Globals
 	{
-        public static Dictionary<double, bool> Versions = new Dictionary<double, bool>()
+        public static readonly Dictionary<double, bool> Versions = new Dictionary<double, bool>()
         {
             { 0.1, true },
             { 0.2, false },
             { 1.0, true },
         };
-        public static double Version = 1.0;
-        public static string Language = "en";
-        public static MudThemeProvider? MudThemeProvider;
-        public static SmartPokedex? NationalDex;
-		public static PokemonStorage PokemonStorage = new PokemonStorage();
+        public static readonly double Version = 1.0;
+        public static readonly string Language = "en";
 
         // ah f*ck it... I'm just gonna hard code the type names in instead
         public static readonly List<string> AllTypes = new List<string>

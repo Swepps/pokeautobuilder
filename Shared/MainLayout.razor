@@ -1,14 +1,14 @@
 ﻿@inherits LayoutComponentBase
 
 @inject ProfileService ProfileService
-@inject SessionService SessionService
+@inject SessionService Session
 @inject PokeApiService PokeApiService
 
 @using PokeApiNet
 @using Toolbelt.Blazor.PWA.Updater
 @using pokeAutoBuilder.Source.Services;
 
-<MudThemeProvider @ref="@Globals.MudThemeProvider" @bind-IsDarkMode="@_isDarkMode" />
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@_isDarkMode" />
 <MudDialogProvider FullWidth="true"
                    MaxWidth="MaxWidth.ExtraExtraLarge" />
 <MudSnackbarProvider />
@@ -54,6 +54,8 @@
 </MudLayout>
 
 @code{
+    public MudThemeProvider? _themeProvider;
+
     enum Init { Initialising, Done, Error }
 
     Init _state = Init.Initialising;
@@ -77,7 +79,7 @@
             // first check the version to clear cache if there has been a format update
             if (await ProfileService.CheckVersion())
             {
-                await SessionService.ClearSessionDataAsync();
+                await Session.ClearSessionDataAsync();
             }
 
             // initialising global variables used across the app
@@ -87,19 +89,23 @@
 
             StateHasChanged();
 
+            // fetch all type info before pokemon are loaded from storage
+            // so we can genenerate their multipliers
+            Globals.LoadedTypes = await PokeApiService.GetAllTypesAsync();
+
             // now do the slow tasks
-            var getNationalDexTask = PokeApiService.GetNationalDex();
-            var getAllTypesTask = PokeApiService.GetAllTypesAsync();
-
             await Task.WhenAll(
-                getNationalDexTask,
-                getAllTypesTask,
-                ProfileService.LoadGlobalStorage());
+                ProfileService.LoadProfileStorage(),
+                Session.LoadSessionStorage());
 
-            Globals.NationalDex = getNationalDexTask.Result;
-            Globals.LoadedTypes = getAllTypesTask.Result;
+            
 
-            if (Globals.NationalDex != null
+            if (Session.NationalDex is null || Session.NationalDex.Count == 0)
+            {
+                Session.NationalDex = (await PokeApiService.GetNationalDex())!;
+            }
+
+            if (Session.NationalDex.Count > 0
                 &&
                 Globals.LoadedTypes.Count > 0)
             {

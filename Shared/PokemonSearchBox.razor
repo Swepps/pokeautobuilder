@@ -3,7 +3,7 @@
 @using pokeAutoBuilder.Shared.Cards
 @using pokeAutoBuilder.Source.Services;
 
-@inject ProfileService ProfileService
+@inject ProfileService Profile
 @inject SessionService Session
 @inject PokeApiService PokeApiService
 @inject IDialogService DialogService
@@ -56,7 +56,7 @@
                 <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
             </MudTooltip>
             <MudTooltip Text="Add To Storage">
-                <MudIconButton Disabled="@(UseStorage || Globals.PokemonStorage.Contains(_pokemon))" Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
+                <MudIconButton Disabled="@(UseStorage || Profile.PokemonStorage.Pokemon.Contains(_pokemon))" Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
             </MudTooltip>
             <MudTooltip Text="Randomize">
                 <MudIconButton Disabled="_Locked" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
@@ -173,20 +173,20 @@
     {
         // if text is null or empty, show complete list
         if (string.IsNullOrEmpty(value))
-            return Globals.NationalDex!;
+            return Session.NationalDex;
 
         // search the pokedex in a background thread
-        return await Task.Run(() => Globals.NationalDex!.SearchPokedex(value.ToLower()));
+        return await Task.Run(() => Session.NationalDex.SearchPokedex(value.ToLower()));
     }
 
     private async Task<IEnumerable<SmartPokemon>> SearchStorage(string value)
     {
         // if text is null or empty, show complete list
         if (string.IsNullOrEmpty(value))
-            return Globals.PokemonStorage!;
+            return Profile.PokemonStorage.Pokemon;
 
         // search the storage in a background thread
-        return await Task.Run(() => Globals.PokemonStorage!.Where(p => p.Name.Contains(value.ToLower())).OrderBy(p => p.Name));
+        return await Task.Run(() => Profile.PokemonStorage.Pokemon.Where(p => p.Name.Contains(value.ToLower())).OrderBy(p => p.Name));
     }
 
     public async Task OnUpdatedPokemonForm()
@@ -240,7 +240,7 @@
         if (Session.Team is not null && PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
         {
             // this function call will trigger OnTeamChanged event
-            Session.SetTeamPokemon(PokemonTeamIndex, _Pokemon);
+            await Session.SetTeamPokemonAsync(PokemonTeamIndex, _Pokemon);
         }
 
         if (before != _pokemon)
@@ -259,14 +259,16 @@
             _pokemon.SelectAbility(value);
     }
 
-    public void OnClickAddToStorage()
+    public async Task OnClickAddToStorage()
     {
         if (_pokemon is null)
             return;
 
-        Globals.PokemonStorage.Add(_pokemon);
+        await Profile.AddPokemonToStorageAsync(_pokemon);
 
         Snackbar.Add("Added " + _pokemon.Name + " to Pokémon Storage", Severity.Success);
+
+        await OnPokemonChanged.InvokeAsync();
     }
 
     public async Task OnClickDetails()
@@ -283,15 +285,12 @@
             SmartPokemon? pokemon = result.Data as SmartPokemon;
             if (pokemon is not null)
             {
-                int idx = Globals.PokemonStorage.IndexOf(_Pokemon!);
-                if (idx >= 0)
-                {
-                    Globals.PokemonStorage.RemoveAt(idx);
-                    Globals.PokemonStorage.Insert(idx, pokemon);
-                    await ProfileService.UpdatePokemonStorageAsync();
-
-                    this._pokemon = pokemon;                    
-                }
+                // add and remove pokemon from storage to "update" it
+                // we can directly remove it here because it's about to be updated
+                // properly by AddPokemonToStorageAsync anyway
+                Profile.PokemonStorage.Pokemon.Remove(pokemon);
+                await Profile.AddPokemonToStorageAsync(pokemon);
+                _Pokemon = pokemon;
             }
             StateHasChanged();
         }
@@ -300,7 +299,7 @@
     public async Task OnClickRandomize()
     {       
         NamedApiResource<Pokemon>? pokemonResource = null;
-        SmartPokemonEntry? entry = Globals.NationalDex!.RandomPokemon();
+        SmartPokemonEntry? entry = Session.NationalDex.RandomPokemon();
         if (entry != null)
         {
             Random rand = new Random();
@@ -310,16 +309,7 @@
 
         if (pokemonResource != null)
         {
-            _pokemon = null;
-            _pokemonSearchValue = entry;
-            _pokemonFormName = pokemonResource.Name;
-            StateHasChanged();
-
-            SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
-            if (pokemon != null)
-            {
-                _Pokemon = pokemon;
-            }
+            await SetPokemon(pokemonResource.Name);
         }
     }
 
@@ -345,7 +335,7 @@
             _Pokemon = Session.Team.Pokemon[PokemonTeamIndex];
             if (_Pokemon is not null)
             {
-                _pokemonSearchValue = Globals.NationalDex!.FindPokemon(_Pokemon.Species.Name);
+                _pokemonSearchValue = Session.NationalDex.FindPokemon(_Pokemon.Species.Name);
                 _pokemonFormName = _Pokemon.Name;
                 _pokemonSearchValueVarieties.Clear();
                 foreach (PokemonSpeciesVariety variety in _Pokemon.LoadedSpecies!.Varieties)

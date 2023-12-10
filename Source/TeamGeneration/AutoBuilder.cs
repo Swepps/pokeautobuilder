@@ -371,7 +371,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             {
                 lockedMembers = new PokemonTeam();
             }
-            else if (lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize || availablePokemon.Count < PokemonTeam.MaxTeamSize)
+            else if (lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize || availablePokemon.Pokemon.Count < PokemonTeam.MaxTeamSize)
             {
                 // they're all locked!
                 return lockedMembers;
@@ -382,7 +382,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
 
             // using the clever combinations code to quickly iterate through each combination of teams
             // we are selecting (6 - lockedMembers.Count) from all the pokemon in the box
-            foreach (SmartPokemon[] remainingTeamCombination in Combinations<SmartPokemon>(availablePokemon.ToArray(), PokemonTeam.MaxTeamSize - lockedMembers.CountPokemon()))
+            foreach (SmartPokemon[] remainingTeamCombination in Combinations<SmartPokemon>(availablePokemon.Pokemon.ToArray(), PokemonTeam.MaxTeamSize - lockedMembers.CountPokemon()))
             {
                 // check that we're not already using one of these selected pokemon in our team already
                 // this is inefficient but the lists will always be small so should be pretty quick
@@ -473,7 +473,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             {
                 lockedMembers = new PokemonTeam();
             }
-            else if (lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize || availablePokemon.Count < PokemonTeam.MaxTeamSize)
+            else if (lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize || availablePokemon.Pokemon.Count < PokemonTeam.MaxTeamSize)
             {
                 // they're all locked!
                 return lockedMembers;

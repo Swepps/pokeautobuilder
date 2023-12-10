@@ -1,5 +1,6 @@
 ﻿@inject NavigationManager NavigationManager
-@inject ProfileService ProfileService
+@inject ProfileService Profile
+@inject SessionService Session
 @inject PokeApiService PokeApiService
 
 @page "/storage"
@@ -14,7 +15,7 @@
         <MudDrawer @bind-Open="@_openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent" Width="200px">
             <MudPaper Class="d-flex flex-column justify-start gap-1 align-content-center mud-height-full py-2 px-1 mb-2 ml-n1"  Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
                 <MudText Typo="Typo.h6" Align="Align.Center">Pokémon Picker</MudText>
-                <PokemonSearchBox @ref="_pokemonCard"/>
+                <PokemonSearchBox @ref="_pokemonCard" OnPokemonChanged="StateHasChanged"/>
                 <MudStack Row="true" AlignItems="AlignItems.Center">
                     <MudToggleIconButton @bind-Toggled="@_deleteMode"
                                          Icon="@Icons.Material.Filled.DeleteOutline" Color="@Color.Success" Title="Enable Delete Mode"
@@ -41,44 +42,15 @@
     private bool _openAddPokemonDrawer = true;
     private bool _deleteMode = false;
 
-    protected async override Task OnInitializedAsync()
-    {
-        // select an initial random pokemon
-        NamedApiResource<Pokemon>? pokemonResource = null;
-        SmartPokemonEntry? entry = Globals.NationalDex!.RandomPokemon();
-        if (entry != null)
-        {
-            Random rand = new Random();
-            List<NamedApiResource<Pokemon>> varieties = await entry.GetAllVarieties();
-            pokemonResource = varieties[rand.Next(varieties.Count)];
-        }
-
-        if (pokemonResource != null)
-        {
-            SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
-            if (pokemon != null && _pokemonCard is not null)
-            {
-                _pokemonCard._Pokemon = pokemon;
-            }
-        }
-    }
-
     public void ToggleOpenAddPokemonDrawer()
     {
         _openAddPokemonDrawer = !_openAddPokemonDrawer;
     }
 
-    private async void Update()
-    {
-        StateHasChanged();
-        _storageBox?.Refresh();
-        await ProfileService.UpdatePokemonStorageAsync();
-    }
-
-    public async void OnClickAddRandomPokemon()
+    public async Task OnClickAddRandomPokemon()
     {
         NamedApiResource<Pokemon>? pokemonResource = null;
-        SmartPokemonEntry? entry = Globals.NationalDex!.RandomPokemon();
+        SmartPokemonEntry? entry = Session.NationalDex.RandomPokemon();
         if (entry != null)
         {
             Random rand = new Random();
@@ -91,22 +63,26 @@
             SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
             if (pokemon != null)
             {
-                Globals.PokemonStorage.Add(pokemon);
-                Update();
+                await Profile.AddPokemonToStorageAsync(pokemon);
             }
         }
     }
 
-    public void OnClickAddPokemon()
+    public async Task OnClickAddPokemon()
     {
         if (_pokemonCard is not null)
         {
             SmartPokemon? pokemon = _pokemonCard._Pokemon;
             if (pokemon is not null)
             {
-                Globals.PokemonStorage.Add(pokemon);
-                Update();
+                await Profile.AddPokemonToStorageAsync(pokemon);
             }
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _pokemonCard is not null)
+            await _pokemonCard.OnClickRandomize();
     }
 }

@@ -2,6 +2,7 @@
 using PokeApiNet;
 using pokeAutoBuilder.Source.Services;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace pokeAutoBuilder.Source
 {
@@ -11,17 +12,24 @@ namespace pokeAutoBuilder.Source
 
     public class SmartPokemonEntry
     {
+        [JsonPropertyName("id")]
         public int Id { get; set; }
+        [JsonIgnore]
         public string Name {
             get => SpeciesResource.Name;
         }
-        private NamedApiResource<PokemonSpecies> SpeciesResource { get; set; }
+
+        [JsonPropertyName("species_resource")]
+        public NamedApiResource<PokemonSpecies> SpeciesResource { get; set; }
+
+        [JsonIgnore]
         private PokemonSpecies? Species;
 
-        public SmartPokemonEntry(int Id, NamedApiResource<PokemonSpecies> Species) 
+        [JsonConstructor]
+        public SmartPokemonEntry(int Id, NamedApiResource<PokemonSpecies> SpeciesResource) 
         {
             this.Id = Id;
-            this.SpeciesResource = Species;
+            this.SpeciesResource = SpeciesResource;
         }
 
         public async Task<PokemonSpecies> GetSpecies()

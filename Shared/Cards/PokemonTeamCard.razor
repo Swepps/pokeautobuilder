@@ -65,7 +65,7 @@
 
 	public async void OnClickDelete()
 	{
-		await ProfileService.RemoveTeam(Team!);
+		await ProfileService.RemoveTeamFromStorageAsync(Team!);
 		await OnUpdated.InvokeAsync();
 	}
 }

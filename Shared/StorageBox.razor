@@ -1,15 +1,15 @@
-﻿@inject ProfileService ProfileService
+﻿@inject ProfileService Profile
 
 @using pokeAutoBuilder.Shared.Cards
 @using pokeAutoBuilder.Source.Services;
 
 <MudPaper Class="d-flex mud-width-full mud-height-full pa-2" Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
 	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
-		@for (int i = 0; i < Globals.PokemonStorage.Count; i++)
+		@for (int i = 0; i < Profile.PokemonStorage.Pokemon.Count; i++)
 		{
 			int index = i;
-			SmartPokemon p = Globals.PokemonStorage[i];
-			<PokemonMiniCard Pokemon="p" DeleteFromStorageMode="@DeleteMode" OnUpdated="Refresh" />
+			SmartPokemon p = Profile.PokemonStorage.Pokemon[i];
+			<PokemonMiniCard Pokemon="p" DeleteFromStorageMode="@DeleteMode" />
 		}
 	</div>
 </MudPaper>
@@ -20,9 +20,4 @@
 
 	[Parameter]
 	public bool DeleteMode { get; set; } = false;
-
-	public void Refresh()
-	{
-		StateHasChanged();
-	}
 }

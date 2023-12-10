@@ -83,7 +83,7 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             public override void Mutate()
             {
                 // can't mutate if the data set is less than team size
-                if (_storage.Count <= PokemonTeam.MaxTeamSize || _lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize)
+                if (_storage.Pokemon.Count <= PokemonTeam.MaxTeamSize || _lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize)
                     return;
 
                 // make sure we don't swap out any locked members

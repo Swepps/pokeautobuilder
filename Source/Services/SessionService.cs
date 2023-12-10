@@ -12,6 +12,7 @@ namespace pokeAutoBuilder.Source.Services
 
         // global variables
         private static readonly string POKEMON_TEAM_KEY = "pokemon_team";
+        private static readonly string NATIONAL_DEX_KEY = "national_pokedex";
         private static readonly string SEARCH_LOCATION_KEY = "search_location";
 
         private PokemonTeam _pokemonTeam = new(); 
@@ -22,6 +23,17 @@ namespace pokeAutoBuilder.Source.Services
             {
                 _pokemonTeam = value;
                 _ = SetTeamAsync(value);
+            }
+        }
+
+        private SmartPokedex _nationalDex = new();
+        public SmartPokedex NationalDex
+        {
+            get => _nationalDex;
+            set
+            {
+                _nationalDex = value;
+                _ = SetNationalDexAsync(value);
             }
         }
 
@@ -44,10 +56,18 @@ namespace pokeAutoBuilder.Source.Services
         public async Task LoadSessionStorage()
         {
             var taskPokemonTeam = _sessionStorageService.GetItemAsync<PokemonTeam>(POKEMON_TEAM_KEY);
+            var taskNationDex = _sessionStorageService.GetItemAsync<SmartPokedex>(NATIONAL_DEX_KEY);
+            var taskSearchLocation = _sessionStorageService.GetItemAsync<SearchLocation>(SEARCH_LOCATION_KEY);
 
-            await Task.WhenAll(taskPokemonTeam.AsTask());
+            await Task.WhenAll(
+                taskPokemonTeam.AsTask(),
+                taskNationDex.AsTask(),
+                taskSearchLocation.AsTask()
+                );
 
-            _pokemonTeam = taskPokemonTeam.Result;
+            _pokemonTeam = taskPokemonTeam.Result ?? new();
+            _nationalDex = taskNationDex.Result ?? new();
+            _searchLoc = taskSearchLocation.Result;
         }
 
         public async Task ClearSessionDataAsync()
@@ -60,7 +80,7 @@ namespace pokeAutoBuilder.Source.Services
             OnTeamChange?.Invoke();
             await _sessionStorageService.SetItemAsync(POKEMON_TEAM_KEY, team);
         }
-        public async Task SetTeamPokemon(int index, SmartPokemon? pokemon)
+        public async Task SetTeamPokemonAsync(int index, SmartPokemon? pokemon)
         {
             if (index < 0 || index >= Team.Pokemon.Count)
                 return;
@@ -69,6 +89,10 @@ namespace pokeAutoBuilder.Source.Services
             await SetTeamAsync(Team);
         }
 
+        public async Task SetNationalDexAsync(SmartPokedex nationalDex)
+        {
+            await _sessionStorageService.SetItemAsync(NATIONAL_DEX_KEY, nationalDex);
+        }
 
         public async Task SetSearchLocationAsync(SearchLocation location)
         {

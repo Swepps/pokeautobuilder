@@ -1,10 +1,11 @@
-﻿@inject SessionService SessionService
-@inject NavigationManager NavigationManager
-
-@using pokeAutoBuilder.Shared.Panes
+﻿@using pokeAutoBuilder.Shared.Panes
 @using pokeAutoBuilder.Source.Services;
 @using pokeAutoBuilder.Source.TeamGeneration;
 @using pokeAutoBuilder.Shared.Cards
+
+@inject SessionService Session
+@inject ProfileService Profile
+@inject NavigationManager NavigationManager
 
 <MudDialog>
     <DialogContent>
@@ -197,7 +198,7 @@
             baseStatTotalWeighting, baseStatHpWeighting, baseStatAttWeighting,
             baseStatDefWeighting, baseStatSpAttWeighting, baseStatSpDefWeighting, baseStatSpeWeighting);
 
-        GA.Initialize(PopulationSize, Globals.PokemonStorage, LockedMembers is null ? new PokemonTeam() : LockedMembers, weightings);
+        GA.Initialize(PopulationSize, Profile.PokemonStorage, LockedMembers is null ? new PokemonTeam() : LockedMembers, weightings);
         GA.Run();
 
         StateHasChanged();
@@ -219,7 +220,7 @@
 
     public async Task OnClickLoadIntoEditor()
     {
-        await SessionService.SetTeamAsync(BestTeam);
+        await Session.SetTeamAsync(BestTeam);
         MudDialog!.Close(DialogResult.Ok(BestTeam));
     }
 
