@@ -117,10 +117,8 @@
         var dialog = await DialogService.ShowAsync<AutoBuilderDialog>("Automatic Team Builder", parameters);
         var result = await dialog.Result;
 
-        if (!result.Canceled)
-        {
-            StateHasChanged();
-        }
+        _teamName = Session.Team.Name;
+        StateHasChanged();
     }
 
     protected override void OnInitialized()
