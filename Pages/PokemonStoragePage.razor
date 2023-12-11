@@ -15,7 +15,7 @@
         <MudDrawer @bind-Open="@_openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent" Width="200px">
             <MudPaper Class="d-flex flex-column justify-start gap-1 align-content-center mud-height-full py-2 px-1 mb-2 ml-n1"  Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
                 <MudText Typo="Typo.h6" Align="Align.Center">Pokémon Picker</MudText>
-                <PokemonSearchBox @ref="_pokemonCard" />
+                <PokemonSearchBox @ref="_pokemonCard" NeverUseStorage="true"/>
                 <MudStack Row="true" AlignItems="AlignItems.Center">
                     <MudToggleIconButton @bind-Toggled="@_deleteMode"
                                          Icon="@Icons.Material.Filled.DeleteOutline" Color="@Color.Success" Title="Enable Delete Mode"

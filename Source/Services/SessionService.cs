@@ -9,6 +9,7 @@ namespace pokeAutoBuilder.Source.Services
         private readonly ISessionStorageService _sessionStorageService;
 
         public event Action? OnTeamChange;
+        public event Action? OnSearchLocationChange;
 
         // global variables
         private static readonly string POKEMON_TEAM_KEY = "pokemon_team";
@@ -41,7 +42,7 @@ namespace pokeAutoBuilder.Source.Services
         {
             get => _searchLoc;
             set
-            {                
+            {
                 _ = SetSearchLocationAsync(value);
             }
         }
@@ -122,7 +123,8 @@ namespace pokeAutoBuilder.Source.Services
         public async Task SetSearchLocationAsync(SearchLocation location)
         {
 			_searchLoc = location;
-			await _sessionStorageService.SetItemAsync(SEARCH_LOCATION_KEY, location);
+            OnSearchLocationChange?.Invoke();
+            await _sessionStorageService.SetItemAsync(SEARCH_LOCATION_KEY, location);
         }
 
         public async Task SetAllTypesAsync(List<PokeApiNet.Type> allTypes)

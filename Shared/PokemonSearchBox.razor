@@ -2,6 +2,7 @@
 @using Type = PokeApiNet.Type
 @using pokeAutoBuilder.Shared.Cards
 @using pokeAutoBuilder.Source.Services;
+@using static pokeAutoBuilder.Pages.TeamBuilderPage
 
 @inject ProfileService Profile
 @inject SessionService Session
@@ -11,7 +12,7 @@
 
 <MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 
-    @if (UseStorage)
+    @if (!NeverUseStorage && Session.SearchLocation == SearchLocation.PokemonStorage)
     {
         <MudAutocomplete T="SmartPokemon" Label="Pokémon" @bind-Value="_Pokemon" SearchFunc="@SearchStorage"
                          ResetValueOnEmptyText="true" Disabled="_Locked"
@@ -56,7 +57,8 @@
                 <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
             </MudTooltip>
             <MudTooltip Text="Add To Storage">
-                <MudIconButton Disabled="@(UseStorage || Profile.PokemonStorage.Pokemon.Contains(_pokemon))" Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
+                <MudIconButton Disabled="@((!NeverUseStorage && Session.SearchLocation == SearchLocation.PokemonStorage) || Profile.PokemonStorage.Pokemon.Contains(_pokemon))"
+                Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
             </MudTooltip>
             <MudTooltip Text="Randomize">
                 <MudIconButton Disabled="_Locked" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
@@ -89,12 +91,11 @@
     [Parameter]
     public int PokemonTeamIndex { get; set; } = -1;
 
-    // if this is true then all the pokemon options will be gathered from the storage instead of the pokedex
-    [Parameter]
-    public bool UseStorage { get; set; } = false;
-
     [Parameter]
     public EventCallback OnPokemonChanged { get; set; }
+
+    [Parameter]
+    public bool NeverUseStorage { get; set; } = false;
 
     // currently selected pokemon
     private SmartPokemon? _pokemon;
@@ -110,6 +111,8 @@
 
     private List<NamedApiResource<Pokemon>> _pokemonSearchValueVarieties = new();
     private bool _pokemonSearchValueVarietiesChanged = true;
+
+    private SearchLocation _prevPokemonSearchLocation;
 
     // the string which holds the last valid search result from the search bar
     private SmartPokemonEntry? _pokemonSearchValue;
@@ -136,19 +139,6 @@
         }
     }
     private string? _prevPokemonFormName;
-
-    // the string used in the ability selector
-    private string? _pokemonAbilityName;
-    public string? _PokemonAbilityName
-    {
-
-        get { return _pokemonAbilityName; }
-        set
-        {
-            _pokemonAbilityName = value;
-            OnChangeAbility(value);
-        }
-    }
 
     // only relevant if this search box is part of a team
     private bool _locked = false;
@@ -231,8 +221,14 @@
             _pokemon = await PokeApiService.GetPokemonAsync(pokemonName);
             if (_Pokemon is not null)
             {
+                _pokemonSearchValue = Session.NationalDex.FindPokemon(_Pokemon.Species.Name);
                 _pokemonFormName = _Pokemon.Name;
-                _pokemonAbilityName = _Pokemon.Abilities[0].Ability.Name;
+                _pokemonSearchValueVarieties.Clear();
+                PokemonSpecies species = await _Pokemon.GetSpeciesAsync();
+                foreach (PokemonSpeciesVariety variety in species.Varieties)
+                {
+                    _pokemonSearchValueVarieties.Add(variety.Pokemon);
+                }
             }
             else
             {
@@ -311,6 +307,12 @@
         }
     }
 
+    protected override void OnInitialized()
+    {
+        Session.OnSearchLocationChange += StateHasChanged;
+        base.OnInitialized();
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         if (PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
@@ -340,7 +342,8 @@
         return _prevPokemon != _pokemon ||
         _prevPokemonSearchValue != _pokemonSearchValue ||
         _prevPokemonFormName != _pokemonFormName ||
-        _pokemonSearchValueVarietiesChanged;
+        _pokemonSearchValueVarietiesChanged ||
+        _prevPokemonSearchLocation != Session.SearchLocation;
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -348,6 +351,7 @@
         _prevPokemon = _pokemon;
         _prevPokemonSearchValue = _pokemonSearchValue;
         _prevPokemonFormName = _pokemonFormName;
+        _prevPokemonSearchLocation = Session.SearchLocation;
         _pokemonSearchValueVarietiesChanged = false;
     }
 }
