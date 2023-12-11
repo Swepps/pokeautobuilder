@@ -165,7 +165,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-UxqGUW2cBLZYyHeSQk6mmgyA9L7z6wjBqV+uEDPJJQY=",
+      "hash": "sha256-ZZPfCQschI9Vi7eUFgyhSj8SgI+hxc9Pzgzv0nMF36w=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -325,7 +325,7 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-2pQeBwS+Qm+Gmk\/u4DUxkfjRUq5QUMhyOfIWOxD6rDs=",
+      "hash": "sha256-3Np2Ic9b4iPSjYxSPR4uluFF8aaQcBz9C\/HqioRrvNQ=",
       "url": "_framework\/pokeAutoBuilder.wasm"
     },
     {
@@ -537,5 +537,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "0rWBox8Y"
+  "version": "Rnn0I9cQ"
 };
