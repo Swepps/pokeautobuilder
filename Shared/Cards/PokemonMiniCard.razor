@@ -65,8 +65,8 @@ else
 				SmartPokemon? pokemon = result.Data as SmartPokemon;
 				if (pokemon is not null)
 				{
-					Profile.PokemonStorage.Pokemon.Remove(pokemon);
-					await Profile.AddPokemonToStorageAsync(pokemon);
+					if (Profile.PokemonStorage.Pokemon.Remove(pokemon))
+						await Profile.AddPokemonToStorageAsync(pokemon);
 
 					Pokemon = pokemon;
 

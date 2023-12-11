@@ -285,8 +285,8 @@
                 // add and remove pokemon from storage to "update" it
                 // we can directly remove it here because it's about to be updated
                 // properly by AddPokemonToStorageAsync anyway
-                Profile.PokemonStorage.Pokemon.Remove(pokemon);
-                await Profile.AddPokemonToStorageAsync(pokemon);
+                if (Profile.PokemonStorage.Pokemon.Remove(pokemon))
+                    await Profile.AddPokemonToStorageAsync(pokemon);
                 _Pokemon = pokemon;
             }
             StateHasChanged();
