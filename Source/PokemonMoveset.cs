@@ -1,21 +1,30 @@
 ﻿using PokeApiNet;
 using pokeAutoBuilder.Source.Services;
-
+using System.Text.Json.Serialization;
 using Type = PokeApiNet.Type;
 
 namespace pokeAutoBuilder.Source
 {
-    public class PokemonMoveset : List<Move?>
+    public class PokemonMoveset
     {
+        [JsonIgnore]
         public static readonly int MaxMovesetSize = 4;
-        
+
+		[JsonIgnore]
         public Dictionary<string, double> AttackMultipliers = new Dictionary<string, double>();
 
+		[JsonIgnore]
+        private List<Move?> _moves = new();
+
+		[JsonPropertyName("moves")]
+		public List<string?> MoveNames { get; set; } = new();
+
+		[JsonIgnore]
         public bool IsEmpty
         {
             get
             {
-                foreach (Move? m in this)
+                foreach (Move? m in _moves)
                 {
                     if (m != null)
                         return false;
@@ -29,8 +38,18 @@ namespace pokeAutoBuilder.Source
             // fill moveset with null moves
             for (int i = 0; i < MaxMovesetSize; i++)
             {
-                Add(null);
+                _moves.Add(null);
+                MoveNames.Add(null);
             }
+        }
+
+		public List<Move?> GetMoves()
+		{
+			return _moves.Take(MaxMovesetSize).ToList();
+		}
+        public List<string?> GetMoveNames()
+        {
+            return MoveNames.Take(MaxMovesetSize).ToList();
         }
 
         public int CountMoves()
@@ -38,7 +57,7 @@ namespace pokeAutoBuilder.Source
             int count = 0;
             for (int i = 0; i < MaxMovesetSize; i++)
             {
-                Move? m = this[i];
+                Move? m = _moves[i];
                 if (m != null) count++;
             }
             return count;
@@ -48,7 +67,8 @@ namespace pokeAutoBuilder.Source
         {
 			if (index >= 0 && index < MaxMovesetSize)
 			{
-				this[index] = move;
+                _moves[index] = move;
+                MoveNames[index] = move?.Name;
                 await UpdateAttackMultipliers();
 			}
 		}
@@ -79,9 +99,25 @@ namespace pokeAutoBuilder.Source
 
         private async Task UpdateAttackMultipliers()
         {
+			// load in move details
+			if (MoveNames.Count > _moves.Count)
+			{
+				_moves.Clear();
+				foreach (string? name in MoveNames) 
+				{
+					if (name is null)
+					{
+						_moves.Add(null);
+						continue;
+					}
+
+					_moves.Add(await PokeApiService.Instance!.GetMoveAsync(name));
+				}
+			}
+
             AttackMultipliers.Clear();
 
-			foreach (Move? move in this)
+			foreach (Move? move in _moves)
             {
                 if (move is null || move.DamageClass.Name == "status")
                     continue;

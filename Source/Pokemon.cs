@@ -47,6 +47,9 @@ namespace pokeAutoBuilder.Source
         [JsonIgnore]
         private Generation? _generation { get; set; }
 
+        [JsonIgnore]
+        public new List<PokemonMove> Moves;
+
         public static async Task<SmartPokemon> BuildSmartPokemonAsync(Pokemon basePokemon)
         {
             PokemonSpecies? species = await PokeApiService.Instance!.GetPokemonSpeciesAsync(basePokemon.Species.Name) ?? throw new Exception("Could not load species information from " + basePokemon.Name);
@@ -72,7 +75,7 @@ namespace pokeAutoBuilder.Source
             GameIndicies = pokemon.GameIndicies;
             HeldItems = pokemon.HeldItems;
             LocationAreaEncounters = pokemon.LocationAreaEncounters;
-            Moves = new(); // load this later because it's huge
+            Moves = pokemon.Moves; // load this later because it's huge
             PastTypes = pokemon.PastTypes;
             Sprites = pokemon.Sprites;
             Species = pokemon.Species;
@@ -165,25 +168,36 @@ namespace pokeAutoBuilder.Source
             return _generation!;
         }
 
+        public async Task<List<PokemonMove>> GetMovesAsync()
+        {
+            if (Moves is null || Moves.Count == 0)
+                await LoadFromAPI();
+
+            return Moves!;
+        }
+
         public async Task LoadFromAPI()
         {
             _loadedSpecies = await PokeApiService.Instance!.GetPokemonSpeciesAsync(Species.Name) ?? throw new Exception("Could not load species information from " + Name);
             _generation = await PokeApiService.Instance!.GetGenerationAsync(_loadedSpecies) ?? throw new Exception("Could not load generation information from " + Species.Name);
+            Moves = await PokeApiService.Instance!.GetPokemonMovesAsync(this);
         }
 
-        public List<PokemonMove> SearchAvailableMoves(string searchTerm)
+        public async Task<List<PokemonMove>> SearchAvailableMoves(string searchTerm)
         {
-            List<PokemonMove> results = Moves.Where(move => move.Move.Name.Contains(searchTerm)).OrderBy(move => move.Move.Name).ToList();
+            List<PokemonMove> results = await GetMovesAsync();
+            results = results.Where(move => move.Move.Name.Contains(searchTerm)).OrderBy(move => move.Move.Name).ToList();
             return results;
         }
 
-        public PokemonMove? GetSelectedMoveResource(int index)
+        public async Task<PokemonMove?> GetSelectedMoveResource(int index)
         {
             if (index < 0 || index >= PokemonMoveset.MaxMovesetSize) return null;
-            if (SelectedMoves[index] is null) return null;
+            if (SelectedMoves.GetMoveNames()[index] is null) return null;
 
-            Move move = SelectedMoves[index]!;
-            return Moves.Find(m => m.Move.Name == move.Name);
+            string? moveName = SelectedMoves.GetMoveNames()[index]!;
+            List<PokemonMove> moves = await GetMovesAsync();
+            return moves.Find(m => m.Move.Name == moveName);
         }
 
         public double GetResistance(string typeName)

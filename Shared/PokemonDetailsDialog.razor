@@ -117,16 +117,16 @@
         }
     }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (Pokemon is null)
             return;
 
         pokemonAbilityName = Pokemon.SelectedAbility.Ability.Name;
-        move1 = Pokemon.GetSelectedMoveResource(0);
-        move2 = Pokemon.GetSelectedMoveResource(1);
-        move3 = Pokemon.GetSelectedMoveResource(2);
-        move4 = Pokemon.GetSelectedMoveResource(3);
+        move1 = await Pokemon.GetSelectedMoveResource(0);
+        move2 = await Pokemon.GetSelectedMoveResource(1);
+        move3 = await Pokemon.GetSelectedMoveResource(2);
+        move4 = await Pokemon.GetSelectedMoveResource(3);
     }
 
     private async Task<IEnumerable<PokemonMove>> SearchAvailableMoves(string value)
@@ -135,12 +135,13 @@
         if (Pokemon is null)
             return new List<PokemonMove>();
 
+        List<PokemonMove> moves = await Pokemon.GetMovesAsync();
+
         // if text is null or empty, show complete list
         if (string.IsNullOrEmpty(value))
-            return Pokemon.Moves.OrderBy(m => m.Move.Name);
+            return moves.OrderBy(m => m.Move.Name);
 
-        // search the pokedex in a background thread
-        return await Task.Run(() => Pokemon.SearchAvailableMoves(value.ToLower()));
+        return await Pokemon.SearchAvailableMoves(value.ToLower());
     }
 
     // need to fetch the move from the API before we can stick it into the pokemon
