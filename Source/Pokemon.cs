@@ -38,29 +38,26 @@ namespace pokeAutoBuilder.Source
         public List<string> MoveCoverage { get; init; }
 
         [JsonIgnore]
-        public PokemonSpecies? LoadedSpecies { get; set; }
-        [JsonIgnore]
         public List<Type> LoadedTypes { get; set; }
         [JsonIgnore]
-        public Generation? Generation { get; set; }
-        [JsonIgnore]
         public Multipliers Multipliers { get; init; }
+
+        [JsonIgnore]
+        private PokemonSpecies? _loadedSpecies { get; set; }
+        [JsonIgnore]
+        private Generation? _generation { get; set; }
 
         public static async Task<SmartPokemon> BuildSmartPokemonAsync(Pokemon basePokemon)
         {
             PokemonSpecies? species = await PokeApiService.Instance!.GetPokemonSpeciesAsync(basePokemon.Species.Name) ?? throw new Exception("Could not load species information from " + basePokemon.Name);
 
-			List<Type> types = await PokeApiService.Instance!.GetPokemonTypesAsync(basePokemon);
-            if (types.Count == 0)
-                throw new Exception("Could not load type information from " + basePokemon.Name);
-
             Generation? generation = await PokeApiService.Instance!.GetGenerationAsync(species) ?? throw new Exception("Could not load generation information from " + species.Name);
 
-			return new SmartPokemon(basePokemon, species, types, generation);
+			return new SmartPokemon(basePokemon, species, generation);
         }
 
 
-        public SmartPokemon(Pokemon pokemon, PokemonSpecies loadedSpecies, List<Type> loadedTypes, Generation generation)
+        public SmartPokemon(Pokemon pokemon, PokemonSpecies loadedSpecies, Generation generation)
         {
             // build our own copy constructor since we can't cast
             Id = pokemon.Id;
@@ -83,9 +80,15 @@ namespace pokeAutoBuilder.Source
             Types = pokemon.Types;
 
             // async value collected from builder function
-            LoadedSpecies = loadedSpecies;
-            LoadedTypes = loadedTypes;
-            Generation = generation;
+            _loadedSpecies = loadedSpecies;
+            _generation = generation;
+
+            // get the loaded types
+            LoadedTypes = new();
+            foreach (PokemonType t in Types)
+            {
+                LoadedTypes.Add(Globals.LoadedTypes.First(lt => lt.Name == t.Type.Name));
+            }
 
             // smart variables that make this pokemon class more useful
             SelectedAbility = Abilities[0];
@@ -145,6 +148,28 @@ namespace pokeAutoBuilder.Source
             Multipliers = new Multipliers();
             UpdateMultipliers();
 		}
+
+        public async Task<PokemonSpecies> GetSpeciesAsync()
+        {
+            if (_loadedSpecies is null)
+                await LoadFromAPI();
+
+            return _loadedSpecies!;
+        }
+
+        public async Task<Generation> GetGenerationAsync()
+        {
+            if (_generation is null)
+                await LoadFromAPI();
+
+            return _generation!;
+        }
+
+        public async Task LoadFromAPI()
+        {
+            _loadedSpecies = await PokeApiService.Instance!.GetPokemonSpeciesAsync(Species.Name) ?? throw new Exception("Could not load species information from " + Name);
+            _generation = await PokeApiService.Instance!.GetGenerationAsync(_loadedSpecies) ?? throw new Exception("Could not load generation information from " + Species.Name);
+        }
 
         public List<PokemonMove> SearchAvailableMoves(string searchTerm)
         {

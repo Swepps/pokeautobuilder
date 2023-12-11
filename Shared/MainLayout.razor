@@ -89,25 +89,14 @@
 
             StateHasChanged();
 
-            // fetch all type info before pokemon are loaded from storage
-            // so we can genenerate their multipliers
-            Globals.LoadedTypes = await PokeApiService.GetAllTypesAsync();
-
-            // now do the slow tasks
-            await Task.WhenAll(
-                ProfileService.LoadProfileStorage(),
-                Session.LoadSessionStorage());
-
-            
-
-            if (Session.NationalDex is null || Session.NationalDex.Count == 0)
-            {
-                Session.NationalDex = (await PokeApiService.GetNationalDex())!;
-            }
+            // session contains information about pokemon types that profile will use
+            // to load pokemon. Therefore session must be done first!
+            await Session.LoadSessionStorage();
+            await ProfileService.LoadProfileStorage();        
 
             if (Session.NationalDex.Count > 0
                 &&
-                Globals.LoadedTypes.Count > 0)
+                Session.AllTypes.Count > 0)
             {
                 _state = Init.Done;
             }

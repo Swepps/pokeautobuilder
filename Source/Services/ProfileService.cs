@@ -16,8 +16,8 @@ namespace pokeAutoBuilder.Source.Services
     {
         private readonly ILocalStorageService _localStorageService;
 
-        public event Action OnStorageChange;
-        public event Action OnTeamStorageChange;
+        public event Action? OnStorageChange;
+        public event Action? OnTeamStorageChange;
 
         // global variables
         private static readonly string POKEMON_STORAGE_KEY = "pokemon_storage";

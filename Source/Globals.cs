@@ -11,8 +11,9 @@ namespace pokeAutoBuilder.Source
             { 0.1, true },
             { 0.2, false },
             { 1.0, true },
+            { 1.1, true },
         };
-        public static readonly double Version = 1.0;
+        public static readonly double Version = 1.1;
         public static readonly string Language = "en";
 
         // ah f*ck it... I'm just gonna hard code the type names in instead
@@ -37,6 +38,8 @@ namespace pokeAutoBuilder.Source
             "steel",
             "fairy"
         };
-        public static List<Type> LoadedTypes = new();
+
+        // still need this for easy access in some classes... I hate it
+        public static List<Type> LoadedTypes = [];
     }
 }

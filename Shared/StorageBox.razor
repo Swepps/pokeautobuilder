@@ -1,7 +1,9 @@
-﻿@inject ProfileService Profile
-
-@using pokeAutoBuilder.Shared.Cards
+﻿@using pokeAutoBuilder.Shared.Cards
 @using pokeAutoBuilder.Source.Services;
+
+@inject ProfileService Profile
+
+@implements IDisposable
 
 <MudPaper Class="d-flex mud-width-full mud-height-full pa-2" Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
 	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
@@ -20,4 +22,14 @@
 
 	[Parameter]
 	public bool DeleteMode { get; set; } = false;
+
+	protected override void OnInitialized()
+	{
+		Profile.OnStorageChange += StateHasChanged;
+	}
+
+	public void Dispose()
+	{
+		Profile.OnStorageChange -= StateHasChanged;
+	}
 }

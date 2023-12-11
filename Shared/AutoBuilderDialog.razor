@@ -221,7 +221,7 @@
     public async Task OnClickLoadIntoEditor()
     {
         await Session.SetTeamAsync(BestTeam);
-        MudDialog!.Close(DialogResult.Ok(BestTeam));
+        MudDialog!.Close(DialogResult.Ok(true));
     }
 
     // called after each generation is completed

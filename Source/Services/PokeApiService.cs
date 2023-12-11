@@ -33,7 +33,7 @@ namespace pokeAutoBuilder.Source.Services
                 Type type = await ApiClient.GetResourceAsync(res);
 
                 // there are some weird types in the API with Ids of over 1000 that aren't real types
-                if (type == null || type.Id > 18)
+                if (type == null || !Globals.AllTypes.Contains(type.Name))
                     continue;
 
                 pokemonTypes.Add(type);

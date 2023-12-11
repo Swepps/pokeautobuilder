@@ -88,17 +88,13 @@
     // if the card has a reference team it needs to know its position within the team using this index
     [Parameter]
     public int PokemonTeamIndex { get; set; } = -1;
-    private int _prevPokemonTeamIndex = -1;
 
     // if this is true then all the pokemon options will be gathered from the storage instead of the pokedex
     [Parameter]
     public bool UseStorage { get; set; } = false;
-    private bool _prevUseStorage = false;
 
     [Parameter]
     public EventCallback OnPokemonChanged { get; set; }
-
-    bool _shouldRender = true;
 
     // currently selected pokemon
     private SmartPokemon? _pokemon;
@@ -113,6 +109,8 @@
     private SmartPokemon? _prevPokemon;
 
     private List<NamedApiResource<Pokemon>> _pokemonSearchValueVarieties = new();
+    private bool _pokemonSearchValueVarietiesChanged = true;
+
     // the string which holds the last valid search result from the search bar
     private SmartPokemonEntry? _pokemonSearchValue;
     public SmartPokemonEntry? _PokemonSearchValue { 
@@ -123,6 +121,7 @@
             _ = OnUpdatedSearchValue();
         }
     }
+    private SmartPokemonEntry? _prevPokemonSearchValue;
 
     // the string used in the form selector
     private string? _pokemonFormName;
@@ -136,6 +135,7 @@
             _ = OnUpdatedPokemonForm();
         }
     }
+    private string? _prevPokemonFormName;
 
     // the string used in the ability selector
     private string? _pokemonAbilityName;
@@ -195,8 +195,9 @@
         if (_PokemonFormName is null || (_Pokemon != null && _PokemonFormName == _Pokemon.Name))
             return;
 
+        string form = _PokemonFormName;
         await SetPokemon(null);
-        await SetPokemon(_PokemonFormName);
+        await SetPokemon(form);
     }
 
     public async Task OnUpdatedSearchValue()
@@ -222,6 +223,8 @@
         if (pokemonName is null)
         {
             _pokemon = null;
+            _pokemonFormName = null;
+            _pokemonSearchValueVarieties.Clear();
         }
         else
         {
@@ -267,8 +270,6 @@
         await Profile.AddPokemonToStorageAsync(_pokemon);
 
         Snackbar.Add("Added " + _pokemon.Name + " to Pokémon Storage", Severity.Success);
-
-        await OnPokemonChanged.InvokeAsync();
     }
 
     public async Task OnClickDetails()
@@ -297,40 +298,22 @@
     }
 
     public async Task OnClickRandomize()
-    {       
-        NamedApiResource<Pokemon>? pokemonResource = null;
-        SmartPokemonEntry? entry = Session.NationalDex.RandomPokemon();
-        if (entry != null)
-        {
+    {
+        await SetPokemon(null);
+
+        _pokemonSearchValue = Session.NationalDex.RandomPokemon();
+
+        if (_pokemonSearchValue != null)
+        {            
+            _pokemonSearchValueVarieties = await _pokemonSearchValue.GetAllVarieties();
             Random rand = new Random();
-            List<NamedApiResource<Pokemon>> varieties = await entry.GetAllVarieties();
-            pokemonResource = varieties[rand.Next(varieties.Count)];
-        }
-
-        if (pokemonResource != null)
-        {
-            await SetPokemon(pokemonResource.Name);
+            await SetPokemon(_pokemonSearchValueVarieties[rand.Next(_pokemonSearchValueVarieties.Count)].Name);
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        Console.WriteLine("Init PokemonSearchBox");
-        // use the team index to get this pokemon if possible
-
-    }
-
-    protected override void OnParametersSet()
-    {
-        _shouldRender = PokemonTeamIndex != _prevPokemonTeamIndex ||
-            UseStorage != _prevUseStorage ||
-            _Pokemon != _prevPokemon;
-
-        _prevPokemonTeamIndex = PokemonTeamIndex;
-        _prevUseStorage = UseStorage;
-        _prevPokemon = _Pokemon;
-
-        if (_shouldRender && PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
+        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
         {
             _Pokemon = Session.Team.Pokemon[PokemonTeamIndex];
             if (_Pokemon is not null)
@@ -338,10 +321,14 @@
                 _pokemonSearchValue = Session.NationalDex.FindPokemon(_Pokemon.Species.Name);
                 _pokemonFormName = _Pokemon.Name;
                 _pokemonSearchValueVarieties.Clear();
-                foreach (PokemonSpeciesVariety variety in _Pokemon.LoadedSpecies!.Varieties)
+                PokemonSpecies species = await _Pokemon.GetSpeciesAsync();
+                foreach (PokemonSpeciesVariety variety in species.Varieties)
                 {
                     _pokemonSearchValueVarieties.Add(variety.Pokemon);
                 }
+                _pokemonSearchValueVarietiesChanged = true;
+
+                StateHasChanged();
             }
         }
 
@@ -350,12 +337,17 @@
 
     protected override bool ShouldRender()
     {
-        return _shouldRender;
+        return _prevPokemon != _pokemon ||
+        _prevPokemonSearchValue != _pokemonSearchValue ||
+        _prevPokemonFormName != _pokemonFormName ||
+        _pokemonSearchValueVarietiesChanged;
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        // TODO prevent re-rendering unnecessarily
-        Console.WriteLine($"Rendered PokemonSearchBox. Index: {PokemonTeamIndex}");
+        _prevPokemon = _pokemon;
+        _prevPokemonSearchValue = _pokemonSearchValue;
+        _prevPokemonFormName = _pokemonFormName;
+        _pokemonSearchValueVarietiesChanged = false;
     }
 }

@@ -31,8 +31,7 @@
             <MudItem xs="6" sm="4" lg="2">
 
                 <PokemonSearchBox @ref="tempCard" PokemonTeamIndex="index"
-                                  UseStorage="@(Session.SearchLocation == SearchLocation.PokemonStorage)"
-                                  OnPokemonChanged="StateHasChanged" />
+                                  UseStorage="@(Session.SearchLocation == SearchLocation.PokemonStorage)" />
             </MudItem>
         }
     </MudGrid>
@@ -121,31 +120,12 @@
 
         if (!result.Canceled)
         {
-            if (result.Data is PokemonTeam)
-            {
-                PokemonTeam? team = result.Data as PokemonTeam;
-                for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
-                {
-                    SmartPokemon? p = team!.Pokemon[i];
-                    if (p is not null)
-                    {
-                        cards[i]!._Pokemon = p;
-                        cards[i]!.Refresh();
-                    }
-                }
-                if (string.IsNullOrEmpty(_teamName))
-                {
-                    _teamName = team!.Name;
-                }
-            }
             StateHasChanged();
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        Console.WriteLine("Init TeamBuilderPage");
-
         // register interest in session changing to update this page
         Session.OnTeamChange += StateHasChanged;
 
@@ -167,16 +147,5 @@
         }
 
         _teamName = Session.Team.Name;
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        Console.WriteLine($"Rendered TeamBuilderPage");
-        base.OnAfterRender(firstRender);
     }
 }

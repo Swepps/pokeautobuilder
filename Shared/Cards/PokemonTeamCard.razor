@@ -60,7 +60,7 @@
 	public async void OnClickLoadInEditor()
 	{
 		await SessionService.SetTeamAsync(Team!);
-		NavigationManager.NavigateTo(NavigationManager.BaseUri + "/");
+		NavigationManager.NavigateTo(NavigationManager.BaseUri);
 	}
 
 	public async void OnClickDelete()

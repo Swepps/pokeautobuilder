@@ -23,7 +23,7 @@
 
 @code {
     // init
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         Profile.OnTeamStorageChange += StateHasChanged;
     }
