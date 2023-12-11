@@ -104,7 +104,7 @@
         get => _pokemon;
         set
         {
-            _pokemon = value;
+            _ = SetPokemon(value);
         }
     }
     private SmartPokemon? _prevPokemon;
@@ -186,8 +186,8 @@
             return;
 
         string form = _PokemonFormName;
-        await SetPokemon(null);
-        await SetPokemon(form);
+        await SearchPokemon(null);
+        await SearchPokemon(form);
     }
 
     public async Task OnUpdatedSearchValue()
@@ -195,15 +195,15 @@
         if (_PokemonSearchValue is not null)
         {
             _pokemonSearchValueVarieties = await _PokemonSearchValue.GetAllVarieties();
-            await SetPokemon(_pokemonSearchValueVarieties[0].Name);
+            await SearchPokemon(_pokemonSearchValueVarieties[0].Name);
         }
         else
         {
-            await SetPokemon(null);
+            await SearchPokemon(null);
         }
     }
 
-    public async Task SetPokemon(string? pokemonName)
+    public async Task SearchPokemon(string? pokemonName)
     {
         SmartPokemon? before = _pokemon;
 
@@ -218,22 +218,11 @@
         }
         else
         {
-            _pokemon = await PokeApiService.GetPokemonAsync(pokemonName);
-            if (_Pokemon is not null)
-            {
-                _pokemonSearchValue = Session.NationalDex.FindPokemon(_Pokemon.Species.Name);
-                _pokemonFormName = _Pokemon.Name;
-                _pokemonSearchValueVarieties.Clear();
-                PokemonSpecies species = await _Pokemon.GetSpeciesAsync();
-                foreach (PokemonSpeciesVariety variety in species.Varieties)
-                {
-                    _pokemonSearchValueVarieties.Add(variety.Pokemon);
-                }
-            }
+            SmartPokemon? searchedPokemon = await PokeApiService.GetPokemonAsync(pokemonName);
+            if (searchedPokemon is not null)
+                await SetPokemon(searchedPokemon);
             else
-            {
                 _errorFetchingPokemon = true;
-            }
         }
 
         if (Session.Team is not null && PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
@@ -248,6 +237,28 @@
         }
 
         StateHasChanged();
+    }
+
+    public async Task SetPokemon(SmartPokemon? pokemon)
+    {
+        _pokemon = pokemon;
+        if (_pokemon is not null)
+        {
+            _pokemonSearchValue = Session.NationalDex.FindPokemon(_pokemon.Species.Name);
+            _pokemonFormName = _pokemon.Name;
+            _pokemonSearchValueVarieties.Clear();
+            PokemonSpecies species = await _pokemon.GetSpeciesAsync();
+            foreach (PokemonSpeciesVariety variety in species.Varieties)
+            {
+                _pokemonSearchValueVarieties.Add(variety.Pokemon);
+            }
+        }
+        else
+        {
+            _pokemonSearchValue = null;
+            _pokemonFormName = null;
+            _pokemonSearchValueVarieties.Clear();
+        }
     }
 
     // pokemon ability functionality
@@ -295,7 +306,7 @@
 
     public async Task OnClickRandomize()
     {
-        await SetPokemon(null);
+        await SearchPokemon(null);
 
         _pokemonSearchValue = Session.NationalDex.RandomPokemon();
 
@@ -303,7 +314,7 @@
         {            
             _pokemonSearchValueVarieties = await _pokemonSearchValue.GetAllVarieties();
             Random rand = new Random();
-            await SetPokemon(_pokemonSearchValueVarieties[rand.Next(_pokemonSearchValueVarieties.Count)].Name);
+            await SearchPokemon(_pokemonSearchValueVarieties[rand.Next(_pokemonSearchValueVarieties.Count)].Name);
         }
     }
 
@@ -317,21 +328,7 @@
     {
         if (PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
         {
-            _Pokemon = Session.Team.Pokemon[PokemonTeamIndex];
-            if (_Pokemon is not null)
-            {
-                _pokemonSearchValue = Session.NationalDex.FindPokemon(_Pokemon.Species.Name);
-                _pokemonFormName = _Pokemon.Name;
-                _pokemonSearchValueVarieties.Clear();
-                PokemonSpecies species = await _Pokemon.GetSpeciesAsync();
-                foreach (PokemonSpeciesVariety variety in species.Varieties)
-                {
-                    _pokemonSearchValueVarieties.Add(variety.Pokemon);
-                }
-                _pokemonSearchValueVarietiesChanged = true;
-
-                StateHasChanged();
-            }
+            await SetPokemon(Session.Team.Pokemon[PokemonTeamIndex]);
         }
 
         base.OnParametersSet();

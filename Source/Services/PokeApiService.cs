@@ -171,6 +171,23 @@ namespace pokeAutoBuilder.Source.Services
             }
         }
 
+        public async Task<List<PokemonMove>> GetPokemonMovesAsync(SmartPokemon pokemon)
+        {
+            try
+            {
+                Pokemon p = await ApiClient.GetResourceAsync<Pokemon>(pokemon.Id);
+                if (p is null)
+                    return [];
+
+                return p.Moves;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return [];
+            }
+        }
+
 		public async Task<Type?> GetTypeAsync(string typeName)
 		{
 			try

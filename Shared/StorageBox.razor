@@ -7,10 +7,8 @@
 
 <MudPaper Class="d-flex mud-width-full mud-height-full pa-2" Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
 	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
-		@for (int i = 0; i < Profile.PokemonStorage.Pokemon.Count; i++)
+		@foreach (SmartPokemon? p in Profile.PokemonStorage.Pokemon)
 		{
-			int index = i;
-			SmartPokemon p = Profile.PokemonStorage.Pokemon[i];
 			<PokemonMiniCard Pokemon="p" DeleteFromStorageMode="@DeleteMode" />
 		}
 	</div>
