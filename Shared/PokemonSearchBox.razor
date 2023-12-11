@@ -32,7 +32,7 @@
     }
 
     <div style="height: 50px">
-        @if (_pokemonSearchValueVarieties.Count > 1)
+        @if (_pokemonSearchValueVarieties.Count > 1 && Session.SearchLocation == SearchLocation.NationalPokedex)
         {
             <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter"
                        @bind-Value="_PokemonFormName">
@@ -104,7 +104,7 @@
         get => _pokemon;
         set
         {
-            _ = SetPokemon(value);
+            _ = SetPokemonAsync(value);
         }
     }
     private SmartPokemon? _prevPokemon;
@@ -204,9 +204,7 @@
     }
 
     public async Task SearchPokemon(string? pokemonName)
-    {
-        SmartPokemon? before = _pokemon;
-
+    { 
         _errorFetchingPokemon = false;
 
         // clear pokemon
@@ -220,27 +218,16 @@
         {
             SmartPokemon? searchedPokemon = await PokeApiService.GetPokemonAsync(pokemonName);
             if (searchedPokemon is not null)
-                await SetPokemon(searchedPokemon);
+                await SetPokemonAsync(searchedPokemon);
             else
                 _errorFetchingPokemon = true;
-        }
-
-        if (Session.Team is not null && PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
-        {
-            // this function call will trigger OnTeamChanged event
-            await Session.SetTeamPokemonAsync(PokemonTeamIndex, _Pokemon);
-        }
-
-        if (before != _pokemon)
-        {
-            _ = OnPokemonChanged.InvokeAsync();
-        }
-
-        StateHasChanged();
+        }        
     }
 
-    public async Task SetPokemon(SmartPokemon? pokemon)
+    public async Task SetPokemonAsync(SmartPokemon? pokemon)
     {
+        SmartPokemon? before = _pokemon;
+
         _pokemon = pokemon;
         if (_pokemon is not null)
         {
@@ -259,6 +246,19 @@
             _pokemonFormName = null;
             _pokemonSearchValueVarieties.Clear();
         }
+
+        if (Session.Team is not null && PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
+        {
+            // this function call will trigger OnTeamChanged event
+            await Session.SetTeamPokemonAsync(PokemonTeamIndex, _pokemon);
+        }
+
+        if (before != _pokemon)
+        {
+            _ = OnPokemonChanged.InvokeAsync();
+        }
+
+        StateHasChanged();
     }
 
     // pokemon ability functionality
@@ -318,18 +318,45 @@
         }
     }
 
+    private async Task FetchPokemonFromStorageAsync()
+    {
+        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
+        {
+            // does pretty much the same as SetPokemonAsync but without updating the
+            // session team (which would create an inf loop)
+            _pokemon = Session.Team.Pokemon[PokemonTeamIndex];
+            if (_pokemon is not null)
+            {
+                _pokemonSearchValue = Session.NationalDex.FindPokemon(_pokemon.Species.Name);
+                _pokemonFormName = _pokemon.Name;
+                _pokemonSearchValueVarieties.Clear();
+                PokemonSpecies species = await _pokemon.GetSpeciesAsync();
+                foreach (PokemonSpeciesVariety variety in species.Varieties)
+                {
+                    _pokemonSearchValueVarieties.Add(variety.Pokemon);
+                }
+            }
+            else
+            {
+                _pokemonSearchValue = null;
+                _pokemonFormName = null;
+                _pokemonSearchValueVarieties.Clear();
+            }
+
+            StateHasChanged();
+        }
+    }
+
     protected override void OnInitialized()
     {
         Session.OnSearchLocationChange += StateHasChanged;
+        Session.OnTeamChange += (async() => await FetchPokemonFromStorageAsync());
         base.OnInitialized();
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
-        {
-            await SetPokemon(Session.Team.Pokemon[PokemonTeamIndex]);
-        }
+        await FetchPokemonFromStorageAsync();
 
         base.OnParametersSet();
     }
