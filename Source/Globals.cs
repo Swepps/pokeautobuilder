@@ -6,18 +6,15 @@ namespace pokeAutoBuilder.Source
 
     public class Globals
 	{
-        public static Dictionary<double, bool> Versions = new Dictionary<double, bool>()
+        public static readonly Dictionary<double, bool> Versions = new Dictionary<double, bool>()
         {
             { 0.1, true },
             { 0.2, false },
             { 1.0, true },
+            { 1.1, true },
         };
-        public static double Version = 1.0;
-        public static string Language = "en";
-        public static MudThemeProvider? MudThemeProvider;
-        public static SmartPokedex? NationalDex;
-		public static PokemonTeam PokemonTeam = new PokemonTeam();
-		public static PokemonStorage PokemonStorage = new PokemonStorage();
+        public static readonly double Version = 1.1;
+        public static readonly string Language = "en";
 
         // ah f*ck it... I'm just gonna hard code the type names in instead
         public static readonly List<string> AllTypes = new List<string>
@@ -41,5 +38,8 @@ namespace pokeAutoBuilder.Source
             "steel",
             "fairy"
         };
+
+        // still need this for easy access in some classes... I hate it
+        public static List<Type> LoadedTypes = [];
     }
 }

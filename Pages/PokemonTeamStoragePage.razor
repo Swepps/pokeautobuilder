@@ -1,4 +1,4 @@
-﻿@inject ProfileService ProfileService
+﻿@inject ProfileService Profile
 
 @page "/teamstorage"
 
@@ -8,41 +8,23 @@
 
 <PageTitle>Team Storage</PageTitle>
 
-
-
-@if (StoredTeams is not null)
-{
-    <MudText Typo="Typo.h6">Pokémon Team Storage</MudText>
-    <MudDivider Class="mb-4" DividerType="DividerType.FullWidth" />
-    <div class="d-flex flex-wrap">
-        @foreach (PokemonTeam t in StoredTeams)
-        {
-            <MudPaper Outlined="true" Class="ma-1" Style="background: var(--mud-palette-background); width: fit-content;">
-                <PokemonTeamCard Team="t" OnUpdated="Update" />
-            </MudPaper>
-        }
-    </div>
-}
-else
-{
-    <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" Size="Size.Large" />
-    <MudText Typo="Typo.body1">Fetching data from PokeApi...</MudText>
-}
+<MudText Typo="Typo.h6">Pokémon Team Storage</MudText>
+<MudDivider Class="mb-4" DividerType="DividerType.FullWidth" />
+<div class="d-flex flex-wrap">
+    @foreach (PokemonTeam t in Profile.TeamStorage)
+    {
+        <MudPaper Outlined="true" Class="ma-1" Style="background: var(--mud-palette-background); width: fit-content;">
+            <PokemonTeamCard Team="t" />
+        </MudPaper>
+    }
+</div>
 
 <PageFooter />
 
 @code {
-    List<PokemonTeam>? StoredTeams;
-
     // init
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        StoredTeams = await ProfileService.FetchTeamStorage();
-    }
-
-    public async void Update()
-    {
-        StoredTeams = await ProfileService.FetchTeamStorage();
-        StateHasChanged();
+        Profile.OnTeamStorageChange += StateHasChanged;
     }
 }

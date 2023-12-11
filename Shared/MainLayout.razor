@@ -1,17 +1,18 @@
 ﻿@inherits LayoutComponentBase
 
 @inject ProfileService ProfileService
+@inject SessionService Session
 @inject PokeApiService PokeApiService
 
 @using PokeApiNet
 @using Toolbelt.Blazor.PWA.Updater
 @using pokeAutoBuilder.Source.Services;
 
-<MudThemeProvider @ref="@Globals.MudThemeProvider" @bind-IsDarkMode="@isDarkMode" />
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@_isDarkMode" />
 <MudDialogProvider FullWidth="true"
                    MaxWidth="MaxWidth.ExtraExtraLarge" />
 <MudSnackbarProvider />
-<PWAUpdater Text="A new version of Poké Autobuilder is available." ButtonCaption="UPDATE"/>
+@* <PWAUpdater Text="A new version of Poké Autobuilder is available." ButtonCaption="UPDATE" State="PWAUpdater.States.Showing" /> *@
 
 <MudLayout>
     <MudAppBar Elevation="1">
@@ -28,18 +29,18 @@
             <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/Swepps/pokemonautoteambuilder" Target="_blank" />
         </MudTooltip>
     </MudAppBar>
-    <MudDrawer @bind-Open="@open" Elevation="1" ClipMode="DrawerClipMode.Always">
+    <MudDrawer @bind-Open="@_open" Elevation="1" ClipMode="DrawerClipMode.Always">
         <NavMenu />
         <MudDivider />
-        <MudSwitch @bind-Checked="@IsDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Dark Mode" />
+        <MudSwitch @bind-Checked="@_IsDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Dark Mode" />
     </MudDrawer>
     <MudMainContent Class="pt-16 px-2 mud-height-full">
         <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
-            @if (state == Init.Done)
+            @if (_state == Init.Done)
             {            
                 @Body
             }
-            else if (state == Init.Initialising)
+            else if (_state == Init.Initialising)
             {
                 <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" Size="Size.Large" />
                 <MudText Typo="Typo.body1">Fetching data from PokeApi...</MudText>
@@ -53,18 +54,20 @@
 </MudLayout>
 
 @code{
+    public MudThemeProvider? _themeProvider;
+
     enum Init { Initialising, Done, Error }
 
-    Init state = Init.Initialising;
+    Init _state = Init.Initialising;
 
     // theme stuff
-    private bool isDarkMode;
-    private bool IsDarkMode
+    private bool _isDarkMode;
+    private bool _IsDarkMode
     {
-        get { return isDarkMode; }
+        get { return _isDarkMode; }
         set
         {
-            isDarkMode = value;
+            _isDarkMode = value;
             OnChangeDarkMode();
         }
     }
@@ -74,32 +77,33 @@
         if (firstRender)
         {
             // first check the version to clear cache if there has been a format update
-            await ProfileService.CheckVersion();
+            if (await ProfileService.CheckVersion())
+            {
+                await Session.ClearSessionDataAsync();
+            }
 
             // initialising global variables used across the app
             // load preferences first before the slow ones
             Preferences prefs = await ProfileService.GetPreferencesAsync();
-            isDarkMode = prefs.DarkMode;
+            _isDarkMode = prefs.DarkMode;
 
             StateHasChanged();
 
-            // now do the slow tasks
-            var getNationalDexTask = PokeApiService.GetNationalDex();
+            // session contains information about pokemon types that profile will use
+            // to load pokemon. Therefore session must be done first!
+            await Session.LoadSessionStorage();
+            await ProfileService.LoadProfileStorage();        
 
-            await Task.WhenAll(
-                getNationalDexTask,
-                ProfileService.LoadGlobalStorage());
-
-            Globals.NationalDex = getNationalDexTask.Result;
-
-            if (Globals.NationalDex != null)
+            if (Session.NationalDex.Count > 0
+                &&
+                Session.AllTypes.Count > 0)
             {
-                state = Init.Done;
+                _state = Init.Done;
             }
             else
             {
                 // uh oh
-                state = Init.Error;
+                _state = Init.Error;
 
             }
 
@@ -109,14 +113,14 @@
 
     void OnChangeDarkMode()
     {
-        ProfileService?.SetDarkModeAsync(IsDarkMode);
+        ProfileService?.SetDarkModeAsync(_IsDarkMode);
     }
 
     // nav menu
-    bool open = false;
+    bool _open = false;
 
     void ToggleDrawer()
     {
-        open = !open;
+        _open = !_open;
     }
 }

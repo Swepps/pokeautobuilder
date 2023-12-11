@@ -3,93 +3,14 @@ using System.Text.Json.Serialization;
 
 namespace pokeAutoBuilder.Source
 {
-    public class PokemonTeamSerializable
-    {
-        public string Name { get; init; }
-        public List<SmartPokemonSerializable> Team { get; init; }
-
-        [JsonConstructor]
-        public PokemonTeamSerializable(string Name, List<SmartPokemonSerializable> Team)
-        {
-            this.Name = Name;
-            this.Team = Team;
-        }
-
-        public PokemonTeamSerializable(PokemonTeam team)
-        {
-            Name = team.Name;
-            Team = new List<SmartPokemonSerializable>();
-            foreach (SmartPokemon? p in team)
-            {
-                if (p is null)
-                    Team.Add(new SmartPokemonSerializable());
-                else
-                    Team.Add(new SmartPokemonSerializable(p));
-            }
-        }
-
-        public PokemonTeamSerializable()
-        {
-            Name = "";
-            Team = new List<SmartPokemonSerializable>();
-            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
-            {
-                Team.Add(new SmartPokemonSerializable());
-            }
-        }
-
-        public async Task<PokemonTeam> GetPokemonTeam()
-        {
-            PokemonTeam team = new PokemonTeam();
-            var getTeamTasks = Team.Select(async (pokemon, index) =>
-            {
-                SmartPokemon? sp = await pokemon.GetSmartPokemon();
-                if (sp is not null)
-                    team[index] = sp;
-            });
-            await Task.WhenAll(getTeamTasks);
-
-            team.Name = Name;
-
-            return team;
-        }
-
-		public override bool Equals(object? obj)
-		{
-            if (obj == null) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-             
-            PokemonTeamSerializable? objTeam = obj as PokemonTeamSerializable;
-            if (objTeam == null) return false;
-
-            if (objTeam.Name != Name) return false;
-
-            // close enough of an equals operation
-            foreach (SmartPokemonSerializable pokemon in objTeam.Team)
-            {
-                if (!Team.Contains(pokemon)) return false;
-            }
-
-			return true;
-		}
-
-		public override int GetHashCode()
-		{
-            int code = Name.GetHashCode();
-            foreach (SmartPokemonSerializable pokemon in Team)
-            {
-                code ^= pokemon.GetHashCode();
-            }
-
-            return code;
-		}
-	}
-
-    public class PokemonTeam : List<SmartPokemon?>
+    public class PokemonTeam
     {
         public static readonly int MaxTeamSize = 6;
 
+        [JsonPropertyName("pokemon")]
+        public List<SmartPokemon?> Pokemon { get; set; } = new();
+
+        [JsonPropertyName("team_name")]
         private string name = "";
         public string Name
         {
@@ -99,7 +20,7 @@ namespace pokeAutoBuilder.Source
                 if (string.IsNullOrEmpty(name))
                 {
                     string defaultName = "";
-                    foreach (SmartPokemon? p in this)
+                    foreach (SmartPokemon? p in Pokemon)
                     {
                         if (p is not null)
                         {
@@ -125,7 +46,7 @@ namespace pokeAutoBuilder.Source
         {
             get
             {
-                foreach (SmartPokemon? p in this)
+                foreach (SmartPokemon? p in Pokemon)
                 {
                     if (p != null)
                         return false;
@@ -139,7 +60,7 @@ namespace pokeAutoBuilder.Source
             // fill team with 6 null pokemon
             for (int i = 0; i < MaxTeamSize; i++)
             {
-                Add(null);
+                Pokemon.Add(null);
             }
         }
 
@@ -149,7 +70,7 @@ namespace pokeAutoBuilder.Source
             {
                 for (int j = i + 1; j < MaxTeamSize; j++)
                 {
-                    if (this[i] == this[j])
+                    if (Pokemon[i] == Pokemon[j])
                         return true;
                 }
             }
@@ -162,7 +83,7 @@ namespace pokeAutoBuilder.Source
             int count = 0;
             for (int i = 0; i < MaxTeamSize; i++)
             {
-                SmartPokemon? p = this[i];
+                SmartPokemon? p = Pokemon[i];
                 if (p != null) count++;
             }
             return count;
@@ -174,7 +95,7 @@ namespace pokeAutoBuilder.Source
             int weaknesses = 0;
             for (int i = 0; i < MaxTeamSize; i++)
             {
-                SmartPokemon? p = this[i];
+                SmartPokemon? p = Pokemon[i];
                 if (p == null) continue;
 
                 if (p.Multipliers.Defense.TryGetValue(typeName, out double value)
@@ -193,7 +114,7 @@ namespace pokeAutoBuilder.Source
             int resistances = 0;
             for (int i = 0; i < MaxTeamSize; i++)
             {
-                SmartPokemon? p = this[i];
+                SmartPokemon? p = Pokemon[i];
                 if (p == null) continue;
 
                 if (p.Multipliers.Defense.TryGetValue(typeName, out double value)
@@ -212,7 +133,7 @@ namespace pokeAutoBuilder.Source
             int coverage = 0;
             for (int i = 0; i < MaxTeamSize; i++)
             {
-                SmartPokemon? p = this[i];
+                SmartPokemon? p = Pokemon[i];
                 if (p == null) continue;
 
                 if (p.IsTypeCoveredBySTAB(typeName))
@@ -229,7 +150,7 @@ namespace pokeAutoBuilder.Source
 			int coverage = 0;
 			for (int i = 0; i < MaxTeamSize; i++)
 			{
-				SmartPokemon? p = this[i];
+				SmartPokemon? p = Pokemon[i];
 				if (p == null) continue;
 
 				if (p.IsTypeCoveredByMove(typeName))
@@ -244,16 +165,16 @@ namespace pokeAutoBuilder.Source
 		public void SortById()
         {
             // order any non null members into a new list
-            List<SmartPokemon?> team = this.Where(p => p is not null).OrderBy(p => p!.Id).ToList();
+            List<SmartPokemon?> team = Pokemon.Where(p => p is not null).OrderBy(p => p!.Id).ToList();
 
             // now empty this team and refill with sorted list
-            Clear();
+            Pokemon.Clear();
             for (int i = 0; i < MaxTeamSize; ++i)
             {
                 if (i < team.Count)
-                    Add(team[i]);
+                    Pokemon.Add(team[i]);
                 else
-                    Add(null);
+                    Pokemon.Add(null);
             }
         }
     }

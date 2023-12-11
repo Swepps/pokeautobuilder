@@ -1,6 +1,9 @@
 ﻿using Blazored.LocalStorage;
+using Blazored.SessionStorage;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
+using static MudBlazor.Colors;
+using static pokeAutoBuilder.Pages.TeamBuilderPage;
 
 namespace pokeAutoBuilder.Source.Services
 {
@@ -9,32 +12,68 @@ namespace pokeAutoBuilder.Source.Services
         public bool DarkMode { get; init; }
     }
 
-    public record UserData
-    {
-        public List<SmartPokemonSerializable> OLD_Storage { get; init; } = new List<SmartPokemonSerializable>();
-        public List<PokemonTeamSerializable> OLD_TeamStorage { get; init; } = new List<PokemonTeamSerializable>();
-        public List<SmartPokemon> Storage { get; init; } = new List<SmartPokemon>();
-        public List<PokemonTeam> TeamStorage { get; init; } = new List<PokemonTeam>();
-    }
-
     public class ProfileService
     {
         private readonly ILocalStorageService _localStorageService;
+
+        public event Action? OnStorageChange;
+        public event Action? OnTeamStorageChange;
+
+        // global variables
+        private static readonly string POKEMON_STORAGE_KEY = "pokemon_storage";
+        private static readonly string TEAM_STORAGE_KEY = "pokemon_team_storage";
+
+        private PokemonStorage _pokemonStorage = new();
+        public PokemonStorage PokemonStorage
+        {
+            get => _pokemonStorage;
+            set
+            {
+                _pokemonStorage = value;
+                _ = SetPokemonStorageAsync(value);
+            }
+        }
+
+        private List<PokemonTeam> _teamStorage = new();
+        public List<PokemonTeam> TeamStorage
+        {
+            get => _teamStorage;
+            set
+            {
+                _teamStorage = value;
+                _ = SetTeamStorageAsync(value);
+            }
+        }
 
         public ProfileService(ILocalStorageService localStorageService)
         {
             _localStorageService = localStorageService;
         }
 
-        public async Task CheckVersion()
+        public async Task LoadProfileStorage()
         {
+            var taskPokemonStorage = _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY);
+            var taskTeamStorage = _localStorageService.GetItemAsync<List<PokemonTeam>>(TEAM_STORAGE_KEY);
+
+            await Task.WhenAll(
+                taskPokemonStorage.AsTask(),
+                taskTeamStorage.AsTask()
+                );
+
+            _pokemonStorage = taskPokemonStorage.Result ?? new();
+            _teamStorage = taskTeamStorage.Result ?? new();
+        }
+
+        public async Task<bool> CheckVersion()
+        {
+            bool dataFormatUpdate = false;
             double cachedVer = 0;
             if (await _localStorageService.ContainKeyAsync("version"))
                 cachedVer = await _localStorageService.GetItemAsync<double>("version");
 
             if (cachedVer < Globals.Version)
             {
-                bool dataFormatUpdate = false;
+                
                 foreach (KeyValuePair<double, bool> entry in Globals.Versions)
                 {
                     if (entry.Key > cachedVer && entry.Value == true)
@@ -53,6 +92,8 @@ namespace pokeAutoBuilder.Source.Services
 
             // store the current version in the cache
             await _localStorageService.SetItemAsync("version", Globals.Version);
+
+            return dataFormatUpdate;
         }
 
         // --- Preferences ---
@@ -63,11 +104,12 @@ namespace pokeAutoBuilder.Source.Services
                 return await _localStorageService.GetItemAsync<Preferences>("preferences");
 
             // else default to OS settings...
-            bool prefersDarkMode = await Globals.MudThemeProvider!.GetSystemPreference();
+            // TODO, get theme provider
+            //bool prefersDarkMode = await Globals.MudThemeProvider!.GetSystemPreference();
 
             return new Preferences
             {
-                DarkMode = prefersDarkMode
+                DarkMode = true
             };
         }
 
@@ -81,123 +123,42 @@ namespace pokeAutoBuilder.Source.Services
             await _localStorageService.SetItemAsync("preferences", newPrefs);
         }
 
-        // --- User data ---
-        public async Task<UserData> GetUserDataAsync()
+        public async Task SetPokemonStorageAsync(PokemonStorage storage)
         {
-            if (await _localStorageService.ContainKeyAsync("userdata"))
-                return await _localStorageService.GetItemAsync<UserData>("userdata");
+            OnStorageChange?.Invoke();
+            await _localStorageService.SetItemAsync(POKEMON_STORAGE_KEY, storage);
+        }
+        public async Task AddPokemonToStorageAsync(SmartPokemon pokemon)
+        {
+            PokemonStorage.Pokemon.Add(pokemon);
+            await SetPokemonStorageAsync(PokemonStorage);
+        }
+        public async Task<bool> RemovePokemonFromStorageAsync(SmartPokemon pokemon)
+        {
+            bool removed = PokemonStorage.Pokemon.Remove(pokemon);
+            if (removed)
+                await SetPokemonStorageAsync(PokemonStorage);
 
-            return new UserData();
+            return removed;
         }
 
-        private async Task SetUserDataAsync(UserData data)
+        public async Task SetTeamStorageAsync(List<PokemonTeam> teamStorage)
         {
-            await _localStorageService.SetItemAsync("userdata", data);
+            OnTeamStorageChange?.Invoke();
+            await _localStorageService.SetItemAsync(TEAM_STORAGE_KEY, teamStorage);
         }
-
-
-        public async Task UpdatePokemonStorageAsync()
+        public async Task AddTeamToStorageAsync(PokemonTeam team)
         {
-            UserData userData = await GetUserDataAsync();
-
-            UserData newdata = userData
-                with
-            {
-                //OLD_Storage = Globals.PokemonStorage.GetSerializableList(),
-                Storage = Globals.PokemonStorage
-			};
-
-            await SetUserDataAsync(newdata);
+            TeamStorage.Add(team);
+            await SetTeamStorageAsync(TeamStorage);
         }
-
-        public async Task LoadGlobalStorage()
+        public async Task<bool> RemoveTeamFromStorageAsync(PokemonTeam team)
         {
-            UserData userData = await GetUserDataAsync();
+            bool removed = TeamStorage.Remove(team);
+            if (removed)
+                await SetTeamStorageAsync(TeamStorage);
 
-            // creates a list of null pokemon with same size as the stored list
-            //List<SmartPokemon?> pokemonList = new List<SmartPokemon?>(new SmartPokemon?[userData.OLD_Storage.Count]);
-
-            //// get the pokemon from the API using the list of serialised pokemon in the storage
-            //// may not load them in the order they were saved
-            //var getStorageTasks = userData.Storage.Select(async (pokemon, index) =>
-            //{
-            //    SmartPokemon? sp = await pokemon.GetSmartPokemon();
-            //    if (sp is not null)
-            //        pokemonList[index] = sp;
-            //});
-            //await Task.WhenAll(getStorageTasks);
-
-            // add any successful deserialisations into global storage
-            foreach (SmartPokemon? pokemon in userData.Storage)
-            {
-                if (pokemon is null) continue;
-
-                Globals.PokemonStorage.Add(pokemon);
-            }
-        }
-
-        public async Task<List<PokemonTeam>> FetchTeamStorage()
-        {
-            UserData userData = await GetUserDataAsync();
-            //List<PokemonTeamSerializable> serializedTeams = userData.OLD_TeamStorage;
-            //List<PokemonTeam> teams = new List<PokemonTeam>();
-
-            //foreach (PokemonTeamSerializable st in serializedTeams)
-            //{
-            //    teams.Add(await st.GetPokemonTeam());
-            //}
-
-            //return teams;
-            return userData.TeamStorage;
-        }
-
-        public async Task AddTeam(PokemonTeam team)
-        {
-            UserData userData = await GetUserDataAsync();
-            //List<PokemonTeamSerializable> teams = userData.OLD_TeamStorage;
-            //teams.Add(new PokemonTeamSerializable(team));
-
-            //UserData newData = userData
-            //    with
-            //{
-            //    OLD_TeamStorage = teams
-            //};
-
-            List<PokemonTeam> teams = userData.TeamStorage;
-            teams.Add(team);
-
-            UserData newData = userData
-                with
-            {
-                TeamStorage = teams
-            };
-
-            await SetUserDataAsync(newData);
-        }
-
-        public async Task RemoveTeam(PokemonTeam team, int index = -1)
-        {
-            UserData userData = await GetUserDataAsync();
-            List<PokemonTeam> teams = userData.TeamStorage;
-
-            // try to find the first matching team
-            if (index == -1)
-            {
-                index = teams.IndexOf(team);
-            }
-
-            if (index >= 0)
-            {
-                teams.RemoveAt(index);
-            }
-
-            UserData newData = userData
-                with
-            {
-                TeamStorage = teams
-            };
-
-            await SetUserDataAsync(newData);
+            return removed;
         }
     }
 }

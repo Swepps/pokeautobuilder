@@ -1,4 +1,4 @@
-﻿@inject ProfileService ProfileService
+﻿@inject ProfileService Profile
 @inject IDialogService DialogService
 
 @using pokeAutoBuilder.Source.Services;
@@ -44,12 +44,11 @@ else
 	}
 
 	// opens a dialog with Pokemon details
-	public async void OnClickCard()
+	public async Task OnClickCard()
 	{
 		if (DeleteFromStorageMode)
 		{
-			Globals.PokemonStorage.Remove(Pokemon!);
-			await ProfileService.UpdatePokemonStorageAsync();
+			await Profile.RemovePokemonFromStorageAsync(Pokemon!);
 			await OnUpdated.InvokeAsync();
 		}
 		else
@@ -66,17 +65,12 @@ else
 				SmartPokemon? pokemon = result.Data as SmartPokemon;
 				if (pokemon is not null)
 				{
-					int idx = Globals.PokemonStorage.IndexOf(Pokemon!);
-					if (idx >= 0)
-					{
-						Globals.PokemonStorage.RemoveAt(idx);
-						Globals.PokemonStorage.Insert(idx, pokemon);
-						await ProfileService.UpdatePokemonStorageAsync();
+					Profile.PokemonStorage.Pokemon.Remove(pokemon);
+					await Profile.AddPokemonToStorageAsync(pokemon);
 
-						Pokemon = pokemon;
+					Pokemon = pokemon;
 
-						await OnUpdated.InvokeAsync();
-					}
+					await OnUpdated.InvokeAsync();
 				}
 				StateHasChanged();
 			}

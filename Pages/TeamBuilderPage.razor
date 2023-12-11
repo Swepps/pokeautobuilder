@@ -1,63 +1,64 @@
-﻿@inject SessionService SessionService
-@inject ProfileService ProfileService
+﻿@using PokeApiNet
+@using pokeAutoBuilder.Source.Services;
+@using pokeAutoBuilder.Shared;
+
+@inject SessionService Session
+@inject ProfileService Profile
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
 @page "/"
-@using PokeApiNet
-@using pokeAutoBuilder.Source.Services;
 
 <PageTitle>Team Builder</PageTitle>
 
-@if (Team is not null)
-{
-    <MudStack Spacing="5" Class="mt-4 mb-4" AlignItems="AlignItems.Center">
-        <MudGrid Justify="Justify.FlexEnd" >
-            <MudItem xs="12" sm="6" Class="d-flex align-end justify-start mud-width-full">
-                <MudRadioGroup @bind-SelectedOption="@PokemonSearchLocation">
-                    <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
-                    <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
-                </MudRadioGroup>
-            </MudItem>
-            <MudItem xs="12" sm="6" Class="d-flex align-end justify-center mud-width-full" >
-                <MudTextField @bind-Value="TeamName" Label="Team Name" Variant="Variant.Text"></MudTextField>
-                <MudButton Disabled="@(Team!.IsEmpty)" OnClick="OnClickAddTeamToStorage" Color="Color.Info" StartIcon="@Icons.Material.Filled.Save" Size="Size.Medium" Variant="Variant.Filled" Class="ml-4">Save</MudButton>
-            </MudItem>
-		</MudGrid>
-        <MudGrid Justify="Justify.SpaceEvenly">
-            @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
-            {
-                int index = i;
-                <MudItem xs="6" sm="4" lg="2"><PokemonSearchBox @ref="tempCard" OnUpdated="Update" Team="@Team" PokemonTeamIndex="index" UseStorage="@(PokemonSearchLocation == SearchLocation.PokemonStorage)" /></MudItem>
-            }
-        </MudGrid>
-        @if (Globals.PokemonStorage.Count < 7 || GetLockedMembers().CountPokemon() > 4)
+<MudStack Spacing="5" Class="mt-4 mb-4" AlignItems="AlignItems.Center">
+    <MudGrid Justify="Justify.FlexEnd">
+        <MudItem xs="12" sm="6" Class="d-flex align-end justify-start mud-width-full">
+            <MudRadioGroup @bind-SelectedOption="@Session.SearchLocation">
+                <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
+                <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
+            </MudRadioGroup>
+        </MudItem>
+        <MudItem xs="12" sm="6" Class="d-flex align-end justify-center mud-width-full">
+            <MudTextField @bind-Value="_teamName" Label="Team Name" Variant="Variant.Text"></MudTextField>
+            <MudButton Disabled="@(Session.Team.IsEmpty)" OnClick="OnClickAddTeamToStorage" Color="Color.Info" StartIcon="@Icons.Material.Filled.Save" Size="Size.Medium" Variant="Variant.Filled" Class="ml-4">Save</MudButton>
+        </MudItem>
+    </MudGrid>
+    <MudGrid Justify="Justify.SpaceEvenly">
+        @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
-            <MudTooltip Text="@GetAutoBuilderTooltipMessage()">
-                <MudButton Disabled="true" OnClick="OnClickAutoBuilder" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Variant="Variant.Filled" Style="max-width: 500px;">Auto Builder</MudButton>
-            </MudTooltip>
-        }
-        else
-        {
-            <MudButton OnClick="OnClickAutoBuilder" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Variant="Variant.Filled" Style="max-width: 500px;">Auto Builder</MudButton>
-        }
-        <MudDivider DividerType="DividerType.FullWidth" />
-        <MudText Typo="Typo.h6">Pokémon Team Stats</MudText>
-        @if (!Team.IsEmpty)
-        {
-            <StatsTeamPanel Team="@Team" />
-        }
-        else
-        {
-            <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see stats.</MudText>
-        }
-    </MudStack>
+            int index = i;
+            <MudItem xs="6" sm="4" lg="2">
 
-    <PageFooter />
-}
+                <PokemonSearchBox @ref="tempCard" PokemonTeamIndex="index" />
+            </MudItem>
+        }
+    </MudGrid>
+    @if (Profile.PokemonStorage.Pokemon.Count < 7 || GetLockedMembers().CountPokemon() > 4)
+    {
+        <MudTooltip Text="@GetAutoBuilderTooltipMessage()">
+            <MudButton Disabled="true" OnClick="OnClickAutoBuilder" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Variant="Variant.Filled" Style="max-width: 500px;">Auto Builder</MudButton>
+        </MudTooltip>
+    }
+    else
+    {
+        <MudButton OnClick="OnClickAutoBuilder" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Variant="Variant.Filled" Style="max-width: 500px;">Auto Builder</MudButton>
+    }
+    <MudDivider DividerType="DividerType.FullWidth" />
+    <MudText Typo="Typo.h6">Pokémon Team Stats</MudText>
+    @if (!Session.Team.IsEmpty)
+    {
+        <StatsTeamPanel Team="Session.Team"/>
+    }
+    else
+    {
+        <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see stats.</MudText>
+    }
+</MudStack>
+<PageFooter />
 
 @code {
-    PokemonTeam? Team;
+    private string _teamName { get; set; } = "";
 
     List<PokemonSearchBox?> cards = new List<PokemonSearchBox?>();
     PokemonSearchBox? tempCard
@@ -70,78 +71,14 @@
         NationalPokedex = 0,
         PokemonStorage = 1
     };
-    private SearchLocation pokemonSearchLocation = SearchLocation.NationalPokedex;
-    public SearchLocation PokemonSearchLocation
-    {
-        get { return pokemonSearchLocation; }
-        set
-        {
-            pokemonSearchLocation = value;
 
-            // need to clear team of pokemon not in the storage
-            if (pokemonSearchLocation == SearchLocation.PokemonStorage)
-            {
-                for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
-                {
-                    SmartPokemon? p = Globals.PokemonTeam[i];
-                    if (p is not null && !Globals.PokemonStorage.Contains(p))
-                    {
-                        Globals.PokemonTeam[i] = null;
-                        cards[i]!.Pokemon = null;
-                    }
-                }
-            }
-
-            Update();
-        }
-    }
-
-    public string TeamName { get; set; } = "";
-
-    // when component is initialised
-    protected override async Task OnInitializedAsync()
-    {
-        SessionData session = await SessionService.GetSessionDataAsync();
-        PokemonSearchLocation = (SearchLocation)session.PokemonSearchLocation;
-        Team = session.GlobalTeam;
-
-        // if the storage has updated any pokemon the changes need to be reflected here
-        if (PokemonSearchLocation == SearchLocation.PokemonStorage)
-        {
-            // arrgh this is a bit shit but not sure how else to approach it at the moment
-            // ... we're just going to find a pokemon in storage with a matching name
-            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
-            {
-                SmartPokemon? pokemon = Team[i];
-                if (pokemon is not null)
-                {
-                    SmartPokemon? foundPokemon = Globals.PokemonStorage.Find(p => p.Name == pokemon.Name);
-                    if (foundPokemon is not null)
-                        Team[i] = foundPokemon;
-                }
-            }
-        }
-
-        TeamName = Team.Name;
-    }
-
-    private async void Update()
-    {
-        StateHasChanged();
-        await SessionService.SetPokemonSearchLocationAsync((int)pokemonSearchLocation);
-        if (Team is not null)
-        {
-            Team.Name = TeamName;
-            await SessionService.SetGlobalTeam(Team);
-        }
-    }
 
     public async void OnClickAddTeamToStorage()
     {
-        Team!.Name = TeamName;
-        await ProfileService.AddTeam(Team!);
+        Session.Team.Name = _teamName;
+        await Profile.AddTeamToStorageAsync(Session.Team);
 
-        Snackbar.Add("Added team '" + Team!.Name + "' to Team Storage", Severity.Success);
+        Snackbar.Add("Added team '" + Session.Team.Name + "' to Team Storage", Severity.Success);
     }
 
     public PokemonTeam GetLockedMembers()
@@ -154,15 +91,15 @@
 
         for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
-            if (cards[i]!.Locked)
-                lockedMembers[i] = cards[i]!.Pokemon;
+            if (cards[i]!._Locked)
+                lockedMembers.Pokemon[i] = cards[i]!._Pokemon;
         }
         return lockedMembers;
     }
 
     public string GetAutoBuilderTooltipMessage()
     {
-        if (Globals.PokemonStorage.Count < 7)
+        if (Profile.PokemonStorage.Pokemon.Count < 7)
             return "Please fill Pokémon storage with at least 7 Pokémon before using the Auto Builder";
 
         if (GetLockedMembers().CountPokemon() > 4)
@@ -182,24 +119,32 @@
 
         if (!result.Canceled)
         {
-            if (result.Data is PokemonTeam)
-            {
-                PokemonTeam? team = result.Data as PokemonTeam;
-                for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
-                {
-                    SmartPokemon? p = team![i];
-                    if (p is not null)
-                    {
-                        cards[i]!.Pokemon = p;
-                        cards[i]!.Refresh();
-                    }
-                }
-                if (string.IsNullOrEmpty(TeamName))
-                {
-                    TeamName = team!.Name;
-                }
-            }
             StateHasChanged();
         }
+    }
+
+    protected override void OnInitialized()
+    {
+        // register interest in session changing to update this page
+        Session.OnTeamChange += StateHasChanged;
+
+        // if the storage has updated any pokemon the changes need to be reflected here
+        if (Session.SearchLocation == SearchLocation.PokemonStorage)
+        {
+            // arrgh this is a bit shit but not sure how else to approach it at the moment
+            // ... we're just going to find a pokemon in storage with a matching name
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                SmartPokemon? pokemon = Session.Team.Pokemon[i];
+                if (pokemon is not null)
+                {
+                    SmartPokemon? foundPokemon = Profile.PokemonStorage.Pokemon.Find(p => p.Name == pokemon.Name);
+                    if (foundPokemon is not null)
+                        Session.Team.Pokemon[i] = foundPokemon;
+                }
+            }
+        }
+
+        _teamName = Session.Team.Name;
     }
 }

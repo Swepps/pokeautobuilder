@@ -1,10 +1,11 @@
-﻿@inject SessionService SessionService
-@inject NavigationManager NavigationManager
-
-@using pokeAutoBuilder.Shared.Panes
+﻿@using pokeAutoBuilder.Shared.Panes
 @using pokeAutoBuilder.Source.Services;
 @using pokeAutoBuilder.Source.TeamGeneration;
 @using pokeAutoBuilder.Shared.Cards
+
+@inject SessionService Session
+@inject ProfileService Profile
+@inject NavigationManager NavigationManager
 
 <MudDialog>
     <DialogContent>
@@ -87,14 +88,14 @@
                         {
                             SmartPokemon? p = null;
                             bool locked = false;
-                            if (LockedMembers is not null && LockedMembers[i] is not null)
+                            if (LockedMembers is not null && LockedMembers.Pokemon[i] is not null)
                             {
-                                p = LockedMembers[i];
+                                p = LockedMembers.Pokemon[i];
                                 locked = true;
                             }
 
                             if (!locked)
-                                p = BestTeam[i];
+                                p = BestTeam.Pokemon[i];
 
                             @if (p is not null)
                             {
@@ -197,7 +198,7 @@
             baseStatTotalWeighting, baseStatHpWeighting, baseStatAttWeighting,
             baseStatDefWeighting, baseStatSpAttWeighting, baseStatSpDefWeighting, baseStatSpeWeighting);
 
-        GA.Initialize(PopulationSize, Globals.PokemonStorage, LockedMembers is null ? new PokemonTeam() : LockedMembers, weightings);
+        GA.Initialize(PopulationSize, Profile.PokemonStorage, LockedMembers is null ? new PokemonTeam() : LockedMembers, weightings);
         GA.Run();
 
         StateHasChanged();
@@ -219,8 +220,8 @@
 
     public async Task OnClickLoadIntoEditor()
     {
-        await SessionService.SetGlobalTeam(BestTeam);
-        MudDialog!.Close(DialogResult.Ok(BestTeam));
+        await Session.SetTeamAsync(BestTeam);
+        MudDialog!.Close(DialogResult.Ok(true));
     }
 
     // called after each generation is completed
