@@ -165,7 +165,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-Rlix8b7BvOeQuNN7U0h1ZCh5NBFYjrdNEPb5Tqb82yA=",
+      "hash": "sha256-UxqGUW2cBLZYyHeSQk6mmgyA9L7z6wjBqV+uEDPJJQY=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -213,7 +213,7 @@
       "url": "_framework\/Microsoft.AspNetCore.Components.Forms.wasm"
     },
     {
-      "hash": "sha256-QaGIbAnQkwIQYfL2Df\/HzYAJHJUgk0AMTWPI0Ii6ZXA=",
+      "hash": "sha256-RHJKXw4RDIfpDNEq+z8XT9t6eXuaX8BRHMh9tWSqHX8=",
       "url": "_framework\/Microsoft.AspNetCore.Components.wasm"
     },
     {
@@ -325,7 +325,7 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-5RE0XaM53o\/8tIJBWtbfx1J8PLHSzf\/l60Kx2fTDS+8=",
+      "hash": "sha256-2pQeBwS+Qm+Gmk\/u4DUxkfjRUq5QUMhyOfIWOxD6rDs=",
       "url": "_framework\/pokeAutoBuilder.wasm"
     },
     {
@@ -537,5 +537,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "PnW1C8XN"
+  "version": "0rWBox8Y"
 };

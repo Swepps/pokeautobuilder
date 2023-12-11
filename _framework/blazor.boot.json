@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "pokeAutoBuilder",
   "resources": {
-    "hash": "sha256-HjO7KkE2JQ92h0Jh6mjD33A5z/wTJSvGeca1/zG4fsc=",
+    "hash": "sha256-eHIEcPFxdUd1qjNjSY5IpH3fpgVzA1tHc2KOWvneqQI=",
     "jsModuleNative": {
       "dotnet.native.8.0.0.45ykigla5r.js": "sha256-LjLDIz9+J7uuiwMlQ4HbNx2BnSpphOtO2MwkoI28vdI="
     },
@@ -28,7 +28,7 @@
       "Microsoft.AspNetCore.Authorization.wasm": "sha256-6D7sOKdFS/5CC2PUozTda3/xwskyuz63msDlj0XN7UE=",
       "Microsoft.AspNetCore.Components.Authorization.wasm": "sha256-MdNVgc0cubEGKl8xL3P9ybipvFSaVaaYPYL5BRbl1no=",
       "Microsoft.AspNetCore.Components.Forms.wasm": "sha256-2nTE7xIjIqqDRFhRSyD/0OaBW4xvomBEGMZPKpzy7gY=",
-      "Microsoft.AspNetCore.Components.wasm": "sha256-QaGIbAnQkwIQYfL2Df/HzYAJHJUgk0AMTWPI0Ii6ZXA=",
+      "Microsoft.AspNetCore.Components.wasm": "sha256-RHJKXw4RDIfpDNEq+z8XT9t6eXuaX8BRHMh9tWSqHX8=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-pRpACayi1h/LDfJzSkgjYZcgI7q8nP+5R7qESAl4FUw=",
       "Microsoft.AspNetCore.Components.WebAssembly.Authentication.wasm": "sha256-GjshS4uFnNbaa6GJw8if11WkV8LtGY0AUxlSP2Yjqag=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-opsskRVrg0jHJWufp8H8HR+ntvaoGS5khjVgXCP3NbA=",
@@ -56,7 +56,7 @@
       "MudBlazor.wasm": "sha256-C3z0N46+tNjGV3GGOLCCpYMViTPOQmEqifIKdMyz/8Y=",
       "netstandard.wasm": "sha256-5LG9Ty05y1XqRu43VAsAf5a1kljo4e4XfOX26wbRZZw=",
       "PokeApiNet.wasm": "sha256-vcQ1x7YMO87E2dEEpxjjELs4vIo1U+lUNBaDuDwss2g=",
-      "pokeAutoBuilder.wasm": "sha256-5RE0XaM53o/8tIJBWtbfx1J8PLHSzf/l60Kx2fTDS+8=",
+      "pokeAutoBuilder.wasm": "sha256-2pQeBwS+Qm+Gmk/u4DUxkfjRUq5QUMhyOfIWOxD6rDs=",
       "System.Collections.Concurrent.wasm": "sha256-koVhm+kz/OtDSEFG0GfPWkAr1qtPOYb0DQivSfK/bG4=",
       "System.Collections.Immutable.wasm": "sha256-WzV6OJ0NRetm+VuQFsWwCn6o9Xi3uCBGLJuiwTNhnEM=",
       "System.Collections.NonGeneric.wasm": "sha256-auVqan5jtC320wqSvohuBz6UxbGJC4fd4vaIgCeXbGo=",
