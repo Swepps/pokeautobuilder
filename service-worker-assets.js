@@ -129,7 +129,7 @@
       "url": "sample-data\/weather.json"
     },
     {
-      "hash": "sha256-r79awFecI73fwWhQ+3Sdudz4ZkJmy3pjT3FQO7wqBj4=",
+      "hash": "sha256-vqUFFupRAK\/gGQFRkoE9QXuErYB2D0b6WNgcVlp7qr4=",
       "url": "pokeAutoBuilder.styles.css"
     },
     {
@@ -165,7 +165,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-nCRAC1FQpbbDCEDw+YHiVje9sfzojYCXlNakavlJJ3g=",
+      "hash": "sha256-UIFtjqmQMLMTq2liatX9p5YogMi\/n7\/XNHQ36trIzlc=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -313,7 +313,7 @@
       "url": "_framework\/Microsoft.JSInterop.WebAssembly.wasm"
     },
     {
-      "hash": "sha256-C3z0N46+tNjGV3GGOLCCpYMViTPOQmEqifIKdMyz\/8Y=",
+      "hash": "sha256-MkYxdf9JqGm\/0KKa94jmTWlcb2APJetAFLnlta2tmzA=",
       "url": "_framework\/MudBlazor.wasm"
     },
     {
@@ -325,7 +325,7 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-CNxu51+Es2MWgxLD\/u5qi6f\/g28YavzmzHBW5jZxwSs=",
+      "hash": "sha256-03+Gy4+M3\/+\/+WQFGJLo2nAGvumsHEGWp6nubThW\/VY=",
       "url": "_framework\/pokeAutoBuilder.wasm"
     },
     {
@@ -537,5 +537,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "35EBcrMj"
+  "version": "DLeBdXpx"
 };
