@@ -59,21 +59,39 @@
 	List<string> typeHeaders = new List<string>() { "" };
 	List<string[]> coverageRows = new List<string[]>();
 
-	// when component is initialised
+	private string GetRowColour(string rowName)
+	{
+		switch (rowName)
+		{
+			case "STAB Moves":
+				return "background: var(--mud-palette-success);";
+
+			case "Weak":
+				return "background: var(--mud-palette-error);";
+
+			default:
+				return "background: var(--mud-palette-secondary);";
+		}
+	}
+
 	protected override void OnInitialized()
 	{
 		foreach (string t in Globals.AllTypes)
 		{
 			typeHeaders.Add(t);
 		}
-		OnParametersSet();
 	}
 
-
-	protected override void OnParametersSet()
+	protected override async Task OnParametersSetAsync()
 	{
 		if (Team is null)
 			return;
+
+		foreach (SmartPokemon? p in Team.Pokemon)
+		{
+			if (p is not null)
+				await p.SelectedMoves.UpdateAttackMultipliers();
+		}
 
 		// coverage table data
 		coverageRows.Clear();
@@ -95,20 +113,7 @@
 		}
 
 		coverageRows.Add(moveCoverage);
-	}
 
-	private string GetRowColour(string rowName)
-	{
-		switch (rowName)
-		{
-			case "STAB Moves":
-				return "background: var(--mud-palette-success);";
-
-			case "Weak":
-				return "background: var(--mud-palette-error);";
-
-			default:
-				return "background: var(--mud-palette-secondary);";
-		}
+		base.OnParametersSet();
 	}
 }

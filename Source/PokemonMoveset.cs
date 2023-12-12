@@ -11,6 +11,9 @@ namespace pokeAutoBuilder.Source
         public static readonly int MaxMovesetSize = 4;
 
 		[JsonIgnore]
+		private bool _multipliersNeedUpdating = true;
+
+		[JsonIgnore]
         public Dictionary<string, double> AttackMultipliers = new Dictionary<string, double>();
 
 		[JsonIgnore]
@@ -38,7 +41,6 @@ namespace pokeAutoBuilder.Source
             // fill moveset with null moves
             for (int i = 0; i < MaxMovesetSize; i++)
             {
-                _moves.Add(null);
                 MoveNames.Add(null);
             }
         }
@@ -69,7 +71,8 @@ namespace pokeAutoBuilder.Source
 			{
                 _moves[index] = move;
                 MoveNames[index] = move?.Name;
-                await UpdateAttackMultipliers();
+				_multipliersNeedUpdating = true;
+				await UpdateAttackMultipliers();
 			}
 		}
 
@@ -97,8 +100,13 @@ namespace pokeAutoBuilder.Source
 			}
 		}
 
-        private async Task UpdateAttackMultipliers()
+        public async Task UpdateAttackMultipliers()
         {
+			if (!_multipliersNeedUpdating)
+				return;
+
+			_multipliersNeedUpdating = false;
+
 			// load in move details
 			if (MoveNames.Count > _moves.Count)
 			{
