@@ -5,14 +5,12 @@
 @inject PokeApiService PokeApiService
 
 @using PokeApiNet
-@using Toolbelt.Blazor.PWA.Updater
 @using pokeAutoBuilder.Source.Services;
 
-<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@_isDarkMode" />
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="AutoBuilderTheme" />
 <MudDialogProvider FullWidth="true"
                    MaxWidth="MaxWidth.ExtraExtraLarge" />
 <MudSnackbarProvider />
-@* <PWAUpdater Text="A new version of Poké Autobuilder is available." ButtonCaption="UPDATE" State="PWAUpdater.States.Showing" /> *@
 
 <MudLayout>
     <MudAppBar Elevation="1">
@@ -71,6 +69,46 @@
             OnChangeDarkMode();
         }
     }
+    MudTheme AutoBuilderTheme = new MudTheme()
+        {
+            Palette = new PaletteLight()
+            {
+                Primary = Colors.Red.Accent3,
+                Secondary = Colors.Blue.Accent3,
+                Dark = Colors.Grey.Lighten1,
+
+                Background = Colors.Grey.Lighten3,
+                BackgroundGrey = Colors.Grey.Lighten2,
+                DrawerBackground = "#d3d3d3",
+                AppbarBackground = Colors.Grey.Lighten1,
+                Surface = "#e3e3e3",
+
+                DrawerText = Colors.Grey.Darken3,
+                TextPrimary = Colors.Grey.Darken4,
+                AppbarText = Colors.Grey.Darken4,
+            },
+            PaletteDark = new PaletteDark()
+            {
+                Primary = Colors.Red.Accent2,
+                Secondary = Colors.Blue.Accent2,
+                Dark = Colors.Grey.Darken2,
+
+                Background = Colors.Grey.Darken4,
+                BackgroundGrey = Colors.Grey.Darken4,
+                DrawerBackground = "#383838",
+                AppbarBackground = Colors.Grey.Darken3,
+                Surface = "#252525",
+
+                DrawerText = Colors.Grey.Lighten4,
+                TextPrimary = Colors.Grey.Lighten4,
+                AppbarText = Colors.Grey.Lighten4,
+            },
+
+            LayoutProperties = new LayoutProperties()
+            {
+                DrawerWidthLeft = "260px",
+            }
+        };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
