@@ -4,7 +4,7 @@
 @using pokeAutoBuilder.Source.Services;
 @using Type = PokeApiNet.Type
 
-@if (Pokemon is not null)
+@if (Pokemon is not null && _generation is not null)
 {
     <MudStack AlignItems="AlignItems.Center" Spacing="1">
         <MudImage Fluid="true" Src="@Pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@Pokemon.Name" title="@Pokemon.Name" Style="-webkit-filter: drop-shadow(5px 5px 5px #222); filter: drop-shadow(5px 5px 5px #222);" />
@@ -18,7 +18,7 @@
         {
             <MudText Typo="Typo.button" Align="Align.Center">@Pokemon.Name</MudText>
         }
-        @* <MudText Typo="Typo.caption">@Pokemon.Generation.Names.Where( name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</MudText> *@
+        <MudText Typo="Typo.caption">@_generation.Names.Where(name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</MudText>
     </MudStack>
 }
 
@@ -28,4 +28,12 @@
 
     [Parameter]
     public bool IsNameDisplayed { get; set; } = true;
+
+    private Generation? _generation;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Pokemon is not null)
+            _generation = await Pokemon.GetGenerationAsync();
+    }
 }
