@@ -35,4 +35,12 @@
 @code {
 	[Parameter]
 	public SmartPokemon? Pokemon { get; set; }
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (Pokemon is not null)
+			await Pokemon.SelectedMoves.UpdateAttackMultipliers();
+
+		base.OnParametersSet();
+	}
 }

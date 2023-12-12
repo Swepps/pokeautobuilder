@@ -1,5 +1,5 @@
 ﻿<MudPaper Class="mud-width-full pa-2 overflow-x-auto">
-	<MudText Typo="Typo.h6" Align="Align.Center">Team Defense</MudText>
+	<MudText Typo="Typo.h6" Align="Align.Center">Type Defense</MudText>
 	<MudSimpleTable Style="width: 100%;" Dense="true" Elevation="0">
 		<thead>
 			<tr>
@@ -50,7 +50,21 @@
 	List<string> typeHeaders = new List<string>() { "" };
 	List<string[]> defenseRows = new List<string[]>();
 
-	// when component is initialised
+	private string GetRowColour(string rowName)
+	{
+		switch (rowName)
+		{
+			case "Resist":
+				return "background: var(--mud-palette-success);";
+
+			case "Weak":
+				return "background: var(--mud-palette-error);";
+
+			default:
+				return "background: var(--mud-palette-primary);";
+		}
+	}
+
 	protected override void OnInitialized()
 	{
 		foreach (string t in Globals.AllTypes)
@@ -88,18 +102,4 @@
 		defenseRows.Add(weaknesses);
 	}
 
-	private string GetRowColour(string rowName)
-	{
-		switch (rowName)
-		{
-			case "Resist":
-				return "background: var(--mud-palette-success);";
-
-			case "Weak":
-				return "background: var(--mud-palette-error);";
-
-			default:
-				return "background: var(--mud-palette-primary);";
-		}
-	}
 }
