@@ -11,7 +11,7 @@
 
 <PageTitle>Team Builder</PageTitle>
 
-<MudStack Spacing="5" Class="mt-4 mb-4" AlignItems="AlignItems.Center">
+<MudStack Spacing="5" Class="mt-4 mb-4" AlignItems="AlignItems.Center" Style="min-width: 60%;">
     <MudGrid Justify="Justify.FlexEnd">
         <MudItem xs="12" sm="6" Class="d-flex align-end justify-start mud-width-full">
             <MudRadioGroup @bind-SelectedOption="@Session.SearchLocation">
@@ -28,7 +28,7 @@
         @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
             int index = i;
-            <MudItem xs="6" sm="4" lg="2">
+            <MudItem xs="6" sm="6" md="4" lg="2">
 
                 <PokemonSearchBox @ref="tempCard" PokemonTeamIndex="index" />
             </MudItem>

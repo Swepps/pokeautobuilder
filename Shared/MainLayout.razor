@@ -36,17 +36,13 @@
         <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
             @if (_state == Init.Done)
             {
-                <MudGrid>
-                    <MudItem xs="12" sm="10">
+                <MudStack>
+                    <div class="body-container">
                         @Body
-                    </MudItem>
-                    <MudItem xs="12" sm="2">
-                        <AdsenseComponent Slot="4361845430" Style="display:block" />
-                    </MudItem>
-                    <MudItem xs="12">
-                        <PageFooter />
-                    </MudItem>
-                </MudGrid>
+                        <AdsenseComponent Slot="4361845430" Style="display:block; width: fit-content;" />
+                    </div>
+                    <PageFooter />
+                </MudStack>
             }
             else if (_state == Init.Initialising)
             {
