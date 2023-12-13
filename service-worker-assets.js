@@ -1,6 +1,10 @@
 ﻿self.assetsManifest = {
   "assets": [
     {
+      "hash": "sha256-kY5QrR+UesptMtcOWrovIlmjyODSjdJN3xqisGRe1Y8=",
+      "url": "browser_not_supported.html"
+    },
+    {
       "hash": "sha256-m2se5u+fnxhhJ3FuhnxBuxlE0SdM\/yDQPFweF1e6Akk=",
       "url": "css\/loading.css"
     },
@@ -117,7 +121,7 @@
       "url": "img\/Type-Water.png"
     },
     {
-      "hash": "sha256-FqU16UQlGwcLj8j9rQd25kLol6Oe1W1ki9otDafg1Zg=",
+      "hash": "sha256-fiHR2gqIDsnpNa3RQz\/4A\/ukGXkHKh6SORECGScUZ1M=",
       "url": "index.html"
     },
     {
@@ -165,7 +169,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-UIFtjqmQMLMTq2liatX9p5YogMi\/n7\/XNHQ36trIzlc=",
+      "hash": "sha256-vxzTIhNeXy1Bt2zjmRLFB5By9tmDlzPPRqSWdfzo2w0=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -325,7 +329,7 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-03+Gy4+M3\/+\/+WQFGJLo2nAGvumsHEGWp6nubThW\/VY=",
+      "hash": "sha256-Rea9jE+2LYY3AcGNWVDeuBJsMpIO7c1oNUfDTnRSslw=",
       "url": "_framework\/pokeAutoBuilder.wasm"
     },
     {
@@ -461,7 +465,7 @@
       "url": "_framework\/System.Runtime.Serialization.Formatters.wasm"
     },
     {
-      "hash": "sha256-d6owMhRLHVvx5RLDRv3vo3bYNNPoopMqd8ijEbvU744=",
+      "hash": "sha256-II5qG3fa+51rM\/ZdIJJDMqxIWpY4ln374g3\/u3v9NpA=",
       "url": "_framework\/System.Runtime.wasm"
     },
     {
@@ -537,5 +541,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "DLeBdXpx"
+  "version": "mpCJXvjR"
 };

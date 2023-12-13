@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "pokeAutoBuilder",
   "resources": {
-    "hash": "sha256-Y/UVp9mlffbTKtYt6rJ2QlW+iP/efDXQg24uVd4rrCQ=",
+    "hash": "sha256-F4S9ir9aGJJRPu5uzH9hoEQvkGgP5GLyygnDcS6KRf4=",
     "jsModuleNative": {
       "dotnet.native.8.0.0.45ykigla5r.js": "sha256-LjLDIz9+J7uuiwMlQ4HbNx2BnSpphOtO2MwkoI28vdI="
     },
@@ -56,7 +56,7 @@
       "MudBlazor.wasm": "sha256-MkYxdf9JqGm/0KKa94jmTWlcb2APJetAFLnlta2tmzA=",
       "netstandard.wasm": "sha256-5LG9Ty05y1XqRu43VAsAf5a1kljo4e4XfOX26wbRZZw=",
       "PokeApiNet.wasm": "sha256-vcQ1x7YMO87E2dEEpxjjELs4vIo1U+lUNBaDuDwss2g=",
-      "pokeAutoBuilder.wasm": "sha256-03+Gy4+M3/+/+WQFGJLo2nAGvumsHEGWp6nubThW/VY=",
+      "pokeAutoBuilder.wasm": "sha256-Rea9jE+2LYY3AcGNWVDeuBJsMpIO7c1oNUfDTnRSslw=",
       "System.Collections.Concurrent.wasm": "sha256-koVhm+kz/OtDSEFG0GfPWkAr1qtPOYb0DQivSfK/bG4=",
       "System.Collections.Immutable.wasm": "sha256-WzV6OJ0NRetm+VuQFsWwCn6o9Xi3uCBGLJuiwTNhnEM=",
       "System.Collections.NonGeneric.wasm": "sha256-auVqan5jtC320wqSvohuBz6UxbGJC4fd4vaIgCeXbGo=",
@@ -90,7 +90,7 @@
       "System.Runtime.InteropServices.wasm": "sha256-DA1/DEd5c+b7PMYU0K3wj/k5BxZbZvA0OnU1jpr0fmY=",
       "System.Runtime.Numerics.wasm": "sha256-JKCnFvyKI45jaG3KqTdjLRac+uOQ7cXkc1gbbrNO1F4=",
       "System.Runtime.Serialization.Formatters.wasm": "sha256-SPI7f47uXP2dTaXUMKwZ/BzxoV2gpEAg7SYuuIIg8Fo=",
-      "System.Runtime.wasm": "sha256-d6owMhRLHVvx5RLDRv3vo3bYNNPoopMqd8ijEbvU744=",
+      "System.Runtime.wasm": "sha256-II5qG3fa+51rM/ZdIJJDMqxIWpY4ln374g3/u3v9NpA=",
       "System.Security.Claims.wasm": "sha256-Iee87TepmnYrMD2zoaxmHuFU5/L/1IYUg81ZvnEGkAA=",
       "System.Security.Cryptography.wasm": "sha256-7Q+p0eGT43dZxPcehiRnRG5YemkuTi234DK/eneC7S4=",
       "System.Text.Encodings.Web.wasm": "sha256-TBQKW3JFt7XUHwQq9GJUIhavHH+Kkw6csHhVpYc+Om0=",
