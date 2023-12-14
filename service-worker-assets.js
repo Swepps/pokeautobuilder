@@ -121,7 +121,7 @@
       "url": "img\/Type-Water.png"
     },
     {
-      "hash": "sha256-9i2ZfZd06gRkHkfBM2wqt3zTIVmhQvhqTePW5mmKWZQ=",
+      "hash": "sha256-dMeFJ2E8X06s670gF9P\/0gNKeNFwm9nJz4tXzA76ojo=",
       "url": "index.html"
     },
     {
@@ -169,7 +169,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-3wL0LOp9zIao+5QYxfcWxx5PRNHKBq\/BxPziM\/0+X7U=",
+      "hash": "sha256-Rske+POUAAk+SWmxGkH\/0fxHygoOaVsMrufJ4GKbtqY=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -329,7 +329,7 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-6IlxDqfMYe79XvXv15e2+THrrBtjHJUsGl293THCwTg=",
+      "hash": "sha256-8m9rodUXMcevEH6qwsj69rVDflSdBlnCjhgIEK+55HA=",
       "url": "_framework\/pokeAutoBuilder.wasm"
     },
     {
@@ -465,7 +465,7 @@
       "url": "_framework\/System.Runtime.Serialization.Formatters.wasm"
     },
     {
-      "hash": "sha256-II5qG3fa+51rM\/ZdIJJDMqxIWpY4ln374g3\/u3v9NpA=",
+      "hash": "sha256-d6owMhRLHVvx5RLDRv3vo3bYNNPoopMqd8ijEbvU744=",
       "url": "_framework\/System.Runtime.wasm"
     },
     {
@@ -541,5 +541,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "Rk+C+TkT"
+  "version": "R\/zdjrm3"
 };
