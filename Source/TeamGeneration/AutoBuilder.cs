@@ -11,34 +11,45 @@ namespace pokeAutoBuilder.Source.TeamGeneration
         // sum of all weightings. some bools are worth 2
         public static readonly double MaxPossibleScore = 13.0;
 
-        // priorities
-        public bool ResistantAll;
-        public bool STABCoverageAll;
-        public bool CoverageOnOffensive;
-        public bool ResistancesOnDefensive;
+        // priorities                               Weighting values
+        public bool ResistantAll;                   // 2.0
+        public bool STABCoverageAll;                // 2.0
+		public bool CoverageOnOffensive;            // 1.0
+		public bool ResistancesOnDefensive;         // 1.0
 
-        // balance weightings
-        public double MoveSetBalanceWeighting;
-        public double StabBalanceWeighting;
-        public double ResistanceBalanceWeighting;
-        public double WeaknessBalanceWeighting;
+		// balance weightings
+		public double MoveSetBalanceWeighting;      // max 1.0
+        public double StabBalanceWeighting;         // max 1.0
+		public double ResistanceBalanceWeighting;   // max 1.0
+		public double WeaknessBalanceWeighting;     // max 1.0
 
-        // base stats ( total = 3.0 )
-        public double BaseStatTotalWeighting;
-        public double BaseStatHpWeighting;
-        public double BaseStatAttWeighting;
-        public double BaseStatDefWeighting;
-        public double BaseStatSpAttWeighting;
-        public double BaseStatSpDefWeighting;
-        public double BaseStatSpeWeighting;
+		public double BaseStatTotalWeighting;       // scales other stat weightings
+		// base stats ( total = 3.0 )
+		public double BaseStatHpWeighting;          // max 0.5
+		public double BaseStatAttWeighting;         // max 0.5
+		public double BaseStatDefWeighting;         // max 0.5
+		public double BaseStatSpAttWeighting;       // max 0.5
+		public double BaseStatSpDefWeighting;       // max 0.5
+		public double BaseStatSpeWeighting;         // max 0.5
 
-        public AutoBuilderWeightings(
-            bool resistantAll, bool stabCoverageAll, bool coverageOnOffensive, bool resistancesOnDefensive,
-            double moveSetBalanceWeighting, double stabBalanceWeighting,
-            double resistanceBalanceWeighting, double weaknessBalanceWeighting,
-            double baseStatTotalWeighting, 
-            double baseStatHpWeighting, double baseStatAttWeighting, double baseStatDefWeighting, 
-            double baseStatSpAttWeighting, double baseStatSpDefWeighting, double baseStatSpeWeighting)
+		public AutoBuilderWeightings(
+            bool resistantAll
+            , bool stabCoverageAll
+            , bool coverageOnOffensive
+            , bool resistancesOnDefensive
+
+            , double moveSetBalanceWeighting
+            , double stabBalanceWeighting
+            , double resistanceBalanceWeighting
+            , double weaknessBalanceWeighting
+
+            , double baseStatTotalWeighting
+            , double baseStatHpWeighting
+            , double baseStatAttWeighting
+            , double baseStatDefWeighting
+            , double baseStatSpAttWeighting
+            , double baseStatSpDefWeighting
+            , double baseStatSpeWeighting)
         {
             ResistantAll = resistantAll;
             STABCoverageAll = stabCoverageAll;
@@ -111,10 +122,10 @@ namespace pokeAutoBuilder.Source.TeamGeneration
             double scaleFactor = AutoBuilderWeightings.MaxPossibleScore / maxScore;
 
             // gather some information about the types in the team
-            Dictionary<string, int> weaknesses = new Dictionary<string, int>();
-            Dictionary<string, int> resistances = new Dictionary<string, int>();
-            Dictionary<string, int> STABcoverage = new Dictionary<string, int>();
-            Dictionary<string, int> movecoverage = new Dictionary<string, int>();
+            Dictionary<string, int> weaknesses = [];
+            Dictionary<string, int> resistances = [];
+            Dictionary<string, int> STABcoverage = [];
+            Dictionary<string, int> movecoverage = [];
 
             double totalWeaknesses = 0;
             double totalResistances = 0;
