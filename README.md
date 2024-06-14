@@ -6,7 +6,7 @@ Features:
 - Pokémon Team Builder.
 
   - This allows the user to select up to 6 Pokémon to build a team.
-  - A selected Pokémon can be expanded to view their details including resistances and weaknesses, base stats, and STAB move coverage. Additionally a Pokémon's moves and ability can be selected here in this dialog.
+  - A selected Pokémon can be expanded to view their details including resistances and weaknesses, base stats, and STAB move coverage. Additionally a Pokémon's moves and ability can be selected in this dialog.
   - The team's overall statistics can be viewed below to evaluate the strengths/weaknesses of the team.
   - Pokémon can be saved to the Pokémon Storage (more details on that below).
   - Pokémon teams can be named and saved to Pokémon Team Storage (more details on that below).
@@ -16,7 +16,8 @@ Features:
   - The Pokémon Storage holds a collection of your saved Pokémon in your browser's local storage for easy access throughout the app.
   - On the right of the page, the Storage Controls can be expanded in and out using the expansion button.
       - These controls are used for easily adding and removing Pokémon to the Storage.
-  - Stored Pokémon can be accessed on the Team Builder page using the radio buttons to change the Pokémon search boxes to search the Storage instead of the Pokédex.
+  - Stored Pokémon can be loaded into the Team Builder page.
+      - Use the radio buttons to change the Pokémon search boxes to search the Storage instead of the Pokédex.
 
 - Team Storage
 
@@ -35,7 +36,3 @@ Features:
 Poké Autobuilder can be found here:
 
 https://pokeautobuilder.com
-
-There are two archived applications in this repository currently:
-- The first WPF app I wrote which will only work on desktop Windows
-- A Blazor Server App which was the beginnings of a port to Blazor so that it could be accessed online instead as a web app
