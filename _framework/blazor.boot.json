@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "pokeAutoBuilder",
   "resources": {
-    "hash": "sha256-X/l+yvq2JFbimrLI2o+jYKzXRHgyxQ4C1aZvWy1VKP0=",
+    "hash": "sha256-KJ0xE5EUpHCOPHdgUHR3bwRJny0CuVuAd7SI2oVBK40=",
     "jsModuleNative": {
       "dotnet.native.8.0.6.suuomc2hr0.js": "sha256-YU6M9+jtDVnB8/wtrgIndOstzNh778Ls8g9XnbjorSk="
     },
@@ -56,7 +56,7 @@
       "MudBlazor.wasm": "sha256-MkYxdf9JqGm/0KKa94jmTWlcb2APJetAFLnlta2tmzA=",
       "netstandard.wasm": "sha256-OiXU8P6+KAgj1JrW67Vx4vCXPjdPGuvostKas3Y6auM=",
       "PokeApiNet.wasm": "sha256-vcQ1x7YMO87E2dEEpxjjELs4vIo1U+lUNBaDuDwss2g=",
-      "pokeAutoBuilder.wasm": "sha256-GQrpo0pWYvCa54bouJ2UAyNYtg+GIxqes0wJtNRvaiI=",
+      "pokeAutoBuilder.wasm": "sha256-H4XMSfH1MWliVa+XzaRrPptZeBANnq8zYO4l/uHt9f0=",
       "System.Collections.Concurrent.wasm": "sha256-DhCJO84iUkUtpkeePhqno+GBhjWHIaS+lWPq27MHzkE=",
       "System.Collections.Immutable.wasm": "sha256-eR3vAXD8S/FvTjEBVcsmCGsfBu1hTNKEvS1FkRjKHng=",
       "System.Collections.NonGeneric.wasm": "sha256-oZjvt0ltTeZUCqDktIzkRNXhpqMI/l5TymzHc0ysRYM=",
