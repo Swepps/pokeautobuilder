@@ -17,7 +17,7 @@
             <div>
                 @foreach (string t in Globals.AllTypes)
                 {                    
-                    <MudButton OnClick="() => OnClickType(t)">
+                    <MudButton OnClick="() => OnClickType(t)" Style="height: 50px;">
                         @if (typeWeightings.ContainsKey(t) && typeWeightings[t])
                         {
                             <MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="40" Class="ma-1" />
@@ -29,6 +29,8 @@
                     </MudButton>
                 }
             </div>
+
+            <MudDivider DividerType="DividerType.FullWidth" />
 
             <MudText Typo="Typo.h6">Balance Weightings</MudText>
             <MudText Typo="Typo.subtitle1">Use the checkboxes and sliders to adjust the importance of different team attributes.</MudText>
