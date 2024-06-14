@@ -245,11 +245,25 @@
         BestOverallFitness = 0;
 
         AutoBuilderWeightings weightings = new AutoBuilderWeightings(
-            resistantAll, stabCoverageAll, coverageOnOffensive, resistancesOnDefensive, 
-            moveSetBalanceWeighting, stabBalanceWeighting,
-            resistanceBalanceWeighting, weaknessBalanceWeighting, 
-            baseStatTotalWeighting, baseStatHpWeighting, baseStatAttWeighting,
-            baseStatDefWeighting, baseStatSpAttWeighting, baseStatSpDefWeighting, baseStatSpeWeighting);
+            resistantAll
+            , stabCoverageAll
+            , coverageOnOffensive
+            , resistancesOnDefensive
+
+            , moveSetBalanceWeighting
+            , stabBalanceWeighting
+            , resistanceBalanceWeighting
+            , weaknessBalanceWeighting
+
+            , baseStatTotalWeighting
+            , baseStatHpWeighting
+            , baseStatAttWeighting
+            , baseStatDefWeighting
+            , baseStatSpAttWeighting
+            , baseStatSpDefWeighting
+            , baseStatSpeWeighting
+            
+            , typeWeightings);
 
         GA.Initialize(PopulationSize, Profile.PokemonStorage, LockedMembers is null ? new PokemonTeam() : LockedMembers, weightings);
         GA.Run();
