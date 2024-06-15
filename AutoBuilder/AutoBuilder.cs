@@ -34,25 +34,24 @@ namespace AutoBuilder
         public Dictionary<string, bool> TypeWeightings = [];
 
 		public AutoBuilderWeightings(
-            bool resistantAll
-            , bool stabCoverageAll
-            , bool coverageOnOffensive
-            , bool resistancesOnDefensive
+            Dictionary<string, bool> typeWeightings
+            , bool resistantAll = true
+            , bool stabCoverageAll = true
+            , bool coverageOnOffensive = true
+            , bool resistancesOnDefensive = true
 
-            , double moveSetBalanceWeighting
-            , double stabBalanceWeighting
-            , double resistanceBalanceWeighting
-            , double weaknessBalanceWeighting
+            , double moveSetBalanceWeighting = 1.0
+            , double stabBalanceWeighting = 1.0
+            , double resistanceBalanceWeighting = 1.0
+            , double weaknessBalanceWeighting = 1.0
 
-            , double baseStatTotalWeighting
-            , double baseStatHpWeighting
-            , double baseStatAttWeighting
-            , double baseStatDefWeighting
-            , double baseStatSpAttWeighting
-            , double baseStatSpDefWeighting
-            , double baseStatSpeWeighting
-            
-            , Dictionary<string, bool> typeWeightings)
+            , double baseStatTotalWeighting = 1.0
+            , double baseStatHpWeighting = 0.5
+            , double baseStatAttWeighting = 0.5
+            , double baseStatDefWeighting = 0.5
+            , double baseStatSpAttWeighting = 0.5
+            , double baseStatSpDefWeighting = 0.5
+            , double baseStatSpeWeighting = 0.5)
         {
             ResistantAll = resistantAll;
             STABCoverageAll = stabCoverageAll;
@@ -73,6 +72,48 @@ namespace AutoBuilder
             BaseStatSpeWeighting = baseStatSpeWeighting;
 
             TypeWeightings = typeWeightings;
+        }
+        public AutoBuilderWeightings(
+            bool resistantAll = true
+            , bool stabCoverageAll = true
+            , bool coverageOnOffensive = true
+            , bool resistancesOnDefensive = true
+
+            , double moveSetBalanceWeighting = 1.0
+            , double stabBalanceWeighting = 1.0
+            , double resistanceBalanceWeighting = 1.0
+            , double weaknessBalanceWeighting = 1.0
+
+            , double baseStatTotalWeighting = 1.0
+            , double baseStatHpWeighting = 0.5
+            , double baseStatAttWeighting = 0.5
+            , double baseStatDefWeighting = 0.5
+            , double baseStatSpAttWeighting = 0.5
+            , double baseStatSpDefWeighting = 0.5
+            , double baseStatSpeWeighting = 0.5)
+        {
+            ResistantAll = resistantAll;
+            STABCoverageAll = stabCoverageAll;
+            CoverageOnOffensive = coverageOnOffensive;
+            ResistancesOnDefensive = resistancesOnDefensive;
+
+            MoveSetBalanceWeighting = moveSetBalanceWeighting;
+            StabBalanceWeighting = stabBalanceWeighting;
+            ResistanceBalanceWeighting = resistanceBalanceWeighting;
+            WeaknessBalanceWeighting = weaknessBalanceWeighting;
+
+            BaseStatTotalWeighting = baseStatTotalWeighting;
+            BaseStatHpWeighting = baseStatHpWeighting;
+            BaseStatAttWeighting = baseStatAttWeighting;
+            BaseStatDefWeighting = baseStatDefWeighting;
+            BaseStatSpAttWeighting = baseStatSpAttWeighting;
+            BaseStatSpDefWeighting = baseStatSpDefWeighting;
+            BaseStatSpeWeighting = baseStatSpeWeighting;
+
+            foreach (string type in Globals.AllTypes) 
+            {
+                TypeWeightings[type] = true;
+            }
         }
 
         public double SumWeightings()
