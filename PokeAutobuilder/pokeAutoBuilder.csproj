@@ -48,4 +48,10 @@
     <Folder Include="wwwroot\NewFolder\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AutoBuilder\AutoBuilder.csproj" />
+    <ProjectReference Include="..\PokemonDataModel\PokemonDataModel.csproj" />
+    <ProjectReference Include="..\Utility\Utility.csproj" />
+  </ItemGroup>
+
 </Project>

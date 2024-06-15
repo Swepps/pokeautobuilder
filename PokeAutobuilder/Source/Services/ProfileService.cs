@@ -1,11 +1,13 @@
 ﻿using Blazored.LocalStorage;
 using Blazored.SessionStorage;
+using PokemonDataModel;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
+using Utility;
 using static MudBlazor.Colors;
-using static pokeAutoBuilder.Pages.TeamBuilderPage;
+using static PokeAutobuilder.Pages.TeamBuilderPage;
 
-namespace pokeAutoBuilder.Source.Services
+namespace PokeAutobuilder.Source.Services
 {
     public record Preferences
     {

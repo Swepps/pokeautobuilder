@@ -1,4 +1,7 @@
-﻿<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
+﻿@using PokemonDataModel
+@using Utility
+
+<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 	<MudText Typo="Typo.h6">Team Base Stats</MudText>
 	<MudText Typo="Typo.body1">Total Base Stat Average: @AverageTotalBaseStats</MudText>
 	<MudChart ChartType="ChartType.Bar" ChartSeries="@TeamStats" @bind-SelectedIndex="Index" XAxisLabels="@Labels" Width="100%" Style="width: 95%;"></MudChart>

@@ -1,5 +1,6 @@
 ﻿using PokeApiNet;
 using System.Text.Json.Serialization;
+using Utility;
 
 namespace PokemonDataModel
 {

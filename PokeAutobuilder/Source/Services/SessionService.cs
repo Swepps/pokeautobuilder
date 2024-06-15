@@ -1,8 +1,10 @@
 ﻿using Blazored.SessionStorage;
+using PokemonDataModel;
+using Utility;
 using static MudBlazor.Colors;
-using static pokeAutoBuilder.Pages.TeamBuilderPage;
+using static PokeAutobuilder.Pages.TeamBuilderPage;
 
-namespace pokeAutoBuilder.Source.Services
+namespace PokeAutobuilder.Source.Services
 { 
     public class SessionService
     {
@@ -71,7 +73,7 @@ namespace pokeAutoBuilder.Source.Services
             {
                 AllTypes = await PokeApiService.Instance!.GetAllTypesAsync();
             }
-            Globals.LoadedTypes = AllTypes;
+            DataModelCache.LoadedTypes = AllTypes;
 
             var taskPokemonTeam = _sessionStorageService.GetItemAsync<PokemonTeam>(POKEMON_TEAM_KEY);
             var taskNationDex = _sessionStorageService.GetItemAsync<SmartPokedex>(NATIONAL_DEX_KEY);

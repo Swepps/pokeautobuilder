@@ -1,10 +1,7 @@
-﻿using Accord.Math;
-using Microsoft.AspNetCore.Components;
-using Microsoft.VisualBasic;
-using PokeApiNet;
-using System.Diagnostics;
+﻿using PokeApiNet;
+using Utility;
 
-namespace pokeAutoBuilder.Source.Services
+namespace PokemonDataModel
 {
     using Type = PokeApiNet.Type;
 

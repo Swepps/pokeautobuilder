@@ -1,11 +1,10 @@
 ﻿using Accord.Genetic;
 using PokeApiNet;
 using PokemonDataModel;
+using Utility;
 
 namespace AutoBuilder
 {
-    using Type = PokeApiNet.Type;
-
     public struct AutoBuilderWeightings
     {
         // sum of all weightings. some bools are worth 2

@@ -1,11 +1,13 @@
-﻿@inject NavigationManager NavigationManager
+﻿@page "/storage"
+@using PokeApiNet
+@using PokeAutobuilder.Source.Services;
+@using PokemonDataModel
+
+
+@inject NavigationManager NavigationManager
 @inject ProfileService Profile
 @inject SessionService Session
 @inject PokeApiService PokeApiService
-
-@page "/storage"
-@using PokeApiNet
-@using pokeAutoBuilder.Source.Services;
 
 <PageTitle>Pokémon Storage</PageTitle>
 

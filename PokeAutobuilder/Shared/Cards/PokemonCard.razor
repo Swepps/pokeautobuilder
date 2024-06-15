@@ -1,7 +1,10 @@
 ﻿@inject IDialogService DialogService
 
 @using PokeApiNet
-@using pokeAutoBuilder.Source.Services;
+@using PokeAutobuilder.Source.Services;
+@using PokemonDataModel;
+@using Utility
+
 @using Type = PokeApiNet.Type
 
 @if (Pokemon is not null && _generation is not null)

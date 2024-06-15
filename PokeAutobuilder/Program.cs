@@ -1,11 +1,12 @@
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
-using pokeAutoBuilder;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using MudBlazor;
-using pokeAutoBuilder.Source.Services;
+using PokeAutobuilder.Source.Services;
+using PokeAutobuilder;
+using PokemonDataModel;
 using Toolbelt.Blazor.Extensions.DependencyInjection;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

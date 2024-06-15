@@ -1,6 +1,7 @@
 ﻿using PokeApiNet;
 using System.Data;
 using System.Text.Json.Serialization;
+using Utility;
 
 namespace PokemonDataModel
 {
@@ -85,7 +86,7 @@ namespace PokemonDataModel
             LoadedTypes = new();
             foreach (PokemonType t in Types)
             {
-                LoadedTypes.Add(Globals.LoadedTypes.First(lt => lt.Name == t.Type.Name));
+                LoadedTypes.Add(DataModelCache.LoadedTypes.First(lt => lt.Name == t.Type.Name));
             }
 
             // smart variables that make this pokemon class more useful
@@ -140,7 +141,7 @@ namespace PokemonDataModel
             LoadedTypes = new();
             foreach (PokemonType t in this.Types)
             {
-                LoadedTypes.Add(Globals.LoadedTypes.First(lt => lt.Name == t.Type.Name));
+                LoadedTypes.Add(DataModelCache.LoadedTypes.First(lt => lt.Name == t.Type.Name));
             }
             
             Multipliers = new Multipliers();

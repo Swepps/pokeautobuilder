@@ -1,11 +1,13 @@
 ﻿@inherits LayoutComponentBase
 
+@using PokeApiNet
+@using PokeAutobuilder.Source.Services;
+@using PokemonDataModel
+
 @inject ProfileService ProfileService
 @inject SessionService Session
 @inject PokeApiService PokeApiService
 
-@using PokeApiNet
-@using pokeAutoBuilder.Source.Services;
 
 <MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="AutoBuilderTheme" />
 <MudDialogProvider FullWidth="true"
