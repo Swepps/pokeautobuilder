@@ -3,11 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "pokeAutoBuilder", "pokeAutoBuilder.csproj", "{65C62AF1-1F88-44C2-9502-265220F17F51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoBuilderTests", "AutoBuilderTests\AutoBuilderTests.csproj", "{6C5EEADE-9D4A-4665-94AE-7AC20D5070D3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoBuilderTests", "AutoBuilderTests\AutoBuilderTests.csproj", "{6C5EEADE-9D4A-4665-94AE-7AC20D5070D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PokemonDataModel", "PokemonDataModel\PokemonDataModel.csproj", "{AA4F7E77-81B2-4253-8645-3BF9EF59DE70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokemonDataModel", "PokemonDataModel\PokemonDataModel.csproj", "{AA4F7E77-81B2-4253-8645-3BF9EF59DE70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoBuilder", "AutoBuilder\AutoBuilder.csproj", "{5C2308B1-9A25-4D9F-B8C9-7507B6B9333B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utility", "Utility\Utility.csproj", "{1ABFDE78-A73A-4379-90E8-81F297BFDE56}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PokeAutobuilder", "PokeAutobuilder\PokeAutobuilder.csproj", "{D3C84E46-C514-4B88-885A-A30D089FD0AB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +19,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{65C62AF1-1F88-44C2-9502-265220F17F51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{65C62AF1-1F88-44C2-9502-265220F17F51}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{65C62AF1-1F88-44C2-9502-265220F17F51}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65C62AF1-1F88-44C2-9502-265220F17F51}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6C5EEADE-9D4A-4665-94AE-7AC20D5070D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6C5EEADE-9D4A-4665-94AE-7AC20D5070D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C5EEADE-9D4A-4665-94AE-7AC20D5070D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -27,6 +27,18 @@ Global
 		{AA4F7E77-81B2-4253-8645-3BF9EF59DE70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA4F7E77-81B2-4253-8645-3BF9EF59DE70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA4F7E77-81B2-4253-8645-3BF9EF59DE70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C2308B1-9A25-4D9F-B8C9-7507B6B9333B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C2308B1-9A25-4D9F-B8C9-7507B6B9333B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C2308B1-9A25-4D9F-B8C9-7507B6B9333B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C2308B1-9A25-4D9F-B8C9-7507B6B9333B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1ABFDE78-A73A-4379-90E8-81F297BFDE56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1ABFDE78-A73A-4379-90E8-81F297BFDE56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1ABFDE78-A73A-4379-90E8-81F297BFDE56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1ABFDE78-A73A-4379-90E8-81F297BFDE56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3C84E46-C514-4B88-885A-A30D089FD0AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3C84E46-C514-4B88-885A-A30D089FD0AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3C84E46-C514-4B88-885A-A30D089FD0AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3C84E46-C514-4B88-885A-A30D089FD0AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

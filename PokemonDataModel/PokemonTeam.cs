@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+﻿using Utility;
 using System.Text.Json.Serialization;
 
 namespace PokemonDataModel
