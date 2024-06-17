@@ -92,7 +92,7 @@ namespace PokeAutobuilder.Source.Services
             // if session doesn't contain the national dex, generate it
             if (NationalDex is null || NationalDex.Count == 0)
             {
-                NationalDex = (await PokeApiService.Instance!.GetNationalDex())!;
+                NationalDex = (await PokeApiService.Instance!.GetNationalDexAsync())!;
             }
         }
 

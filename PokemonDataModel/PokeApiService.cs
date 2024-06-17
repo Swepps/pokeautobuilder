@@ -40,9 +40,9 @@ namespace PokemonDataModel
         }
 
         // we will cache the national pokedex between sessions for faster loading time
-        public async Task<SmartPokedex?> GetNationalDex()
+        public async Task<SmartPokedex?> GetNationalDexAsync()
         {
-            Pokedex? nationalDex = await GetPokedex(1);
+            Pokedex? nationalDex = await GetPokedexAsync(1);
 
             if (nationalDex is not null)
             {
@@ -52,7 +52,7 @@ namespace PokemonDataModel
 
             return null;
         }
-        public async Task<Pokedex?> GetPokedex(int i)
+        public async Task<Pokedex?> GetPokedexAsync(int i)
         {
             try
             {

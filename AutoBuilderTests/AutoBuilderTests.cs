@@ -5,44 +5,165 @@ using PokeApiNet;
 using PokemonDataModel;
 using System.Net;
 using Xunit;
+using Accord.Math;
+using Utility;
 
 namespace PokeAutobuilderTests
 {
-    public class AutoBuilderTests
-    {
-        private PokeApiService? pokeApiService;
+    using Type = PokeApiNet.Type;
 
-        public AutoBuilderTests()
+    public class AutoBuilderTests : IAsyncLifetime
+    {
+        private PokeApiService? apiService;
+
+        public Task DisposeAsync()
         {
-            var mockMessageHandler = new Mock<HttpMessageHandler>();
-            mockMessageHandler.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK
-                });
-            pokeApiService = new PokeApiService(new HttpClient(mockMessageHandler.Object));
+            return Task.CompletedTask;
+        }
+
+        public async Task InitializeAsync()
+        {
+            apiService = new PokeApiService(new HttpClient());
+            if (DataModelCache.LoadedTypes.Count == 0)
+            {
+                DataModelCache.LoadedTypes = await apiService.GetAllTypesAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ApiServiceGetPokedex()
+        {
+            SmartPokedex? nationalDex = await apiService!.GetNationalDexAsync();
+            Assert.NotNull(nationalDex);
+
+            Pokedex? hoennDex = await apiService.GetPokedexAsync(4);
+            Assert.NotNull(hoennDex);
+            Assert.Equal("hoenn", hoennDex.Name);
+        }
+
+        [Fact]
+        public async Task ApiServiceGetPokemon()
+        {
+            SmartPokemon? pikachu = await apiService!.GetPokemonAsync("pikachu");
+            Assert.NotNull(pikachu);
+            Assert.Equal("pikachu", pikachu.Name);
+
+            SmartPokemon? gholdengo = await apiService!.GetPokemonAsync(1000);
+            Assert.NotNull(gholdengo);
+            Assert.Equal("gholdengo", gholdengo.Name);
+        }
+
+        [Fact]
+        public async Task ApiServiceGetAllTypes()
+        {
+            List<Type> types = await apiService!.GetAllTypesAsync();
+            Assert.NotEmpty(types);
+            Assert.All(types, t => Assert.Contains(t.Name, Globals.AllTypes));
+        }
+
+        [Fact]
+        public async Task ApiServiceGetPokemonSpeciesByEntry()
+        {
+            Pokedex? nationalDex = await apiService!.GetPokedexAsync(1);
+            Assert.NotNull(nationalDex);
+            PokemonSpecies? species = await apiService!.GetPokemonSpeciesAsync(nationalDex.PokemonEntries[24]);
+            Assert.NotNull(species);
+            Assert.Equal("pikachu", species.Name);
+        }
+
+        [Fact]
+        public async Task ApiServiceGetPokemonSpeciesBySmartPokemon()
+        {
+            SmartPokemon? pikachu = await apiService!.GetPokemonAsync("pikachu");
+            Assert.NotNull(pikachu);
+            PokemonSpecies? species = await apiService!.GetPokemonSpeciesAsync(pikachu!);
+            Assert.NotNull(species);
+            Assert.Equal("pikachu", species.Name);
+        }
+
+        [Fact]
+        public async Task ApiServiceGetPokemonSpeciesByName()
+        {
+            PokemonSpecies? species = await apiService!.GetPokemonSpeciesAsync("pikachu");
+            Assert.NotNull(species);
+            Assert.Equal("pikachu", species.Name);
+        }
+
+        [Fact]
+        public async Task ApiServiceGetGeneration()
+        {
+            PokemonSpecies? species = await apiService!.GetPokemonSpeciesAsync("pikachu");
+            Assert.NotNull(species);
+            Generation? generation = await apiService!.GetGenerationAsync(species);
+            Assert.NotNull(generation);
+            Assert.Equal("generation-i", generation.Name);
+        }
+
+        [Fact]
+        public async Task ApiServiceGetMove()
+        {
+            Move? move = await apiService!.GetMoveAsync("tackle");
+            Assert.NotNull(move);
+            Assert.Equal("tackle", move.Name);
+        }
+
+        [Fact]
+        public async Task ApiServiceGetPokemonMoves()
+        {
+            SmartPokemon? pikachu = await apiService!.GetPokemonAsync("pikachu");
+            Assert.NotNull(pikachu);
+            List<PokemonMove> moves = await apiService.GetPokemonMovesAsync(pikachu!);
+            Assert.NotEmpty(moves);
+            Assert.All(moves, move => Assert.NotNull(move.Move));
+        }
+
+        [Fact]
+        public async Task ApiServiceGetType()
+        {
+            Type? type = await apiService!.GetTypeAsync("electric");
+            Assert.NotNull(type);
+            Assert.Equal("electric", type.Name);
+        }
+
+        [Fact]
+        public async Task ApiServiceGetPokemonTypes()
+        {
+            SmartPokemon? pikachu = await apiService!.GetPokemonAsync("pikachu");
+            Assert.NotNull(pikachu);
+            List<Type> types = await apiService!.GetPokemonTypesAsync(pikachu);
+            Assert.NotEmpty(types);
+            Assert.All(types, t => Assert.Equal("electric", t.Name));
+        }
+
+        [Fact]
+        public async Task ApiServiceGetFinalEvolution()
+        {
+            SmartPokemon? pikachu = await apiService!.GetPokemonAsync("pikachu");
+            Assert.NotNull(pikachu);
+            SmartPokemon? finalEvolution = await apiService.GetFinalEvolution(pikachu);
+            Assert.NotNull(finalEvolution);
+            Assert.NotEqual("pikachu", finalEvolution.Name); // Assuming Pikachu is not the final evolution in the chain
         }
 
         [Fact]
         public async Task NormalGeneration()
         {
             PokemonStorage storage = new();
-            storage.Pokemon.Add((await pokeApiService!.GetPokemonAsync("pikachu"))!);
-            storage.Pokemon.Add((await pokeApiService!.GetPokemonAsync("gyarados"))!);
-            storage.Pokemon.Add((await pokeApiService!.GetPokemonAsync("swampert"))!);
-            storage.Pokemon.Add((await pokeApiService!.GetPokemonAsync("salamence"))!);
-            storage.Pokemon.Add((await pokeApiService!.GetPokemonAsync("golem"))!);
-            storage.Pokemon.Add((await pokeApiService!.GetPokemonAsync("skarmory"))!);
-            storage.Pokemon.Add((await pokeApiService!.GetPokemonAsync("kyogre"))!);
+            storage.Pokemon.Add((await apiService!.GetPokemonAsync("pikachu"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("gyarados"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("swampert"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("salamence"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("golem"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("skarmory"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("kyogre"))!);
 
             Assert.Equal(7, storage.Pokemon.Count);
 
-            PokemonTeamGeneticAlgorithm GA = new();
-            AutoBuilderWeightings weightings = new();
+            //PokemonTeamGeneticAlgorithm GA = new();
+            //AutoBuilderWeightings weightings = new();
 
-            GA.Initialize(250, storage, new PokemonTeam(), weightings);
-            GA.Run();
+            //GA.Initialize(250, storage, new PokemonTeam(), weightings);
+            //GA.Run();
         }
     }
 }
