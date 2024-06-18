@@ -205,8 +205,8 @@
       "url": "sample-data\/weather.json"
     },
     {
-      "hash": "sha256-vqUFFupRAK\/gGQFRkoE9QXuErYB2D0b6WNgcVlp7qr4=",
-      "url": "pokeAutoBuilder.styles.css"
+      "hash": "sha256-PpzC5sRC60eORk7Knh9CmkiakbW4aW\/tSC1ayH9WX6U=",
+      "url": "PokeAutobuilder.styles.css"
     },
     {
       "hash": "sha256-rcIWTVNnYus6VWf2Z2U1g\/JzlC07Ym02cFjHtI59Xsc=",
@@ -241,7 +241,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-d5mqvfcOiod9WUyL1NP0saSbOtIa8NrYORMwTSPqLmI=",
+      "hash": "sha256-TeoLjtkOpIOZJhLVDO0oBeA95QmnnyqaR9EBNelWIXc=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -259,6 +259,10 @@
     {
       "hash": "sha256-KYp7hAf92VlK+DW7xEgtu30LGuheWt5+OcRHf9mcIp8=",
       "url": "_framework\/Accord.wasm"
+    },
+    {
+      "hash": "sha256-L+IFnIf+sRbZSdi+cJ2m2OAE3a\/pCxU1tbuIqdU2sdg=",
+      "url": "_framework\/AutoBuilder.wasm"
     },
     {
       "hash": "sha256-xHBGFCMjDjvvTwtMvgaMBNmQk9JdVhGmws2\/GMZlxrI=",
@@ -401,8 +405,12 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-H4XMSfH1MWliVa+XzaRrPptZeBANnq8zYO4l\/uHt9f0=",
-      "url": "_framework\/pokeAutoBuilder.wasm"
+      "hash": "sha256-+ZgAAHziJ3MRi5ZnfC01SAI+hTi4kQy9k0JWtxV9LJ4=",
+      "url": "_framework\/PokeAutobuilder.wasm"
+    },
+    {
+      "hash": "sha256-ioJAogXjEDrjMQ8hcTpjLB0uV6eDX41EWC811u5VWKw=",
+      "url": "_framework\/PokemonDataModel.wasm"
     },
     {
       "hash": "sha256-DhCJO84iUkUtpkeePhqno+GBhjWHIaS+lWPq27MHzkE=",
@@ -585,6 +593,10 @@
       "url": "_framework\/Toolbelt.Blazor.PWA.Updater.wasm"
     },
     {
+      "hash": "sha256-bi2x\/uZ5VUXD6b7eeq3VvivubDFpmwRDtJfhr0oYNkY=",
+      "url": "_framework\/Utility.wasm"
+    },
+    {
       "hash": "sha256-G5Ga+uCOkVHxSiBJsnj1MOcAOxo5GUbq6mFEUmBp5nQ=",
       "url": "appsettings.Development.json"
     },
@@ -613,5 +625,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "Og94gIjG"
+  "version": "4J4hek9B"
 };
