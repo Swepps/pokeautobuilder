@@ -177,7 +177,7 @@
     [Parameter]
     public PokemonTeam? LockedMembers { get; set; }
 
-    private PokemonTeamGeneticAlgorithm GA = new PokemonTeamGeneticAlgorithm();
+    private PokemonTeamGeneticAlgorithm GeneticAlgorithm = new PokemonTeamGeneticAlgorithm();
     private PokemonTeam BestTeam = new PokemonTeam();
 
     private bool Generating = false;
@@ -216,7 +216,7 @@
         if (firstRender)
         {
             // set generation ran callback event
-            GA.GenerationRan += HandleGenerationRan;
+            GeneticAlgorithm.GenerationRan += HandleGenerationRan;
 
             StateHasChanged();
         }
@@ -268,15 +268,19 @@
             , baseStatSpDefWeighting
             , baseStatSpeWeighting);
 
-        GA.Initialize(PopulationSize, Profile.PokemonStorage, LockedMembers is null ? new PokemonTeam() : LockedMembers, weightings);
-        GA.Run();
+        GeneticAlgorithm.Initialize(
+            PopulationSize
+            , Profile.PokemonStorage
+            , LockedMembers is null ? new PokemonTeam() : LockedMembers
+            , weightings);
+        GeneticAlgorithm.RunInBackground();
 
         StateHasChanged();
     }
 
     public void OnClickStop()
     {
-        GA.Stop();
+        GeneticAlgorithm.Stop();
 
         Generating = false;
         StateHasChanged();
@@ -295,13 +299,13 @@
     }
 
     // called after each generation is completed
-    void HandleGenerationRan()
+    void HandleGenerationRan(PokemonTeamGeneticAlgorithm geneticAlgorithm)
     {
-        if (GA.BestChromosome is null)
+        if (geneticAlgorithm.BestChromosome is null)
             return;
 
-        PokemonTeam GeneratedTeam = GA.BestChromosome.GetTeam();
-        GABestChromFitness = GA.BestChromosome.Fitness;        
+        PokemonTeam GeneratedTeam = geneticAlgorithm.BestChromosome.GetTeam();
+        GABestChromFitness = geneticAlgorithm.BestChromosome.Fitness;
 
         if (GABestChromFitness > BestOverallFitness)
         {
@@ -325,12 +329,12 @@
 
     void Submit() 
     {
-        GA.Stop();
+        GeneticAlgorithm.Stop();
         MudDialog!.Close(DialogResult.Ok(true)); 
     }
     void Cancel() 
     { 
-        GA.Stop();
+        GeneticAlgorithm.Stop();
         MudDialog!.Cancel(); 
     }
 }

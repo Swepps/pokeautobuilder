@@ -5,7 +5,7 @@ using Utility;
 
 namespace AutoBuilder
 {
-    public struct AutoBuilderWeightings
+    public class AutoBuilderWeightings
     {
         // sum of all weightings. some bools are worth 2
         public static readonly double MaxPossibleScore = 11.0;
@@ -32,6 +32,16 @@ namespace AutoBuilder
 		public double BaseStatSpeWeighting;         // max 0.5
 
         public Dictionary<string, bool> TypeWeightings = [];
+
+        private static Dictionary<string, bool> MakeDefaultTypeWeightings()
+        {
+            Dictionary<string, bool> typeWeightings = [];
+            foreach (string type in Globals.AllTypes)
+            {
+                typeWeightings[type] = true;
+            }
+            return typeWeightings;
+        }
 
 		public AutoBuilderWeightings(
             Dictionary<string, bool> typeWeightings
@@ -73,47 +83,8 @@ namespace AutoBuilder
 
             TypeWeightings = typeWeightings;
         }
-        public AutoBuilderWeightings(
-            bool resistantAll = true
-            , bool stabCoverageAll = true
-            , bool coverageOnOffensive = true
-            , bool resistancesOnDefensive = true
-
-            , double moveSetBalanceWeighting = 1.0
-            , double stabBalanceWeighting = 1.0
-            , double resistanceBalanceWeighting = 1.0
-            , double weaknessBalanceWeighting = 1.0
-
-            , double baseStatTotalWeighting = 1.0
-            , double baseStatHpWeighting = 0.5
-            , double baseStatAttWeighting = 0.5
-            , double baseStatDefWeighting = 0.5
-            , double baseStatSpAttWeighting = 0.5
-            , double baseStatSpDefWeighting = 0.5
-            , double baseStatSpeWeighting = 0.5)
+        public AutoBuilderWeightings() : this(MakeDefaultTypeWeightings())
         {
-            ResistantAll = resistantAll;
-            STABCoverageAll = stabCoverageAll;
-            CoverageOnOffensive = coverageOnOffensive;
-            ResistancesOnDefensive = resistancesOnDefensive;
-
-            MoveSetBalanceWeighting = moveSetBalanceWeighting;
-            StabBalanceWeighting = stabBalanceWeighting;
-            ResistanceBalanceWeighting = resistanceBalanceWeighting;
-            WeaknessBalanceWeighting = weaknessBalanceWeighting;
-
-            BaseStatTotalWeighting = baseStatTotalWeighting;
-            BaseStatHpWeighting = baseStatHpWeighting;
-            BaseStatAttWeighting = baseStatAttWeighting;
-            BaseStatDefWeighting = baseStatDefWeighting;
-            BaseStatSpAttWeighting = baseStatSpAttWeighting;
-            BaseStatSpDefWeighting = baseStatSpDefWeighting;
-            BaseStatSpeWeighting = baseStatSpeWeighting;
-
-            foreach (string type in Globals.AllTypes) 
-            {
-                TypeWeightings[type] = true;
-            }
         }
 
         public double SumWeightings()

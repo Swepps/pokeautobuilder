@@ -66,16 +66,7 @@ namespace PokemonDataModel
 
         public bool ContainsDuplicates()
         {
-            for (int i = 0; i < MaxTeamSize; i++)
-            {
-                for (int j = i + 1; j < MaxTeamSize; j++)
-                {
-                    if (Pokemon[i] == Pokemon[j])
-                        return true;
-                }
-            }
-
-            return false;
+            return Pokemon.Distinct().Count() != Pokemon.Count;
         }
 
         public int CountPokemon()

@@ -7,7 +7,7 @@ namespace AutoBuilder
     {
         GeneticAlgorithm? _ga;
         Timer? _timer;
-        public event Action? GenerationRan;
+        public event Action<PokemonTeamGeneticAlgorithm>? GenerationRan;
         public PokemonTeamFitness? Fitness { get; private set; }
         public PokemonTeamChromosome? BestChromosome => _ga != null ? _ga.BestChromosome as PokemonTeamChromosome : null;
         public int GenerationsNumber => _ga != null ? _ga.GenerationsNumber : 0;
@@ -31,12 +31,13 @@ namespace AutoBuilder
             _ga.MutationProbability = 0.2f;
         }
 
-        public void Run()
+        public void RunInBackground()
         {
             if (!IsRunning)
             {
                 // As is there no way to use a new thread on WebAssembly right now, we wil use a timer
-                // to start a new generation each 1 microsecond.
+                // to start a new generation each 1 microsecond. This allows it to run in the background
+                // so the UI thread can be updated. STINKY!!
                 _timer = new Timer(new TimerCallback(_ =>
                 {
                     if (_ga is null)
@@ -47,8 +48,25 @@ namespace AutoBuilder
                         _ga.Resume();
                     else
                         _ga.Start();
-                    GenerationRan?.Invoke();
-                }), null, 0, 1);
+                    GenerationRan?.Invoke(this);
+                }), null, 0, 1);                
+            }
+        }
+
+        // run it synchronously for a number of iterations
+        public void Run(int numGenerations)
+        {
+            for (int i = 0; i < numGenerations; i++)
+            {
+                if (_ga is null)
+                    return;
+
+                _ga.Termination = new GenerationNumberTermination(_ga.GenerationsNumber + 1);
+                if (_ga.GenerationsNumber > 0)
+                    _ga.Resume();
+                else
+                    _ga.Start();
+                GenerationRan?.Invoke(this);
             }
         }
 

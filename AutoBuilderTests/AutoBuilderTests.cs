@@ -12,7 +12,7 @@ namespace PokeAutobuilderTests
 {
     using Type = PokeApiNet.Type;
 
-    public class AutoBuilderTests : IAsyncLifetime
+    public class PokeApiServiceTests : IAsyncLifetime
     {
         private PokeApiService? apiService;
 
@@ -144,6 +144,26 @@ namespace PokeAutobuilderTests
             Assert.NotNull(finalEvolution);
             Assert.NotEqual("pikachu", finalEvolution.Name); // Assuming Pikachu is not the final evolution in the chain
         }
+    }
+
+
+    public class AutoBuilderTests : IAsyncLifetime
+    {
+        private PokeApiService? apiService;
+
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task InitializeAsync()
+        {
+            apiService = new PokeApiService(new HttpClient());
+            if (DataModelCache.LoadedTypes.Count == 0)
+            {
+                DataModelCache.LoadedTypes = await apiService.GetAllTypesAsync();
+            }
+        }
 
         [Fact]
         public async Task NormalGeneration()
@@ -159,11 +179,22 @@ namespace PokeAutobuilderTests
 
             Assert.Equal(7, storage.Pokemon.Count);
 
-            //PokemonTeamGeneticAlgorithm GA = new();
-            //AutoBuilderWeightings weightings = new();
+            PokemonTeamGeneticAlgorithm GA = new();
+            AutoBuilderWeightings weightings = new();
 
-            //GA.Initialize(250, storage, new PokemonTeam(), weightings);
-            //GA.Run();
+            PokemonTeam BestTeam = new();
+            GA.GenerationRan += (g) => 
+            {
+                if (g.BestChromosome is null)
+                    return;
+
+                BestTeam = g.BestChromosome.GetTeam();
+            };
+            GA.Initialize(250, storage, new PokemonTeam(), weightings);
+            GA.Run(50);
+
+            // check that the final team has 6 unique members
+            Assert.False(BestTeam.ContainsDuplicates());
         }
     }
 }

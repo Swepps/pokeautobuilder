@@ -24,7 +24,7 @@ namespace AutoBuilder
 
             private readonly PokemonStorage _storage;
             private readonly PokemonTeam _lockedMembers;
-            public readonly AutoBuilderWeightings _weightings;
+            public readonly AutoBuilderWeightings? _weightings;
 
             public PokemonTeam Team;
 
@@ -57,7 +57,7 @@ namespace AutoBuilder
 
             public override IChromosome CreateNew()
             {
-                PokemonTeamChromosome chrom = new PokemonTeamChromosome(_storage, _weightings, _lockedMembers);
+                PokemonTeamChromosome chrom = new PokemonTeamChromosome(_storage, _weightings!, _lockedMembers);
                 chrom.Generate();
                 return chrom;
             }
@@ -109,7 +109,7 @@ namespace AutoBuilder
                     if (pokeChrom == null)
                         return 0;
 
-                    return AutoBuilder.CalculateScore(pokeChrom.Team, pokeChrom._weightings);
+                    return AutoBuilder.CalculateScore(pokeChrom.Team, pokeChrom._weightings!);
                 }
             }
         }
