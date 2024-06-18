@@ -165,17 +165,10 @@ namespace AutoBuilder
                 STABCoverageAllScore = 1.0;
                 foreach (string type in Globals.AllTypes)
                 {
-                    if (STABcoverage.TryGetValue(type, out int count) && count < 1)
+                    if (weightings.TypeWeightings[type] // only reduce if the type is being counted
+                        && STABcoverage.TryGetValue(type, out int count) && count < 1)
                     {
-                        // normal type isn't as important
-                        if (type == "normal")
-                        {
-                            STABCoverageAllScore -= 0.05;
-                        }
-                        else
-                        {
-                            STABCoverageAllScore -= 0.1;
-                        }
+                        STABCoverageAllScore -= 1.0 / totalTypes;
                     }
                 }
                 STABCoverageAllScore *= scaleFactor;
@@ -188,17 +181,10 @@ namespace AutoBuilder
                 resistantAllScore = 1.0;
                 foreach (string type in Globals.AllTypes)
                 {
-                    if (resistances.TryGetValue(type, out int count) && count < 1)
+                    if (weightings.TypeWeightings[type] // only reduce if the type is being counted
+                        && resistances.TryGetValue(type, out int count) && count < 1)
                     {
-                        // normal type isn't as important
-                        if (type == "normal")
-                        {
-                            resistantAllScore -= 0.05;
-                        }
-                        else
-                        {
-                            resistantAllScore -= 0.1;
-                        }
+                        resistantAllScore -= 1.0 / totalTypes;
                     }
                 }
                 resistantAllScore *= scaleFactor;
