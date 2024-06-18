@@ -233,8 +233,7 @@ namespace AutoBuilder
                 }
 
                 double resistancesSD = CalculateStandardDeviation(resistances);
-                resistanceScore -= (resistancesSD / (double)((1 + Globals.AllTypes.Count)  - totalTypes));
-                resistanceScore = Math.Clamp(resistanceScore, 0, 1.0);
+                resistanceScore = Math.Pow(resistanceScore, resistancesSD);
                 resistanceScore *= weightings.ResistanceBalanceWeighting * scaleFactor;
             }
 
@@ -254,8 +253,7 @@ namespace AutoBuilder
                 }
 
                 double weaknessesSD = CalculateStandardDeviation(weaknesses);
-                weaknessScore -= (weaknessesSD / (double)((1 + Globals.AllTypes.Count) - totalTypes));
-                weaknessScore = Math.Clamp(weaknessScore, 0, 1.0);
+                weaknessScore = Math.Pow(weaknessScore, weaknessesSD);
                 weaknessScore *= weightings.WeaknessBalanceWeighting * scaleFactor;
             }
 
@@ -274,8 +272,7 @@ namespace AutoBuilder
                 }
 
                 double moveBalanceSD = CalculateStandardDeviation(movecoverage);
-                moveBalanceScore -= (moveBalanceScore / (double)((1 + Globals.AllTypes.Count) - totalTypes));
-                moveBalanceScore = Math.Clamp(moveBalanceScore, 0, 1.0);
+                moveBalanceScore = Math.Pow(moveBalanceScore, moveBalanceSD);
                 moveBalanceScore *= weightings.MoveSetBalanceWeighting * scaleFactor;
             }
 
@@ -294,8 +291,7 @@ namespace AutoBuilder
                 }
 
                 double stabBalanceSD = CalculateStandardDeviation(STABcoverage);
-                stabBalanceScore -= (stabBalanceScore / (double)((1 + Globals.AllTypes.Count) - totalTypes));
-                stabBalanceScore = Math.Clamp(stabBalanceScore, 0, 1.0);
+                stabBalanceScore = Math.Pow(stabBalanceScore, stabBalanceSD);
                 stabBalanceScore *= weightings.StabBalanceWeighting * scaleFactor;
             }
 
