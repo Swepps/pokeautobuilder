@@ -34,7 +34,7 @@ jobs:
       # updating the hash on each modified file and update service-worker-assets.js with the hashes
       # this will allow the app to continue to run as a PWA
       - name: Fix service-worker-assets.js hashes
-        working-directory: release/wwwroot
+        working-directory: PokeAutobuilder/bin/Release/net8.0/wwwroot
         run: |
           jsFile=$(<service-worker-assets.js)
           # remove JavaScript from contents so it can be interpreted as JSON
