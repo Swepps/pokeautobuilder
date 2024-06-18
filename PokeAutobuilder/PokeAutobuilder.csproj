@@ -7,6 +7,14 @@
     <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <RunAOTCompilation>True</RunAOTCompilation>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <RunAOTCompilation>True</RunAOTCompilation>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Remove="Application\**" />
     <Compile Remove="archive\**" />
