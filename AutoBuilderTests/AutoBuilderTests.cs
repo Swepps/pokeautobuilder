@@ -166,7 +166,7 @@ namespace PokeAutobuilderTests
         }
 
         [Fact]
-        public async Task NormalGeneration()
+        public async Task BasicGeneration()
         {
             PokemonStorage storage = new();
             storage.Pokemon.Add((await apiService!.GetPokemonAsync("pikachu"))!);
@@ -176,8 +176,6 @@ namespace PokeAutobuilderTests
             storage.Pokemon.Add((await apiService.GetPokemonAsync("golem"))!);
             storage.Pokemon.Add((await apiService.GetPokemonAsync("skarmory"))!);
             storage.Pokemon.Add((await apiService.GetPokemonAsync("kyogre"))!);
-
-            Assert.Equal(7, storage.Pokemon.Count);
 
             PokemonTeamGeneticAlgorithm GA = new();
             AutoBuilderWeightings weightings = new();
@@ -190,11 +188,64 @@ namespace PokeAutobuilderTests
 
                 BestTeam = g.BestChromosome.GetTeam();
             };
+            GA.Initialize(50, storage, new PokemonTeam(), weightings);
+            GA.Run(10);
+
+            // check that the final team has 6 unique members
+            Assert.False(BestTeam.ContainsDuplicates());
+        }
+
+        [Fact]
+        public async Task NormalGeneration()
+        {
+            PokemonStorage storage = new();
+            // add a selection of "bad" pokemon
+            storage.Pokemon.Add((await apiService!.GetPokemonAsync("rattata"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
+
+            // add 6 "good" pokemon that should theoretically get picked
+            SmartPokemon lapras = (await apiService.GetPokemonAsync("lapras"))!;
+            SmartPokemon gardevoir = (await apiService.GetPokemonAsync("gardevoir"))!;
+            SmartPokemon gengar = (await apiService.GetPokemonAsync("gengar"))!;
+            SmartPokemon talonflame = (await apiService.GetPokemonAsync("talonflame"))!;
+            SmartPokemon ferrothorn = (await apiService.GetPokemonAsync("ferrothorn"))!;
+            SmartPokemon gliscor = (await apiService.GetPokemonAsync("gliscor"))!;
+            storage.Pokemon.Add(lapras);
+            storage.Pokemon.Add(gardevoir);
+            storage.Pokemon.Add(gengar);
+            storage.Pokemon.Add(talonflame);
+            storage.Pokemon.Add(ferrothorn);
+            storage.Pokemon.Add(gliscor);
+
+            PokemonTeamGeneticAlgorithm GA = new();
+            AutoBuilderWeightings weightings = new();
+
+            PokemonTeam BestTeam = new();
+            GA.GenerationRan += (g) =>
+            {
+                if (g.BestChromosome is null)
+                    return;
+
+                BestTeam = g.BestChromosome.GetTeam();
+            };
             GA.Initialize(250, storage, new PokemonTeam(), weightings);
             GA.Run(50);
 
             // check that the final team has 6 unique members
             Assert.False(BestTeam.ContainsDuplicates());
+
+            // check that the algorithm has picked out the 6 good pokemon
+            Assert.Contains(lapras, BestTeam.Pokemon);
+            Assert.Contains(gardevoir, BestTeam.Pokemon);
+            Assert.Contains(gengar, BestTeam.Pokemon);
+            Assert.Contains(talonflame, BestTeam.Pokemon);
+            Assert.Contains(ferrothorn, BestTeam.Pokemon);
+            Assert.Contains(gliscor, BestTeam.Pokemon);
         }
     }
 }
