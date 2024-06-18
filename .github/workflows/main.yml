@@ -25,6 +25,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.*
+
+      # Installs wasm-tools needed for AOT compilation (hopefully)
+      - name: Install wasm-tools
+        run: dotnet workload install wasm-tools
           
       # publishes Blazor project to the release-folder
       - name: Publish .NET Core Project
