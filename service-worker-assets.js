@@ -233,7 +233,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-LOaLnnTjz9Zywb9WQXXndF0DHzWxCuuPuKMR5beBwLg=",
+      "hash": "sha256-fDp4f1tKpqeBVZJ4z9ndEZHBAEZEdQiDjEbL0wCTpV8=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -241,7 +241,7 @@
       "url": "_framework\/dotnet.native.8.0.6.koinleev67.js"
     },
     {
-      "hash": "sha256-pk01IlKMk0I4efu8qKPpykwxgfDE9\/Vv8yVYsqTDIWA=",
+      "hash": "sha256-Yu4rjidzjm9sHGQSDx7EkGkJePDZ1hurotD\/lagvoWk=",
       "url": "_framework\/dotnet.native.wasm"
     },
     {
@@ -261,7 +261,7 @@
       "url": "_framework\/Accord.wasm"
     },
     {
-      "hash": "sha256-KHS8bnRRJtcNRKxWnjUkxT81uoqGrwaUKqX901X1Hhw=",
+      "hash": "sha256-nvwDwPviVvR1NJjUdov7L\/+VCoyKSNRJuzbzThblHNA=",
       "url": "_framework\/AutoBuilder.wasm"
     },
     {
@@ -405,11 +405,11 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-MZy3OrWCBhUC9G6tSygCF1Zuc+uLUlTr0hs3KF9CAGg=",
+      "hash": "sha256-vrS4\/TeEuHgELUy1x1xXVOFapenHbQiOTmOp\/iovUeY=",
       "url": "_framework\/PokeAutobuilder.wasm"
     },
     {
-      "hash": "sha256-8\/eslp15da24EZ7UMK+Eg+k1l5ixSoEZLEA6m9Q1kWw=",
+      "hash": "sha256-M7A3eQCzSi9YIUW+TTdZaR4Jf8UzUF7fI67DmpEQvYc=",
       "url": "_framework\/PokemonDataModel.wasm"
     },
     {
@@ -593,7 +593,7 @@
       "url": "_framework\/Toolbelt.Blazor.PWA.Updater.wasm"
     },
     {
-      "hash": "sha256-DxRg\/kc4ywscUgmOiMlmBbPZC2nNOiXfMC54EHx5FgI=",
+      "hash": "sha256-8+6Q\/I0ViXAOylyP0YQlt51a4dlUi8\/RncsnhjnyC1I=",
       "url": "_framework\/Utility.wasm"
     },
     {
@@ -625,5 +625,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "KniVUxcY"
+  "version": "TP4SIdxY"
 };
