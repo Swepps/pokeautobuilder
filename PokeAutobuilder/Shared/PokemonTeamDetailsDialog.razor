@@ -1,0 +1,48 @@
+﻿@using PokeAutobuilder.Shared.Cards
+@using PokeAutobuilder.Shared.Panes
+@using PokemonDataModel
+
+@if (Team is not null)
+{
+    <MudDialog>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudGrid Justify="Justify.SpaceEvenly">
+                        @foreach (SmartPokemon? p in Team.Pokemon)
+                        {
+                            @if (p is not null)
+                            {
+                                <MudItem xs="4" md="2">
+                                    <MudPaper>
+                                        <PokemonCard Pokemon="p" />
+                                    </MudPaper>
+                                </MudItem>
+                            }
+                        }
+                    </MudGrid>
+                </MudItem>
+                <MudItem xs="12">
+                    <StatsTeamPanel Team="Team" />
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter]
+    public PokemonTeam? Team { get; set; }
+
+    void Submit() => MudDialog!.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog!.Cancel();
+
+
+}

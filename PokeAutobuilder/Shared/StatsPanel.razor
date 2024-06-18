@@ -1,0 +1,25 @@
+﻿@using PokeAutobuilder.Shared.Panes
+@using PokemonDataModel
+
+@using Type = PokeApiNet.Type
+
+@if (Pokemon is not null)
+{
+	<MudGrid Class="pa-4" Justify="Justify.Center">
+		<MudItem xs="12" sm="8" md="6" lg="4">
+			<PokemonStatsChartPane Pokemon="@Pokemon" />
+		</MudItem>
+		<MudItem xs="12" sm="6" md="3" lg="3">
+			<PokemonDefensePane Pokemon="@Pokemon" />
+		</MudItem>
+		<MudItem xs="12" sm="6" md="3" lg="3">
+			<PokemonCoveragePane Pokemon="@Pokemon" />
+		</MudItem>
+	</MudGrid>
+}
+
+@code {
+	[Parameter]
+	public SmartPokemon? Pokemon { get; set; }
+
+}

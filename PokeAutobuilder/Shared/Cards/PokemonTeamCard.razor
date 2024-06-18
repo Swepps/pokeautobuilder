@@ -1,0 +1,73 @@
+﻿@inject SessionService SessionService
+@inject ProfileService ProfileService
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+
+@using PokeAutobuilder.Source.Services
+@using PokemonDataModel
+@using Utility
+
+<MudStack Spacing="1" AlignItems="AlignItems.Start" Class="ma-1">	
+	<MudStack Row="true" AlignItems="AlignItems.End" Class="mud-width-full">
+		<MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" >
+			<MudTooltip Text="Details">
+				<MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
+			</MudTooltip>
+			<MudTooltip Text="Load Into Editor">
+				<MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Upload" OnClick="OnClickLoadInEditor"></MudIconButton>
+			</MudTooltip>
+			<MudTooltip Text="Delete Team">
+				<MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="OnClickDelete"></MudIconButton>
+			</MudTooltip>
+		</MudButtonGroup>
+		<MudText Typo="Typo.body1" Class="pa-1" Style="text-overflow: ellipsis; overflow: hidden; overflow-wrap: break-word; white-space: nowrap;">@Team!.Name</MudText>
+	</MudStack>
+	<MudDivider DividerType="DividerType.FullWidth" />
+	<div class="justify-center gap-1 align-content-center mud-height-full mud-width-full">
+		@foreach (SmartPokemon? p in Team!.Pokemon)
+		{
+			@if (p is not null)
+			{
+				<PokemonMiniCard Pokemon="p" />
+			}
+		}
+	</div>
+</MudStack>
+
+@code {
+	[Parameter]
+	public PokemonTeam? Team { get; set; }
+
+	[Parameter] // used for telling the parent of the card that it has updated
+	public EventCallback OnUpdated { get; set; }
+
+	// ensure Team has been set
+	public override Task SetParametersAsync(ParameterView parameters)
+	{
+		parameters.SetParameterProperties(this);
+		if (Team == null)
+			throw new InvalidOperationException($"{nameof(PokemonTeamCard)} requires a {nameof(PokemonTeam)} parameter.");
+
+		return base.SetParametersAsync(ParameterView.Empty);
+	}
+
+	public void OnClickDetails()
+	{
+		var parameters = new DialogParameters();
+		parameters.Add("Team", Team);
+
+		DialogService.Show<PokemonTeamDetailsDialog>(StringUtils.FirstCharToUpper(Team!.Name), parameters);
+	}
+
+	public async void OnClickLoadInEditor()
+	{
+		await SessionService.SetTeamAsync(Team!);
+		NavigationManager.NavigateTo(NavigationManager.BaseUri);
+	}
+
+	public async void OnClickDelete()
+	{
+		await ProfileService.RemoveTeamFromStorageAsync(Team!);
+		await OnUpdated.InvokeAsync();
+	}
+}

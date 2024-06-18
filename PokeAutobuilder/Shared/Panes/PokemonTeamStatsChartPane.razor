@@ -1,0 +1,54 @@
+﻿@using PokemonDataModel
+@using Utility
+
+<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
+	<MudText Typo="Typo.h6">Team Base Stats</MudText>
+	<MudText Typo="Typo.body1">Total Base Stat Average: @AverageTotalBaseStats</MudText>
+	<MudChart ChartType="ChartType.Bar" ChartSeries="@TeamStats" @bind-SelectedIndex="Index" XAxisLabels="@Labels" Width="100%" Style="width: 95%;"></MudChart>
+</MudPaper>
+
+@code {
+	[Parameter]
+	public PokemonTeam? Team { get; set; }
+
+	// team base stats stuff
+	private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+	public List<ChartSeries> TeamStats = new List<ChartSeries>();
+	public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed" };
+
+	private double TotalBaseStats = 0;
+	private int AverageTotalBaseStats = 0;
+
+	// when component is initialised
+	protected override void OnInitialized()
+	{
+		OnParametersSet();
+	}
+
+
+	protected override void OnParametersSet()
+	{
+		if (Team is null)
+			return;
+
+		TeamStats = new List<ChartSeries>();
+		TotalBaseStats = 0;
+		AverageTotalBaseStats = 0;
+
+		foreach (SmartPokemon? p in Team.Pokemon)
+		{
+			if (p is not null)
+			{
+				// need to add an empty value to get the chart to draw correctly >:(
+				List<double> stats = new List<double>(p.GetBaseStatsArray());
+				stats.Add(0);
+				TeamStats.Add(new ChartSeries() { Name = StringUtils.FirstCharToUpper(p.Name), Data = stats.ToArray() });
+
+				// for finding average total base stats
+				TotalBaseStats += p.GetBaseStatsTotal();
+			}
+		}
+
+		AverageTotalBaseStats = (int)(TotalBaseStats / Team.CountPokemon());
+	}
+}

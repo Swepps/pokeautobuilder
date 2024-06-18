@@ -1,0 +1,80 @@
+﻿@inject ProfileService Profile
+@inject IDialogService DialogService
+
+@using PokeAutobuilder.Source.Services
+@using PokemonDataModel
+@using Utility
+
+@if (DeleteFromStorageMode)
+{
+	<MudTooltip Text="@("Remove " + Pokemon!.Name)">
+		<MudBadge Icon="@Icons.Material.Filled.Clear" Overlap="true" Color="Color.Surface">
+			<MudPaper Class="ma-2 pa-1 cursor-pointer" Style="background: var(--mud-palette-surface)" @onclick="OnClickCard">
+				<MudImage Src="@Pokemon!.Sprites.FrontDefault" Style="width: 50px;" />
+			</MudPaper>
+		</MudBadge>
+	</MudTooltip>
+}
+else
+{
+	<MudTooltip Text="@Pokemon!.Name">
+		<MudPaper Class="ma-2 pa-1 cursor-pointer" Style="background: var(--mud-palette-surface)" @onclick="OnClickCard">
+			<MudImage Src="@Pokemon!.Sprites.FrontDefault" Style="width: 50px;" />
+		</MudPaper>
+	</MudTooltip>
+}
+
+
+@code {
+	[Parameter]
+	public SmartPokemon? Pokemon { get; set; }
+
+	[Parameter] // used for telling the parent of the card that it has updated
+	public EventCallback OnUpdated { get; set; }
+
+	// changes the onclick to delete this pokemon from the storage
+	[Parameter]
+	public bool DeleteFromStorageMode { get; set; } = false;
+
+	public override Task SetParametersAsync(ParameterView parameters)
+	{
+		parameters.SetParameterProperties(this);
+		if (Pokemon == null)
+			throw new InvalidOperationException($"{nameof(PokemonMiniCard)} requires a {nameof(SmartPokemon)} parameter.");
+
+		return base.SetParametersAsync(ParameterView.Empty);
+	}
+
+	// opens a dialog with Pokemon details
+	public async Task OnClickCard()
+	{
+		if (DeleteFromStorageMode)
+		{
+			await Profile.RemovePokemonFromStorageAsync(Pokemon!);
+			await OnUpdated.InvokeAsync();
+		}
+		else
+		{
+			var parameters = new DialogParameters();
+			parameters.Add("Pokemon", Pokemon);
+
+			var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
+			var result = await dialog.Result;
+
+			if (!result.Canceled && result.Data is SmartPokemon)
+			{
+				// replace old pokemon with updated version
+				SmartPokemon? pokemon = result.Data as SmartPokemon;
+				if (pokemon is not null)
+				{
+					if (Profile.PokemonStorage.Pokemon.Remove(pokemon))
+						await Profile.AddPokemonToStorageAsync(pokemon);
+
+					Pokemon = pokemon;
+
+					await OnUpdated.InvokeAsync();
+				}
+			}
+		}
+	}
+}

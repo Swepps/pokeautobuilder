@@ -1,0 +1,49 @@
+﻿@using PokemonDataModel
+@using Utility
+
+@if (Pokemon is not null)
+{
+	<MudPaper Class="d-flex flex-column align-center justify-center pa-2">
+		<MudStack Spacing="5" AlignItems="AlignItems.Center" Style="width: 100%;" Class="pa-2">
+			<MudText Typo="Typo.h6" Class="mb-2">Coverage</MudText>
+			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
+				<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">STAB</MudText>
+				<MudGrid>
+					@foreach (string t in Globals.AllTypes)
+					{
+						@if (Pokemon.IsTypeCoveredBySTAB(t))
+						{
+							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" Class="ma-1" />
+						}
+					}
+				</MudGrid>
+			</MudStack>
+			<MudDivider />
+			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
+				<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">Moves</MudText>
+				<MudGrid>
+					@foreach (string t in Globals.AllTypes)
+					{
+						@if (Pokemon.IsTypeCoveredByMove(t))
+						{
+							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" Class="ma-1" />
+						}
+					}
+				</MudGrid>
+			</MudStack>
+		</MudStack>
+	</MudPaper>
+}
+
+@code {
+	[Parameter]
+	public SmartPokemon? Pokemon { get; set; }
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (Pokemon is not null)
+			await Pokemon.SelectedMoves.UpdateAttackMultipliers();
+
+		base.OnParametersSet();
+	}
+}

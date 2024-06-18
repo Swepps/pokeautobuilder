@@ -1,0 +1,166 @@
+﻿@inherits LayoutComponentBase
+
+@using PokeApiNet
+@using PokeAutobuilder.Source.Services;
+@using PokemonDataModel
+
+@inject ProfileService ProfileService
+@inject SessionService Session
+@inject PokeApiService PokeApiService
+
+
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="AutoBuilderTheme" />
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.ExtraExtraLarge" />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" />
+        <MudSpacer />
+        <MudStack Row="true" AlignItems="AlignItems.Center">
+            <MudImage Src="icon-single.svg" Width="40" Height="40" />
+            <MudStack AlignItems="AlignItems.Center" Spacing="0">
+                <MudText Typo="Typo.h6">Poké Autobuilder</MudText>
+            </MudStack>
+        </MudStack>
+        <MudSpacer />
+        <MudTooltip Text="GitHub Repository">
+            <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Href="https://github.com/Swepps/pokemonautoteambuilder" Target="_blank" />
+        </MudTooltip>
+    </MudAppBar>
+    <MudDrawer @bind-Open="@_open" Elevation="1" ClipMode="DrawerClipMode.Always">
+        <NavMenu />
+        <MudDivider />
+        <MudSwitch @bind-Checked="@_IsDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Dark Mode" />
+    </MudDrawer>
+    <MudMainContent Class="pt-16 px-2 mud-height-full">
+        <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
+            @if (_state == Init.Done)
+            {            
+                @Body
+            }
+            else if (_state == Init.Initialising)
+            {
+                <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" Size="Size.Large" />
+                <MudText Typo="Typo.body1">Fetching data from PokeApi...</MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.body1" Color="Color.Error">Error initialising app. Please report on GitHub.</MudText>
+            }
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code{
+    public MudThemeProvider? _themeProvider;
+
+    enum Init { Initialising, Done, Error }
+
+    Init _state = Init.Initialising;
+
+    // theme stuff
+    private bool _isDarkMode;
+    private bool _IsDarkMode
+    {
+        get { return _isDarkMode; }
+        set
+        {
+            _isDarkMode = value;
+            OnChangeDarkMode();
+        }
+    }
+    MudTheme AutoBuilderTheme = new MudTheme()
+        {
+            Palette = new PaletteLight()
+            {
+                Primary = Colors.Red.Accent3,
+                Secondary = Colors.Blue.Accent3,
+                Dark = Colors.Grey.Lighten1,
+
+                Background = Colors.Grey.Lighten3,
+                BackgroundGrey = Colors.Grey.Lighten2,
+                DrawerBackground = "#d3d3d3",
+                AppbarBackground = Colors.Grey.Lighten1,
+                Surface = "#e3e3e3",
+
+                DrawerText = Colors.Grey.Darken3,
+                TextPrimary = Colors.Grey.Darken4,
+                AppbarText = Colors.Grey.Darken4,
+            },
+            PaletteDark = new PaletteDark()
+            {
+                Primary = Colors.Red.Accent2,
+                Secondary = Colors.Blue.Accent2,
+                Dark = Colors.Grey.Darken2,
+
+                Background = Colors.Grey.Darken4,
+                BackgroundGrey = Colors.Grey.Darken4,
+                DrawerBackground = "#383838",
+                AppbarBackground = Colors.Grey.Darken3,
+                Surface = "#252525",
+
+                DrawerText = Colors.Grey.Lighten4,
+                TextPrimary = Colors.Grey.Lighten4,
+                AppbarText = Colors.Grey.Lighten4,
+            },
+
+            LayoutProperties = new LayoutProperties()
+            {
+                DrawerWidthLeft = "260px",
+            }
+        };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // first check the version to clear cache if there has been a format update
+            if (await ProfileService.CheckVersion())
+            {
+                await Session.ClearSessionDataAsync();
+            }
+
+            // initialising global variables used across the app
+            // load preferences first before the slow ones
+            Preferences prefs = await ProfileService.GetPreferencesAsync();
+            _isDarkMode = prefs.DarkMode;
+
+            StateHasChanged();
+
+            // session contains information about pokemon types that profile will use
+            // to load pokemon. Therefore session must be done first!
+            await Session.LoadSessionStorage();
+            await ProfileService.LoadProfileStorage();        
+
+            if (Session.NationalDex.Count > 0
+                &&
+                Session.AllTypes.Count > 0)
+            {
+                _state = Init.Done;
+            }
+            else
+            {
+                // uh oh
+                _state = Init.Error;
+
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    void OnChangeDarkMode()
+    {
+        ProfileService?.SetDarkModeAsync(_IsDarkMode);
+    }
+
+    // nav menu
+    bool _open = false;
+
+    void ToggleDrawer()
+    {
+        _open = !_open;
+    }
+}

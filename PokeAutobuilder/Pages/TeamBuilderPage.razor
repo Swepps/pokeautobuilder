@@ -1,0 +1,151 @@
+﻿@using PokeApiNet
+@using PokeAutobuilder.Source.Services;
+@using PokeAutobuilder.Shared;
+@using PokemonDataModel
+
+@inject SessionService Session
+@inject ProfileService Profile
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+@page "/"
+
+<PageTitle>Team Builder</PageTitle>
+
+<MudStack Spacing="5" Class="mt-4 mb-4" AlignItems="AlignItems.Center">
+    <MudGrid Justify="Justify.FlexEnd">
+        <MudItem xs="12" sm="6" Class="d-flex align-end justify-start mud-width-full">
+            <MudRadioGroup @bind-SelectedOption="@Session.SearchLocation">
+                <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
+                <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
+            </MudRadioGroup>
+        </MudItem>
+        <MudItem xs="12" sm="6" Class="d-flex align-end justify-center mud-width-full">
+            <MudTextField @bind-Value="_teamName" Label="Team Name" Variant="Variant.Text"></MudTextField>
+            <MudButton Disabled="@(Session.Team.IsEmpty)" OnClick="OnClickAddTeamToStorage" Color="Color.Info" StartIcon="@Icons.Material.Filled.Save" Size="Size.Medium" Variant="Variant.Filled" Class="ml-4">Save</MudButton>
+        </MudItem>
+    </MudGrid>
+    <MudGrid Justify="Justify.SpaceEvenly">
+        @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+        {
+            int index = i;
+            <MudItem xs="6" sm="4" lg="2">
+
+                <PokemonSearchBox @ref="tempCard" PokemonTeamIndex="index" />
+            </MudItem>
+        }
+    </MudGrid>
+    @if (Profile.PokemonStorage.Pokemon.Count < 7 || GetLockedMembers().CountPokemon() > 4)
+    {
+        <MudTooltip Text="@GetAutoBuilderTooltipMessage()">
+            <MudButton Disabled="true" OnClick="OnClickAutoBuilder" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Variant="Variant.Filled" Style="max-width: 500px;">Auto Builder</MudButton>
+        </MudTooltip>
+    }
+    else
+    {
+        <MudButton OnClick="OnClickAutoBuilder" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Variant="Variant.Filled" Style="max-width: 500px;">Auto Builder</MudButton>
+    }
+    <MudDivider DividerType="DividerType.FullWidth" />
+    <MudText Typo="Typo.h6">Pokémon Team Stats</MudText>
+    <div style="width: 100%; text-align: center;">
+        @if (!Session.Team.IsEmpty)
+        {
+            <StatsTeamPanel Team="Session.Team"/>
+        }
+        else
+        {
+            <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see stats.</MudText>
+        }
+    </div>
+</MudStack>
+<PageFooter />
+
+@code {
+    private string _teamName { get; set; } = "";
+
+    List<PokemonSearchBox?> cards = new List<PokemonSearchBox?>();
+    PokemonSearchBox? tempCard
+    {
+        set { cards.Add(value); }
+    }
+
+    public enum SearchLocation
+    {
+        NationalPokedex = 0,
+        PokemonStorage = 1
+    };
+
+
+    public async void OnClickAddTeamToStorage()
+    {
+        Session.Team.Name = _teamName;
+        await Profile.AddTeamToStorageAsync(Session.Team);
+
+        Snackbar.Add("Added team '" + Session.Team.Name + "' to Team Storage", Severity.Success);
+    }
+
+    public PokemonTeam GetLockedMembers()
+    {
+        // build a team containing the locked members
+        PokemonTeam lockedMembers = new PokemonTeam();
+
+        if (cards.Count == 0)
+            return lockedMembers;
+
+        for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+        {
+            if (cards[i]!._Locked)
+                lockedMembers.Pokemon[i] = cards[i]!._Pokemon;
+        }
+        return lockedMembers;
+    }
+
+    public string GetAutoBuilderTooltipMessage()
+    {
+        if (Profile.PokemonStorage.Pokemon.Count < 7)
+            return "Please fill Pokémon storage with at least 7 Pokémon before using the Auto Builder";
+
+        if (GetLockedMembers().CountPokemon() > 4)
+            return "Please unlock some more Pokémon before using the Auto Builder";
+
+        return "";
+    }
+
+    public async Task OnClickAutoBuilder()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("LockedMembers", GetLockedMembers());
+
+
+        var dialog = await DialogService.ShowAsync<AutoBuilderDialog>("Automatic Team Builder", parameters);
+        var result = await dialog.Result;
+
+        _teamName = Session.Team.Name;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        // register interest in session changing to update this page
+        Session.OnTeamChange += StateHasChanged;
+
+        // if the storage has updated any pokemon the changes need to be reflected here
+        if (Session.SearchLocation == SearchLocation.PokemonStorage)
+        {
+            // arrgh this is a bit shit but not sure how else to approach it at the moment
+            // ... we're just going to find a pokemon in storage with a matching name
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                SmartPokemon? pokemon = Session.Team.Pokemon[i];
+                if (pokemon is not null)
+                {
+                    SmartPokemon? foundPokemon = Profile.PokemonStorage.Pokemon.Find(p => p.Name == pokemon.Name);
+                    if (foundPokemon is not null)
+                        Session.Team.Pokemon[i] = foundPokemon;
+                }
+            }
+        }
+
+        _teamName = Session.Team.Name;
+    }
+}

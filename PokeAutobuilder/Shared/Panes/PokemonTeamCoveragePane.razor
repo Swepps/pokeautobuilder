@@ -1,0 +1,122 @@
+﻿@using PokemonDataModel
+@using Utility
+
+<MudPaper Class="mud-width-full pa-2 overflow-x-auto">
+	<MudText Typo="Typo.h6" Align="Align.Center">Coverage</MudText>
+	<MudSimpleTable Style="width: 100%;" Dense="true" Elevation="0">
+		<thead>
+			<tr>
+				@foreach (string h in typeHeaders)
+				{
+					<th class="table-header mx-0 mt-2 px-0 py-2" style="text-align: center;">
+						@if (!string.IsNullOrEmpty(h))
+						{
+							<img src="@StringUtils.TypeImgFromName(h)" Alt="@h" title="@h" style="width: 90%;" />
+						}
+					</th>
+				}
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (string[] row in coverageRows)
+			{
+				<tr>
+					@foreach (string val in row)
+					{
+						<td class="table-row px-1 py-1" style="width: 5%; min-width: 20px;">
+							@if (int.TryParse(val, out int result))
+							{
+								@if (result == 0)
+								{
+									<div class="d-flex flex-column align-center">
+										<MudIcon Icon="@Icons.Material.Filled.Clear" Color="Color.Error" Style="width: 100%;"/>
+									</div>
+								}
+								else
+								{
+									<div class="d-flex flex-column flex-grow-1 align-end gap-1">
+										@for (int i = 0; i < result; i++)
+										{
+											<MudPaper Class="my-0 " Style="@(GetRowColour(row[0]))" Width="100%" Height="4px" />
+										}
+									</div>
+								}
+							}
+							else
+							{
+								@val
+							}
+						</td>
+					}
+				</tr>
+			}
+		</tbody>
+	</MudSimpleTable>
+</MudPaper>
+
+@code {
+	[Parameter]
+	public PokemonTeam? Team { get; set; }
+
+	// team defense/coverage stuff
+	List<string> typeHeaders = new List<string>() { "" };
+	List<string[]> coverageRows = new List<string[]>();
+
+	private string GetRowColour(string rowName)
+	{
+		switch (rowName)
+		{
+			case "STAB Moves":
+				return "background: var(--mud-palette-success);";
+
+			case "Weak":
+				return "background: var(--mud-palette-error);";
+
+			default:
+				return "background: var(--mud-palette-secondary);";
+		}
+	}
+
+	protected override void OnInitialized()
+	{
+		foreach (string t in Globals.AllTypes)
+		{
+			typeHeaders.Add(t);
+		}
+	}
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (Team is null)
+			return;
+
+		foreach (SmartPokemon? p in Team.Pokemon)
+		{
+			if (p is not null)
+				await p.SelectedMoves.UpdateAttackMultipliers();
+		}
+
+		// coverage table data
+		coverageRows.Clear();
+
+		string[] stabMoveCoverage = new string[Globals.AllTypes.Count + 1];
+		stabMoveCoverage[0] = "STAB";
+		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
+		{
+			stabMoveCoverage[i] = Team.CountSTABCoverage(typeHeaders[i]).ToString();
+		}
+
+		coverageRows.Add(stabMoveCoverage);
+
+		string[] moveCoverage = new string[Globals.AllTypes.Count + 1];
+		moveCoverage[0] = "Moves";
+		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
+		{
+			moveCoverage[i] = Team.CountMoveCoverage(typeHeaders[i]).ToString();
+		}
+
+		coverageRows.Add(moveCoverage);
+
+		base.OnParametersSet();
+	}
+}

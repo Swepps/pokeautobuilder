@@ -1,0 +1,34 @@
+﻿@using PokeAutobuilder.Shared.Cards
+@using PokeAutobuilder.Source.Services;
+@using PokemonDataModel
+
+@inject ProfileService Profile
+
+@implements IDisposable
+
+<MudPaper Class="d-flex mud-width-full mud-height-full pa-2" Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
+	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
+		@foreach (SmartPokemon? p in Profile.PokemonStorage.Pokemon)
+		{
+			<PokemonMiniCard Pokemon="p" DeleteFromStorageMode="@DeleteMode" />
+		}
+	</div>
+</MudPaper>
+
+@code {
+	[Parameter] // used for telling the parent of the card that it has updated
+	public EventCallback OnUpdated { get; set; }
+
+	[Parameter]
+	public bool DeleteMode { get; set; } = false;
+
+	protected override void OnInitialized()
+	{
+		Profile.OnStorageChange += StateHasChanged;
+	}
+
+	public void Dispose()
+	{
+		Profile.OnStorageChange -= StateHasChanged;
+	}
+}
