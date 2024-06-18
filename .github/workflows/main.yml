@@ -9,7 +9,8 @@ on:
     branches: [ dev ]
 
 env:
-  WWWROOT_DIR: PokeAutobuilder/bin/Release/net8.0/wwwroot
+  WWWROOT_DIR: release/wwwroot
+# WWWROOT_DIR: PokeAutobuilder/bin/Release/net8.0/wwwroot
     
 jobs:
   deploy-to-github-pages:
@@ -27,7 +28,7 @@ jobs:
           
       # publishes Blazor project to the release-folder
       - name: Publish .NET Core Project
-        run: dotnet publish PokeAutobuilder.sln -c Release --property:PublishDir=release --nologo
+        run: dotnet publish PokeAutobuilder/PokeAutobuilder.csproj -c Release -o release --nologo
         
       # No longer needed as we're hosting this repositry from the domain pokeautobuilder.com
       # changes the base-tag in index.html from '/' to 'pokemonautoteambuilder' to match GitHub Pages repository subdirectory
@@ -80,5 +81,5 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages
-          FOLDER: "$WWWROOT_DIR"
+          FOLDER: ${{ env.WWWROOT_DIR }}
     
