@@ -37,7 +37,7 @@ jobs:
       # updating the hash on each modified file and update service-worker-assets.js with the hashes
       # this will allow the app to continue to run as a PWA
       - name: Fix service-worker-assets.js hashes
-        working-directory: "$WWWROOT_DIR"
+        working-directory: ${{ env.WWWROOT_DIR }}
         run: |
           jsFile=$(<service-worker-assets.js)
           # remove JavaScript from contents so it can be interpreted as JSON
@@ -69,11 +69,11 @@ jobs:
         
       # copy index.html to 404.html to serve the same file when a file is not found
       - name: copy index.html to 404.html
-        run: cp "$WWWROOT_DIR"/index.html "$WWWROOT_DIR"/404.html
+        run: cp ${{ env.WWWROOT_DIR }}/index.html ${{ env.WWWROOT_DIR }}/404.html
         
       # add .nojekyll file to tell GitHub pages to not treat this as a Jekyll project. (Allow files and folders starting with an underscore)
       - name: Add .nojekyll file
-        run: touch "$WWWROOT_DIR"/.nojekyll
+        run: touch ${{ env.WWWROOT_DIR }}/.nojekyll
         
       - name: Commit wwwroot to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@3.7.1
