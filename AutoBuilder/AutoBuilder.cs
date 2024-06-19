@@ -531,22 +531,5 @@ namespace AutoBuilder
                 yield return result;
             }
         }
-
-
-
-        public static PokemonTeam BuildTeamGenetic(PokemonStorage availablePokemon, AutoBuilderWeightings weightings, PokemonTeam? lockedMembers)
-        {
-            if (lockedMembers == null)
-            {
-                lockedMembers = new PokemonTeam();
-            }
-            else if (lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize || availablePokemon.Pokemon.Count < PokemonTeam.MaxTeamSize)
-            {
-                // they're all locked!
-                return lockedMembers;
-            }
-
-            return AccordGeneticAlgorithm.SolvePokemonTeam(availablePokemon, weightings, lockedMembers);
-        }
     }   
 }
