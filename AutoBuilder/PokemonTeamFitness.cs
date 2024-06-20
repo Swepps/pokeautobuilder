@@ -14,10 +14,14 @@ namespace AutoBuilder
 
         public double Evaluate(IChromosome chromosome)
         {
-            PokemonTeam team = (chromosome as PokemonTeamChromosome)!.GetTeam();
+            if (chromosome is not PokemonTeamChromosome pokemonTeamChromosome)
+                return 0.0;
 
-            double fitness = AutoBuilder.CalculateScore(team, _weightings);
+            PokemonTeam team = pokemonTeamChromosome.GetTeam();
 
+            pokemonTeamChromosome.WeightingScores = AutoBuilder.CalculateScore(team, _weightings);
+
+            double fitness = pokemonTeamChromosome.WeightingScores.SumWeightings();
             // duplicates in a team don't qualify as a valid team
             if (fitness < 0 || team.ContainsDuplicates())
                 fitness = 0;
