@@ -233,7 +233,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-fDp4f1tKpqeBVZJ4z9ndEZHBAEZEdQiDjEbL0wCTpV8=",
+      "hash": "sha256-YijTB8ermzfiqg9OTAtfk\/sZ4R2kQ0Kan9KOHUfjeeg=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -241,7 +241,7 @@
       "url": "_framework\/dotnet.native.8.0.6.koinleev67.js"
     },
     {
-      "hash": "sha256-Yu4rjidzjm9sHGQSDx7EkGkJePDZ1hurotD\/lagvoWk=",
+      "hash": "sha256-3e60wtRz1A5Mi52lo6aXvt0OTznE8pfrrbQMaWLvSV4=",
       "url": "_framework\/dotnet.native.wasm"
     },
     {
@@ -261,7 +261,7 @@
       "url": "_framework\/Accord.wasm"
     },
     {
-      "hash": "sha256-nvwDwPviVvR1NJjUdov7L\/+VCoyKSNRJuzbzThblHNA=",
+      "hash": "sha256-Fk7dtxlQQ9d3a9tDkgurhxYSGd0N031PQSocI+fxWaU=",
       "url": "_framework\/AutoBuilder.wasm"
     },
     {
@@ -393,7 +393,7 @@
       "url": "_framework\/Microsoft.JSInterop.WebAssembly.wasm"
     },
     {
-      "hash": "sha256-MkYxdf9JqGm\/0KKa94jmTWlcb2APJetAFLnlta2tmzA=",
+      "hash": "sha256-RC4JGsCeyRU6qfOpiPzTOB289NB7mXyUI0o1zdS1DeY=",
       "url": "_framework\/MudBlazor.wasm"
     },
     {
@@ -405,11 +405,11 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-vrS4\/TeEuHgELUy1x1xXVOFapenHbQiOTmOp\/iovUeY=",
+      "hash": "sha256-HB1dB7K1BFMuVLfa7kC0c021\/liIuWp\/1mQLgXo4EuI=",
       "url": "_framework\/PokeAutobuilder.wasm"
     },
     {
-      "hash": "sha256-M7A3eQCzSi9YIUW+TTdZaR4Jf8UzUF7fI67DmpEQvYc=",
+      "hash": "sha256-O5eNKdZTyIpeddWjAknwKkda0YIfCDgA5TQVK3yovhA=",
       "url": "_framework\/PokemonDataModel.wasm"
     },
     {
@@ -593,7 +593,7 @@
       "url": "_framework\/Toolbelt.Blazor.PWA.Updater.wasm"
     },
     {
-      "hash": "sha256-8+6Q\/I0ViXAOylyP0YQlt51a4dlUi8\/RncsnhjnyC1I=",
+      "hash": "sha256-ShQuY6YHO4AYB62i\/UDaew0GQHES3kHP\/aW16c2GjJo=",
       "url": "_framework\/Utility.wasm"
     },
     {
@@ -625,5 +625,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "TP4SIdxY"
+  "version": "Mkiy4Pc0"
 };
