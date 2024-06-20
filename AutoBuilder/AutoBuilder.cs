@@ -387,8 +387,11 @@ namespace AutoBuilder
                         if (p.IsTypeCoveredByMove(type)) countCoverage++;
                     }
                 }
-                double totalOffStats = p.GetBaseStat("attack") + p.GetBaseStat("special-attack") + p.GetBaseStat("speed");
-                double totalDefStats = p.GetBaseStat("hp") + p.GetBaseStat("defense") + p.GetBaseStat("special-defense");
+                // only really care about the highest offensive stat
+                double highestOffStat = Math.Max(p.GetBaseStat("attack"), p.GetBaseStat("special-attack"));
+                double totalOffStats = highestOffStat + p.GetBaseStat("speed");
+                // scale def stats to roughly same size as offense
+                double totalDefStats = 0.66 * (p.GetBaseStat("hp") + p.GetBaseStat("defense") + p.GetBaseStat("special-defense"));
                 double offensiveFactor = totalOffStats / totalDefStats;
 
                 coverageScore += ((offensiveFactor * countCoverage) + (10.0 / offensiveFactor)) / 150.0;
@@ -403,6 +406,7 @@ namespace AutoBuilder
         private static double CalculateResistancesScore(PokemonTeam team, AutoBuilderWeightings weightings)
         {
             double resistancesScore = 0;
+            double totalTypes = weightings.Types.Where((t) => t.Value).Count();
 
             foreach (SmartPokemon? p in team.Pokemon)
             {
@@ -414,9 +418,10 @@ namespace AutoBuilder
                 {
                     if (weightings.Types[type])
                     {
-                        countResistances += 2.0 - p.GetResistance(type);
+                        countResistances += 1.0 / (p.GetResistance(type) == 0 ? 0.25 : p.GetResistance(type));
                     }
                 }
+                countResistances -= totalTypes; // normal resistance is counted as 1, so minus the number of types to get a real value
                 double totalOffStats = p.GetBaseStat("attack") + p.GetBaseStat("special-attack") + p.GetBaseStat("speed");
                 double totalDefStats = p.GetBaseStat("hp") + p.GetBaseStat("defense") + p.GetBaseStat("special-defense");
                 double defensiveFactor = totalDefStats / totalOffStats;
