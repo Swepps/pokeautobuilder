@@ -7,6 +7,7 @@ using System.Net;
 using Xunit;
 using Accord.Math;
 using Utility;
+using Xunit.Abstractions;
 
 namespace PokeAutobuilderTests
 {
@@ -150,6 +151,12 @@ namespace PokeAutobuilderTests
     public class AutoBuilderTests : IAsyncLifetime
     {
         private PokeApiService? apiService;
+        private readonly ITestOutputHelper output;
+
+        public AutoBuilderTests(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
 
         public Task DisposeAsync()
         {
@@ -201,12 +208,12 @@ namespace PokeAutobuilderTests
             PokemonStorage storage = new();
             // add a selection of "bad" pokemon
             storage.Pokemon.Add((await apiService!.GetPokemonAsync("rattata"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("wurmple"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("pidgey"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("zigzagoon"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("magikarp"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("whismur"))!);
+            storage.Pokemon.Add((await apiService.GetPokemonAsync("spearow"))!);
 
             // add 6 "good" pokemon that should theoretically get picked
             SmartPokemon lapras = (await apiService.GetPokemonAsync("lapras"))!;
@@ -225,27 +232,40 @@ namespace PokeAutobuilderTests
             PokemonTeamGeneticAlgorithm GA = new();
             AutoBuilderWeightings weightings = new();
 
-            PokemonTeam BestTeam = new();
+            PokemonTeam bestTeam = new();
+            double? bestScore = 0;
             GA.GenerationRan += (g) =>
             {
                 if (g.BestChromosome is null)
                     return;
 
-                BestTeam = g.BestChromosome.GetTeam();
+                if (g.BestChromosome.Fitness > bestScore)
+                {
+                    bestScore = g.BestChromosome.Fitness;
+                    bestTeam = g.BestChromosome.GetTeam();
+                }
+
+                output.WriteLine("{0,-4}|{1,-9:0.000}|{2,-14:0.000}|{3,-30}"
+                    , g.GenerationsNumber
+                    , g.BestChromosome.Fitness
+                    , bestScore
+                    , bestTeam.ToString()
+                    );
             };
+            output.WriteLine("Gen |G.Fitness|Best Fitness  |Best Team");
             GA.Initialize(250, storage, new PokemonTeam(), weightings);
             GA.Run(50);
 
             // check that the final team has 6 unique members
-            Assert.False(BestTeam.ContainsDuplicates());
+            Assert.False(bestTeam.ContainsDuplicates());
 
             // check that the algorithm has picked out the 6 good pokemon
-            Assert.Contains(lapras, BestTeam.Pokemon);
-            Assert.Contains(gardevoir, BestTeam.Pokemon);
-            Assert.Contains(gengar, BestTeam.Pokemon);
-            Assert.Contains(talonflame, BestTeam.Pokemon);
-            Assert.Contains(ferrothorn, BestTeam.Pokemon);
-            Assert.Contains(gliscor, BestTeam.Pokemon);
+            Assert.Contains(lapras, bestTeam.Pokemon);
+            Assert.Contains(gardevoir, bestTeam.Pokemon);
+            Assert.Contains(gengar, bestTeam.Pokemon);
+            Assert.Contains(talonflame, bestTeam.Pokemon);
+            Assert.Contains(ferrothorn, bestTeam.Pokemon);
+            Assert.Contains(gliscor, bestTeam.Pokemon);
         }
     }
 }

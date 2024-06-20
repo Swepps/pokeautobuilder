@@ -168,5 +168,18 @@ namespace PokemonDataModel
                     Pokemon.Add(null);
             }
         }
+
+        public override string ToString()
+        {
+            string team = "";
+            foreach (SmartPokemon? p in Pokemon)
+            {
+                if (p is null)
+                    team += "\"empty\"";
+                else
+                    team += '\"' + p.ToString() + '\"';
+            }
+            return team;
+        }
     }
 }

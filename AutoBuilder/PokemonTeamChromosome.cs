@@ -19,6 +19,8 @@ namespace AutoBuilder
 
         public double? Fitness { get; set; }
 
+        public AutoBuilderWeightings? WeightingScores;
+
         public int Length => m_length;
 
         // pokemon chromosome vars
