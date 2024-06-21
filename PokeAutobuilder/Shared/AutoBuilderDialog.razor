@@ -196,18 +196,18 @@
 
     public Dictionary<string, bool> typeWeightings = [];
 
-    public double resistantAll = 1.0;
-    public double stabCoverageAll = 1.0;
-    public double coverageOnOffensive = 1.0;
-    public double resistancesOnDefensive = 0.5;
+    public double resistantAll = 0.5;
+    public double stabCoverageAll = 0.5;
+    public double coverageOnOffensive = 0.0;
+    public double resistancesOnDefensive = 0.0;
 
-    public double moveSetBalanceWeighting = 0.0;
-    public double stabBalanceWeighting = 1.0;
-    public double resistanceBalanceWeighting = 1.0;
+    public double moveSetBalanceWeighting = 0.5;
+    public double stabBalanceWeighting = 0.5;
+    public double resistanceBalanceWeighting = 0.5;
     public double weaknessBalanceWeighting = 0.5;
 
     // base stats
-    public double baseStatTotalWeighting = 1.0;
+    public double baseStatTotalWeighting = 0.5;
     public double baseStatHpWeighting = 0.5;
     public double baseStatAttWeighting = 0.5;
     public double baseStatDefWeighting = 0.5;
