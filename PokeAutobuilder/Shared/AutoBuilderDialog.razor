@@ -14,6 +14,84 @@
         <MudStack AlignItems="AlignItems.Start">
             <MudDivider DividerType="DividerType.FullWidth" />
 
+            <MudGrid Class="mb-2">
+                <MudItem xs="12">
+                    <MudGrid Justify="Justify.SpaceEvenly">
+                        @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+                        {
+                            SmartPokemon? p = null;
+                            bool locked = false;
+                            if (LockedMembers is not null && LockedMembers.Pokemon[i] is not null)
+                            {
+                                p = LockedMembers.Pokemon[i];
+                                locked = true;
+                            }
+                            else
+                            {
+                                p = BestTeam.Pokemon[i];
+                            }
+
+                            @if (p is not null)
+                            {
+                                <MudItem xs="4" md="2">
+                                    <MudPaper>
+                                        @if (locked)
+                                        {
+                                            <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
+                                        }
+                                        <PokemonCard Pokemon="p" />
+                                    </MudPaper>
+                                </MudItem>
+                            }
+                            else
+                            {
+                                <MudItem xs="4" md="2">
+                                    <MudSkeleton Height="100px"></MudSkeleton>
+                                </MudItem>
+                            }
+                        }
+                    </MudGrid>
+                </MudItem>
+                @if (!BestTeam.IsEmpty)
+                {
+                    <MudItem xs="12">
+                        <StatsTeamPanel Team="BestTeam" />
+                    </MudItem>
+                }
+            </MudGrid>
+
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudStack Row="true">
+                        @if (Generating)
+                        {
+                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" OnClick="OnClickStop">Stop</MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="OnClickGenerate">Generate</MudButton>
+                        }
+                        <MudButton Disabled="Generating" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickReset">Reset</MudButton>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10" />
+                </MudItem>
+                <MudItem xs="6" md="3">
+                    <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudButton Disabled="@(Generating || BestTeam.IsEmpty)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Primary" OnClick="OnClickLoadIntoEditor">Load Into Editor</MudButton>
+                </MudItem>
+            </MudGrid>
+
+            @if (Generating)
+            {
+                <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
+            }
+
+            <MudDivider DividerType="DividerType.FullWidth" />
+
             <MudText Typo="Typo.h6">Type Weightings</MudText>
             <MudText Typo="Typo.subtitle1">Click a type to toggle it. Disabled types won't be considered during team generation.</MudText>
             <div>
@@ -85,84 +163,6 @@
                 </MudItem>
             </MudGrid>
 
-            <MudGrid>
-                <MudItem xs="12" md="6">
-                    <MudStack Row="true">
-                    @if (Generating)
-                    {                    
-                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" OnClick="OnClickStop">Stop</MudButton>
-                    }
-                    else
-                    {
-                        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="OnClickGenerate">Generate</MudButton>
-                    }
-                        <MudButton Disabled="Generating" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickReset">Reset</MudButton>
-                    </MudStack>
-                </MudItem>
-                <MudItem xs="6" md="3">
-                    <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10"/>
-                </MudItem>
-                <MudItem xs="6" md="3">
-                    <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudButton Disabled="@(Generating || BestTeam.IsEmpty)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Primary" OnClick="OnClickLoadIntoEditor">Load Into Editor</MudButton>
-                </MudItem>
-            </MudGrid>
-            @*</MudStack>*@
-
-            @if (Generating)
-            {
-                <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
-            }
-
-            <MudDivider DividerType="DividerType.FullWidth" />
-
-            <MudGrid>
-                <MudItem xs="12">
-                    <MudGrid Justify="Justify.SpaceEvenly">
-                        @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
-                        {
-                            SmartPokemon? p = null;
-                            bool locked = false;
-                            if (LockedMembers is not null && LockedMembers.Pokemon[i] is not null)
-                            {
-                                p = LockedMembers.Pokemon[i];
-                                locked = true;
-                            }
-
-                            if (!locked)
-                                p = BestTeam.Pokemon[i];
-
-                            @if (p is not null)
-                            {
-                                <MudItem xs="4" md="2">
-                                    <MudPaper>
-                                        @if (locked)
-                                        {
-                                            <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
-                                        }
-                                        <PokemonCard Pokemon="p" />
-                                    </MudPaper>
-                                </MudItem>
-                            }
-                            else
-                            {
-                                <MudItem xs="4" md="2">
-                                    <MudSkeleton Height="100px"></MudSkeleton>
-                                </MudItem>
-                            }
-                        }
-                    </MudGrid>
-                </MudItem>
-                @if (!BestTeam.IsEmpty)
-                {
-                    <MudItem xs="12" >
-                        <StatsTeamPanel Team="BestTeam" />
-                    </MudItem>
-                }
-            </MudGrid>
-
         </MudStack>
     </DialogContent>
     <DialogActions>
@@ -227,10 +227,7 @@
         // initialise type weightings list
         foreach (string t in Globals.AllTypes)
         {
-            if (t == "normal")
-                typeWeightings[t] = false;
-            else
-                typeWeightings[t] = true;
+            typeWeightings[t] = true;
         }
         base.OnParametersSet();
     }
