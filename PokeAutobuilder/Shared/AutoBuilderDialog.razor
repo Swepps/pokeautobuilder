@@ -120,7 +120,7 @@
             <MudText Typo="Typo.subtitle1">Use the checkboxes and sliders to adjust the importance of different team attributes.</MudText>
             <MudGrid Spacing="2">
                 <MudItem xs="12" md="6">
-                    <MudStack Class="px-1">
+                    <MudStack Class="px-2">
                         <MudTooltip Text="Prioritise a team with at least one Pokémon resistant to each type." Placement="Placement.Bottom" RootClass="mud-width-full">
                             <MudSlider @bind-Value="resistantAll" Size="Size.Medium" Min="0" Max="1" Step="0.05" Disabled="Generating">Resistant To All Types</MudSlider>
                         </MudTooltip>
@@ -136,7 +136,7 @@
                     </MudStack>
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudStack Class="px-1">
+                    <MudStack Class="px-2">
                         <MudTooltip Text="Determines how important a good balance of moves is." Placement="Placement.Bottom" RootClass="mud-width-full">
                             <MudSlider @bind-Value="moveSetBalanceWeighting" Size="Size.Medium" Min="0" Max="1" Step="0.05" Disabled="Generating">Balance Move Coverage</MudSlider>
                         </MudTooltip>
