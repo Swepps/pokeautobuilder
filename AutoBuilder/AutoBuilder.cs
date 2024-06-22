@@ -69,17 +69,39 @@ namespace AutoBuilder
 
         public Dictionary<string, bool> Types = typeWeightings;
 
-        private static Dictionary<string, bool> MakeDefaultTypeWeightings()
+        public AutoBuilderWeightings() : this(MakeDefaultTypeWeightings())
         {
-            Dictionary<string, bool> typeWeightings = [];
-            foreach (string type in Globals.AllTypes)
-            {
-                typeWeightings[type] = true;
-            }
-            return typeWeightings;
         }
 
-        public AutoBuilderWeightings() : this(MakeDefaultTypeWeightings())
+        // copy constructor
+        public AutoBuilderWeightings(AutoBuilderWeightings clone) : this(
+            clone.Types
+            , resistanceAll: clone.ResistanceAll
+            , resistanceBalance: clone.ResistanceBalance
+            , resistanceAmount: clone.ResistanceAmount
+
+            , weaknessBalance: clone.WeaknessBalance
+            , weaknessAmount: clone.WeaknessAmount
+
+            , stabAll: clone.StabAll
+            , stabBalance: clone.StabBalance
+            , stabAmount: clone.StabAmount
+            
+            , moveSetAll: clone.MoveSetAll
+            , moveSetBalance: clone.MoveSetBalance
+            , moveSetAmount: clone.MoveSetAmount
+
+            , coverageOnOffensive: clone.CoverageOnOffensive
+            , resistancesOnDefensive: clone.ResistancesOnDefensive
+
+            , baseStatTotal: clone.BaseStatTotal
+            , baseStatHp: clone.BaseStatHp
+            , baseStatAtt: clone.BaseStatAtt
+            , baseStatDef: clone.BaseStatDef
+            , baseStatSpAtt: clone.BaseStatSpAtt
+            , baseStatSpDef: clone.BaseStatSpDef
+            , baseStatSpe: clone.BaseStatSpe
+        )
         {
         }
 
@@ -113,6 +135,16 @@ namespace AutoBuilder
             sum += BaseStatSpe;
 
             return sum;
+        }
+
+                public static Dictionary<string, bool> MakeDefaultTypeWeightings()
+        {
+            Dictionary<string, bool> typeWeightings = [];
+            foreach (string type in Globals.AllTypes)
+            {
+                typeWeightings[type] = true;
+            }
+            return typeWeightings;
         }
     }
 
