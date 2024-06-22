@@ -1,0 +1,66 @@
+﻿@inject IJSRuntime JS
+@inject ISnackbar SnackbarService
+@inject IAnalytics GlobalTracking
+
+<style>
+    .mud-snackbar {
+        max-width: 750px;
+    }
+</style>
+
+@code {
+    private Snackbar? _snackbar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bool hasCookiePolicy = await JS.InvokeAsync<bool>("HasCookiePolicy");
+        if (!hasCookiePolicy)
+        {
+            bool cookiePolicyAccepted = await JS.InvokeAsync<bool>("GetCookiePolicyAccepted");
+            if (!cookiePolicyAccepted)
+            {
+                SnackbarService.Configuration.PositionClass = Defaults.Classes.Position.BottomCenter;
+                _snackbar = SnackbarService.Add
+                (
+                @<MudGrid Justify="Justify.FlexEnd">
+                    <MudItem xs="12" md="6" lg="8">
+                        <MudText Typo="Typo.body2">
+                            This site uses cookies to store information on your computer and for Google Analytics traffic monitoring.
+                            See the <MudLink Href="/cookiepolicy">cookie policy</MudLink> to learn more. Do you accept to Google Analytics cookie usage?
+                        </MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="6" lg="4">
+                        <MudStack Row="true">
+                            <MudButton OnClick="AcceptMessage" Color="Color.Success" Variant="Variant.Filled" Style="height: fit-content; width: fit-content;">Accept</MudButton>
+                            <MudButton OnClick="DeclineMessage" Style="height: fit-content; width: fit-content;">Decline</MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+    , Severity.Normal
+                    , config =>
+                    {
+                        config.ShowCloseIcon = false;
+                        config.CloseAfterNavigation = false;
+                        config.RequireInteraction = true;
+                    }
+
+                );
+            }
+        }
+    }
+
+    private async Task AcceptMessage()
+    {
+        await JS.InvokeVoidAsync("SetCookiePolicyAccepted");
+        if (_snackbar is null) return;
+        SnackbarService.Remove(_snackbar);
+    }
+
+    private async Task DeclineMessage()
+    {
+        await JS.InvokeVoidAsync("SetCookiePolicyDeclined");
+        if (_snackbar is null) return;
+        SnackbarService.Remove(_snackbar);
+        GlobalTracking.Disable();
+    }
+}
