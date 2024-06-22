@@ -1,0 +1,49 @@
+﻿<MudTooltip Text="@Tooltip" Placement="Placement.Bottom" RootClass="mud-width-full">
+    <MudSlider @bind-Value="Value" Size="Size.Medium" Min="0" Max="1" Step="0.05" Disabled="Disabled">@Name</MudSlider>
+    @if (Score is not null)
+    {
+        <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@((double)Score)" Max="1.0">
+            <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", Score * 100))%</MudText>
+        </MudProgressLinear>
+    }
+</MudTooltip>
+
+@code {
+    protected double? _value;
+
+    [Parameter]
+    public string? Name { get; set; }
+
+    [Parameter]
+    public string? Tooltip { get; set; }
+
+    [Parameter]
+    public double? Value
+    {
+        get => _value;
+        set
+        {
+            if (_value != value)
+            {
+                _value = value;
+                if (value is not null)
+                {
+                    ValueChanged.InvokeAsync((double)value);
+                }
+                else
+                {
+                    ValueChanged.InvokeAsync(0.0);
+                }
+            }
+        }
+    }
+
+    [Parameter]
+    public double? Score { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public EventCallback<double> ValueChanged { get; set; }
+}
