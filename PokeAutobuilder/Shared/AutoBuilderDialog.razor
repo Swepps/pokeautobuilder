@@ -125,8 +125,8 @@
                             <MudSlider @bind-Value="resistantAll" Size="Size.Medium" Min="0" Max="1" Step="0.05" Disabled="Generating">Resistant To All Types</MudSlider>
                             @if (BestTeamScore is not null)
                             {
-                                <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.ResistantAll" Max="1.0" >
-                                    <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.ResistantAll * 100))%</MudText>
+                                <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.ResistanceAll" Max="1.0" >
+                                    <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.ResistanceAll * 100))%</MudText>
                                 </MudProgressLinear>
                             }
                         </MudTooltip>
@@ -134,8 +134,8 @@
                             <MudSlider @bind-Value="stabCoverageAll" Size="Size.Medium" Min="0" Max="1" Step="0.05" Disabled="Generating">STAB Against All Types</MudSlider>
                             @if (BestTeamScore is not null)
                             {
-                                <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.STABCoverageAll" Max="1.0">
-                                    <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.STABCoverageAll * 100))%</MudText>
+                                <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.StabAll" Max="1.0">
+                                    <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.StabAll * 100))%</MudText>
                                 </MudProgressLinear>
                             }
                         </MudTooltip>
