@@ -186,14 +186,6 @@ namespace AutoBuilder
             if (team.CountPokemon() == 0)
                 return result;
 
-            // scale the base stat weightings by the total weighting
-            weightings.BaseStatHp *= weightings.BaseStatTotal;
-            weightings.BaseStatAtt *= weightings.BaseStatTotal;
-            weightings.BaseStatDef *= weightings.BaseStatTotal;
-            weightings.BaseStatSpAtt *= weightings.BaseStatTotal;
-            weightings.BaseStatSpDef *= weightings.BaseStatTotal;
-            weightings.BaseStatSpe *= weightings.BaseStatTotal;
-
             double totalTypes = weightings.Types.Where((t) => t.Value).Count();
 
             // gather some information about the types in the team
