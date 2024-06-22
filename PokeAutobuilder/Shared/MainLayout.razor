@@ -7,6 +7,8 @@
 @inject ProfileService ProfileService
 @inject SessionService Session
 @inject PokeApiService PokeApiService
+@inject IAnalytics GlobalTracking
+@inject IJSRuntime JS
 
 
 <MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="AutoBuilderTheme" />
@@ -51,6 +53,7 @@
             }
         </MudContainer>
     </MudMainContent>
+    <ConsentCookie />
 </MudLayout>
 
 @code{
@@ -116,6 +119,17 @@
     {
         if (firstRender)
         {
+            // disable Google analytics if user has declined it
+            bool hasCookiePolicy = await JS.InvokeAsync<bool>("HasCookiePolicy");
+            if (hasCookiePolicy)
+            {
+                bool cookiePolicyAccepted = await JS.InvokeAsync<bool>("GetCookiePolicyAccepted");
+                if (!cookiePolicyAccepted)
+                {
+                    GlobalTracking.Disable();
+                }
+            }
+
             // first check the version to clear cache if there has been a format update
             if (await ProfileService.CheckVersion())
             {

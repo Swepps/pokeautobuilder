@@ -68,6 +68,35 @@
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="_content/Toolbelt.Blazor.PWA.Updater.Service/script.min.js"></script>
     <script src="_content/Blazor-Analytics/blazor-analytics.js"></script>
+    <script>
+        function SetCookiePolicyAccepted() {
+            localStorage.setItem('CookiePolicyAccepted', 'true');
+        }
+
+        function SetCookiePolicyDeclined() {
+            localStorage.setItem('CookiePolicyAccepted', 'false');
+        }
+
+        function HasCookiePolicy() {
+            const cookiePolicy = localStorage.getItem('CookiePolicyAccepted');
+            if (cookiePolicy === null) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function GetCookiePolicyAccepted() {
+            const cookiePolicy = localStorage.getItem('CookiePolicyAccepted');
+            if (cookiePolicy === 'true') {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+    </script>
 </body>
 
 </html>
