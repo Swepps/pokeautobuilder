@@ -88,14 +88,22 @@ namespace AutoBuilder
             double sum = 0;
 
             sum += ResistanceAll;
+            sum += ResistanceBalance;
+            sum += ResistanceAmount;
+
+            sum += WeaknessBalance;
+            sum += WeaknessAmount;
+
             sum += StabAll;
+            sum += StabBalance;
+            sum += StabAmount;
+
+            sum += MoveSetAll;
+            sum += MoveSetBalance;
+            sum += MoveSetAmount;
+
             sum += CoverageOnOffensive;
             sum += ResistancesOnDefensive;
-
-            sum += MoveSetBalance;
-            sum += StabBalance;
-            sum += ResistanceBalance;
-            sum += WeaknessBalance;
 
             sum += BaseStatHp;
             sum += BaseStatAtt;
