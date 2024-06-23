@@ -1,5 +1,6 @@
 ﻿@page "/storage"
 @using PokeApiNet
+@using PokeAutobuilder.Shared.Cards
 @using PokeAutobuilder.Source.Services;
 @using PokemonDataModel
 
@@ -11,80 +12,42 @@
 
 <PageTitle>Pokémon Storage</PageTitle>
 
-<MudText Typo="Typo.h6">Pokémon Storage</MudText>
-<MudPaper Height="calc(100vh - 140px)" Class="pa-1" Style="position: relative; overflow:hidden; background: var(--mud-palette-background)" Elevation="0" Square="true">
-    <MudDrawerContainer Class="mud-height-full">
-        <MudDrawer @bind-Open="@_openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent" Width="200px">
-            <MudPaper Class="d-flex flex-column justify-start gap-1 align-content-center mud-height-full py-2 px-1 mb-2 ml-n1"  Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
-                <MudText Typo="Typo.h6" Align="Align.Center">Pokémon Picker</MudText>
-                <PokemonSearchBox @ref="_pokemonCard" NeverUseStorage="true"/>
-                <MudStack Row="true" AlignItems="AlignItems.Center">
-                    <MudToggleIconButton @bind-Toggled="@_deleteMode"
-                                         Icon="@Icons.Material.Filled.DeleteOutline" Color="@Color.Success" Title="Enable Delete Mode"
-                                         ToggledIcon="@Icons.Material.Filled.Delete" ToggledColor="@Color.Error" ToggledTitle="Disable Delete Mode" />
-                    <MudText Typo="Typo.body1">@(_deleteMode ? "Disable Delete Mode" : "Enable Delete Mode")</MudText>
-                </MudStack>
-            </MudPaper>
-        </MudDrawer>
-        <div class="d-flex justify-center gap-0 align-content-start mud-height-full">
-            <StorageBox @ref="_storageBox" DeleteMode="@_deleteMode"/>
-            <MudPaper Square="true" Elevation="0" Class="d-flex justify-center align-center mud-height-full cursor-pointer mx-0" @onclick="ToggleOpenAddPokemonDrawer">
-                <MudIcon Icon="@(_openAddPokemonDrawer ? @Icons.Material.Filled.KeyboardArrowRight : @Icons.Material.Filled.KeyboardArrowLeft)" />
-            </MudPaper>
-        </div>
-    </MudDrawerContainer>
-</MudPaper>
+<div class="d-flex flex-wrap gap-4">
+    <MudPaper Width="320px" Height="fit-content">
+        <PokemonCard Pokemon="SelectedPokemon" />
+    </MudPaper>
+    <MudPaper Class="pa-1 d-flex flex-md-1" MinWidth="325px" Elevation="0" Square="true">
+        <StorageBox @ref="_storageBox" OnClickPokemon="OnSelectPokemon" />
+    </MudPaper>
+</div>
 
 <PageFooter />
 
 @code {
+    private SmartPokemon? _selectedPokemon;
+    public SmartPokemon? SelectedPokemon 
+    {
+        get => _selectedPokemon;
+        set
+        {
+            _selectedPokemon = value;
+            StateHasChanged();
+        }
+    }
+
     private StorageBox? _storageBox;
-    private PokemonSearchBox? _pokemonCard;
 
-    private bool _openAddPokemonDrawer = true;
-    private bool _deleteMode = false;
-
-    public void ToggleOpenAddPokemonDrawer()
+    protected override Task OnAfterRenderAsync(bool firstRender)
     {
-        _openAddPokemonDrawer = !_openAddPokemonDrawer;
+        if (firstRender)
+        {
+            SelectedPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
+        }
+        return base.OnAfterRenderAsync(firstRender);
     }
 
-    public async Task OnClickAddRandomPokemon()
+    protected async Task OnSelectPokemon(SmartPokemon selectedPokemon)
     {
-        NamedApiResource<Pokemon>? pokemonResource = null;
-        SmartPokemonEntry? entry = Session.NationalDex.RandomPokemon();
-        if (entry != null)
-        {
-            Random rand = new Random();
-            List<NamedApiResource<Pokemon>> varieties = await entry.GetAllVarieties();
-            pokemonResource = varieties[rand.Next(varieties.Count)];
-        }
-
-        if (pokemonResource != null)
-        {
-            SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
-            if (pokemon != null)
-            {
-                await Profile.AddPokemonToStorageAsync(pokemon);
-            }
-        }
-    }
-
-    public async Task OnClickAddPokemon()
-    {
-        if (_pokemonCard is not null)
-        {
-            SmartPokemon? pokemon = _pokemonCard._Pokemon;
-            if (pokemon is not null)
-            {
-                await Profile.AddPokemonToStorageAsync(pokemon);
-            }
-        }
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && _pokemonCard is not null)
-            await _pokemonCard.OnClickRandomize();
+        SelectedPokemon = selectedPokemon;
     }
 }
