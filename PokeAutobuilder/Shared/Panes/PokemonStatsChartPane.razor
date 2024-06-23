@@ -3,9 +3,9 @@
 
 @if (Pokemon is not null)
 {
-	<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
-		<MudText Typo="Typo.h6">Base Stats</MudText>
-		<MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="70%" Height="100%"
+	<div class="d-flex flex-column align-center justify-center mud-width-full">
+		<MudText Typo="Typo.subtitle1">Base Stats</MudText>
+		<MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="auto" Height="100%"
 		InputData="@Data" InputLabels="@Labels" @bind-SelectedIndex="SelectedIndex" @onmouseout="OnMouseLeaveChart">
 			<CustomGraphics>
 				<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="var(--mud-palette-text-primary)" font-family="Helvetica" font-size="2">Total</text>
@@ -15,8 +15,14 @@
 				</MudPopover>
 			</CustomGraphics>
 		</MudChart>
-	</MudPaper>
+	</div>
 }
+
+<style>
+	.mud-chart .mud-chart-legend {
+		min-width: 80px;
+	}
+</style>
 
 @code {
 	[Parameter]
@@ -41,7 +47,7 @@
 	public bool IsTooltipOpen = false;
 
 	// when component is initialised
-	protected override void OnInitialized()
+	protected override void OnParametersSet()
 	{
 		if (Pokemon is not null)
 		{

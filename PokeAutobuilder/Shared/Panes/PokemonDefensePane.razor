@@ -3,11 +3,11 @@
 
 @if (Pokemon is not null)
 {
-	<MudPaper Class="d-flex flex-column align-center justify-center pa-2">
+	<div class="d-flex flex-column align-center justify-center">
 		<MudStack Spacing="5" AlignItems="AlignItems.Center" Style="width: 100%;" Class="pa-2">
-			<MudText Typo="Typo.h6" Class="mb-2">Type Defense</MudText>
+			<MudText Typo="Typo.subtitle1" Class="mb-2">Type Defense</MudText>
 			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
-				<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">Resist</MudText>
+				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 80px">Resist</MudText>
 				<MudGrid>
 					@foreach (string t in Globals.AllTypes)
 					{
@@ -34,7 +34,7 @@
 			</MudStack>
 			<MudDivider />
 			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
-				<MudText Typo="Typo.body2" Class="mr-1" Style="width: 80px">Weak</MudText>
+				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 80px">Weak</MudText>
 				<MudGrid>
 					@foreach (string t in Globals.AllTypes)
 					{
@@ -56,7 +56,7 @@
 				</MudGrid>
 			</MudStack>
 		</MudStack>
-	</MudPaper>
+	</div>
 }
 
 @code {
