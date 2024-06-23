@@ -7,14 +7,26 @@
 
 @inject NavigationManager NavigationManager
 @inject ProfileService Profile
-@inject SessionService Session
-@inject PokeApiService PokeApiService
+@inject IDialogService DialogService
 
 <PageTitle>Pokémon Storage</PageTitle>
 
 <div class="d-flex flex-wrap gap-4">
-    <MudPaper Width="320px" Height="fit-content">
-        <PokemonCard Pokemon="SelectedPokemon" />
+    <MudPaper MinWidth="320px" MaxWidth="600px" Height="fit-content">
+        <PokemonDetails Pokemon="SelectedPokemon">
+            <ActionsContent>
+                <div class="d-flex justify-center align-end mud-height-full">
+                    <MudButtonGroup VerticalAlign="true" 
+                                    OverrideStyles="false"
+                                    Size="Size.Large"
+                                    Class="mud-width-full"
+                                    >
+                        <MudButton Disabled="true">EVOLVE</MudButton>
+                        <MudButton Color="Color.Error" Variant="Variant.Outlined" OnClick="OnClickRelease">RELEASE</MudButton>
+                    </MudButtonGroup>
+                </div>
+            </ActionsContent>
+        </PokemonDetails>
     </MudPaper>
     <MudPaper Class="pa-1 d-flex flex-md-1" MinWidth="325px" Elevation="0" Square="true">
         <StorageBox @ref="_storageBox" OnClickPokemon="OnSelectPokemon" />
@@ -37,6 +49,8 @@
 
     private StorageBox? _storageBox;
 
+    private string _messageBoxState = "Message box hasn't been opened yet";
+
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -46,8 +60,29 @@
         return base.OnAfterRenderAsync(firstRender);
     }
 
-    protected async Task OnSelectPokemon(SmartPokemon selectedPokemon)
+    protected void OnSelectPokemon(SmartPokemon selectedPokemon)
     {
         SelectedPokemon = selectedPokemon;
+    }
+
+    protected async Task OnClickRelease()
+    {
+        if (SelectedPokemon is not null)
+        {
+            bool? result = await DialogService.ShowMessageBox(
+                "Warning"
+                , "Are you sure you want to release " + SelectedPokemon.ToString() + "?"
+                , yesText: "Release!"
+                , cancelText: "Cancel"
+                , options: new() { MaxWidth = MaxWidth.ExtraSmall }
+            );
+            _messageBoxState = result == null ? "Canceled" : "Released";
+            if (_messageBoxState == "Released")
+            {
+                await Profile.RemovePokemonFromStorageAsync(SelectedPokemon);
+                SelectedPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
+                StateHasChanged();
+            }
+        }
     }
 }

@@ -6,9 +6,11 @@
 @using Utility
 
 <MudTooltip Text="@Pokemon!.Name">
-	<MudPaper Class="ma-2 pa-1 cursor-pointer" Style="background: var(--mud-palette-surface)" @onclick="OnClickCard">
-		<MudImage Src="@Pokemon!.Sprites.FrontDefault" Style="width: 50px;" />
-	</MudPaper>
+	<MudButton Class="ma-2 pa-1" Color="Color.Surface" OnClick="OnClickCard">
+		<MudImage
+			Src="@(String.IsNullOrEmpty(Pokemon!.Sprites.FrontDefault) ? Pokemon!.Sprites.Other.OfficialArtwork.FrontDefault : Pokemon!.Sprites.FrontDefault)"
+			Style="width: 50px; height: 50px" />
+	</MudButton>
 </MudTooltip>
 
 @code {
@@ -27,7 +29,6 @@
 		return base.SetParametersAsync(ParameterView.Empty);
 	}
 
-	// opens a dialog with Pokemon details
 	public Task OnClickCard()
 	{
 		return OnClick.InvokeAsync(Pokemon);

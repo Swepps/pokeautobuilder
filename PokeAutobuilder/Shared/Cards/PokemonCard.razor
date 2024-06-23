@@ -24,6 +24,12 @@
         <MudText Typo="Typo.caption">@_generation.Names.Where(name => name.Language.Name == Globals.Language).FirstOrDefault()?.Name</MudText>
     </MudStack>
 }
+else
+{
+    <MudSkeleton Height="100%" Width="100%">
+
+    </MudSkeleton>
+}
 
 @code {
     [Parameter]
@@ -36,7 +42,11 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        _generation = null;
         if (Pokemon is not null)
+        {
             _generation = await Pokemon.GetGenerationAsync();
+            StateHasChanged();
+        }
     }
 }
