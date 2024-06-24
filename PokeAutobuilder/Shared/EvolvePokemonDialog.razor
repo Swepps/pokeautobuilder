@@ -1,0 +1,84 @@
+﻿@using PokemonDataModel
+@using PokeAutobuilder.Shared.Cards
+@using PokeAutobuilder.Shared
+
+<MudDialog>
+    <DialogContent>
+        <MudGrid>
+            <MudItem xs="6">
+                <MudStack Row="true" AlignItems="AlignItems.Center">
+                    <PokemonCard Pokemon="@Pokemon" />
+                    <MudIcon Icon="@Icons.Material.Filled.DoubleArrow" Size="Size.Large"/>
+                    <PokemonCard Pokemon="@SelectedPokemon" />                    
+                </MudStack>                
+            </MudItem>
+            <MudItem xs="6">
+                @if (_noEvolutions)
+                {
+                    <MudText Typo="Typo.body2">@(Pokemon!.ToString()) has no evolutions!</MudText>
+                }
+                else if (_evolutions.Count == 0)
+                {
+                    <MudProgressCircular Indeterminate="true" />
+                }
+                else
+                {
+                    <MudText Typo="Typo.h6">@(Pokemon!.ToString()) evolutions</MudText>
+                    <MudPaper Class="pa-1 d-flex" Elevation="0" Square="true">
+                        <CascadingValue Value="@SelectedPokemon">
+                            <PokemonStorageBox PokemonCollection="_evolutions" OnClickPokemon="OnSelectPokemon" />
+                        </CascadingValue>
+                    </MudPaper>
+                }
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit" Disabled="@(SelectedPokemon is null)">Evolve</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter, EditorRequired]
+    public SmartPokemon? Pokemon { get; set; }
+
+    private List<SmartPokemon> _evolutions = [];
+    private bool _noEvolutions = false;
+
+    private SmartPokemon? _selectedPokemon;
+    public SmartPokemon? SelectedPokemon
+    {
+        get => _selectedPokemon;
+        set
+        {
+            _selectedPokemon = value;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _evolutions = await PokeApiService.Instance!.GetNextEvolutions(Pokemon!);
+        if (_evolutions.Count == 0)
+        {
+            _noEvolutions = true;
+        }
+    }
+
+    protected void OnSelectPokemon(SmartPokemon selectedPokemon)
+    {
+        SelectedPokemon = selectedPokemon;
+    }
+
+    protected void Submit() 
+    {
+        SelectedPokemon!.SelectAbility(Pokemon!.SelectedAbility.Ability.Name);
+        SelectedPokemon.SelectedMoves = Pokemon.SelectedMoves;
+        MudDialog!.Close(DialogResult.Ok(SelectedPokemon));
+    }
+
+    void Cancel() => MudDialog!.Cancel();
+}

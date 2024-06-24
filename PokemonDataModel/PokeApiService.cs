@@ -296,5 +296,29 @@ namespace PokemonDataModel
 
             return result;
 		}
+
+        public async Task<bool> CanEvolve(SmartPokemon pokemon)
+        {
+            try
+            {
+                PokemonSpecies species = await pokemon.GetSpeciesAsync();
+                EvolutionChain chain = await ApiClient.GetResourceAsync(species.EvolutionChain);
+
+                ChainLink? chainLink = FindPokemonChainLink(chain.Chain, species.Name);
+                if (chainLink is not null)
+                {
+                    if (chainLink.EvolvesTo.Count > 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            return false;
+        }
 	}
 }

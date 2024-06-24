@@ -193,7 +193,7 @@
 
         if (move is null)
         {
-            await Pokemon.SelectMove(index, null);
+            await Pokemon.SelectMoveAsync(index, null);
             StateHasChanged();
             return;
         }
@@ -201,7 +201,7 @@
         Move? loadedMove = await PokeApiService.GetMoveAsync(move.Move.Name);
         if (loadedMove is not null)
         {
-            await Pokemon.SelectMove(index, loadedMove);
+            await Pokemon.SelectMoveAsync(index, loadedMove);
             StateHasChanged();
         }
     }

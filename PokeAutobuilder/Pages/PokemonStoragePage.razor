@@ -1,9 +1,8 @@
 ﻿@page "/storage"
-@using PokeApiNet
-@using PokeAutobuilder.Shared.Cards
-@using PokeAutobuilder.Source.Services;
-@using PokemonDataModel
 
+@using PokemonDataModel
+@using PokeAutobuilder.Source.Services
+@using PokeAutobuilder.Shared;
 
 @inject NavigationManager NavigationManager
 @inject ProfileService Profile
@@ -21,52 +20,35 @@
                                     Size="Size.Large"
                                     Class="mud-width-full"
                                     >
-                        <MudButton Disabled="true">MOVE</MudButton>
-                        <MudMenu Label="EVOLVE" Disabled="@(_selectedPokemonEvolutions.Count == 0)"
-                            Variant="Variant.Outlined"
-                            Class="mud-width-full mud-height-full">
-                            @foreach (SmartPokemon evolution in _selectedPokemonEvolutions)
-                            {
-                                <MudMenuItem>
-                                    <PokemonMiniCard Pokemon="evolution" />
-                                </MudMenuItem>
-                            }
-                        </MudMenu>
+                        <MudButton Variant="Variant.Outlined"
+                                   Disabled="true">
+                            MOVE
+                        </MudButton>
                         <MudButton 
-                            Color="Color.Error" 
-                            Variant="Variant.Outlined" 
-                            OnClick="OnClickReleaseAsync" 
-                            Disabled="@(SelectedPokemon is null)">
+                                   Variant="Variant.Outlined"
+                                   OnClick="OnClickEvolveAsync"
+                                   Disabled="@(!_selectedPokemonCanEvolve)">
+                            EVOLVE
+                        </MudButton>
+                        <MudButton Color="Color.Error"
+                                   Variant="Variant.Outlined"
+                                   OnClick="OnClickReleaseAsync"
+                                   Disabled="@(SelectedPokemon is null)">
                             RELEASE
                         </MudButton>
                     </MudButtonGroup>
-                    <MudPopover Open="_isEvolveOpen" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Paper="false">
-                        <MudPaper Outlined="true">
-                            @foreach (SmartPokemon evolution in _selectedPokemonEvolutions)
-                            {
-                                <PokemonMiniCard Pokemon="evolution" />
-                            }
-                        </MudPaper>
-                    </MudPopover>
                 </div>
             </ActionsContent>
         </PokemonDetails>
     </MudPaper>
     <MudPaper Class="pa-1 d-flex flex-md-1" MinWidth="325px" Elevation="0" Square="true">
         <CascadingValue Value="@SelectedPokemon">
-            <StorageBox OnClickPokemon="OnSelectPokemonAsync" />
+            <PokemonStorageBox PokemonCollection="Profile.PokemonStorage.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
         </CascadingValue>
     </MudPaper>
 </div>
 
 <PageFooter />
-
-<style>
-    .mud-menu button
-    {
-        width: 100%;
-    }
-</style>
 
 @code {
     private SmartPokemon? _selectedPokemon;
@@ -79,11 +61,9 @@
         }
     }
 
-    private List<SmartPokemon> _selectedPokemonEvolutions = [];
+    private bool _selectedPokemonCanEvolve = false;
 
     private string _messageBoxState = "Message box hasn't been opened yet";
-
-    private bool _isEvolveOpen = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -99,9 +79,8 @@
 
     protected async Task OnSelectPokemonAsync(SmartPokemon selectedPokemon)
     {
-        _selectedPokemonEvolutions.Clear();
         SelectedPokemon = null;
-        _selectedPokemonEvolutions = await PokeApiService.Instance!.GetNextEvolutions(selectedPokemon);
+        _selectedPokemonCanEvolve = await PokeApiService.Instance!.CanEvolve(selectedPokemon);
         SelectedPokemon = selectedPokemon;
         StateHasChanged();
     }
@@ -121,14 +100,38 @@
             if (_messageBoxState == "Released")
             {
                 await Profile.RemovePokemonFromStorageAsync(SelectedPokemon);
-                SelectedPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
-                StateHasChanged();
+                SmartPokemon? newSelectedPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
+                if (newSelectedPokemon is not null)
+                {
+                    await OnSelectPokemonAsync(newSelectedPokemon);
+                }
             }
         }
     }
 
-    protected void OnClickEvolve()
+    protected async Task OnClickEvolveAsync()
     {
-        _isEvolveOpen = true;
+        var parameters = new DialogParameters();
+        parameters.Add("Pokemon", SelectedPokemon);
+
+        var dialog = await DialogService.ShowAsync<EvolvePokemonDialog>("Evolving " + SelectedPokemon!.ToString() + "..."
+        , parameters
+        , options: new() { MaxWidth = MaxWidth.Medium });
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is SmartPokemon)
+        {
+            // replace old pokemon with evolved version
+            SmartPokemon? pokemon = result.Data as SmartPokemon;
+            if (pokemon is not null)
+            {
+                // add and remove pokemon from storage to "update" it
+                // we can directly remove it here because it's about to be updated
+                // properly by AddPokemonToStorageAsync anyway
+                if (Profile.PokemonStorage.Pokemon.Remove(SelectedPokemon))
+                    await Profile.AddPokemonToStorageAsync(pokemon);
+                await OnSelectPokemonAsync(pokemon);
+            }
+        }
     }
 }

@@ -238,7 +238,7 @@ namespace PokemonDataModel
             return false;
         }
 
-        public async Task<bool> SelectMove(int index, Move? move)
+        public async Task<bool> SelectMoveAsync(int index, Move? move)
         {
             if (index >= 0 && index < PokemonMoveset.MaxMovesetSize)
             {
