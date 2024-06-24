@@ -21,16 +21,41 @@
                                     Size="Size.Large"
                                     Class="mud-width-full"
                                     >
-                        <MudButton Disabled="true">EVOLVE</MudButton>
-                        <MudButton Color="Color.Error" Variant="Variant.Outlined" OnClick="OnClickRelease">RELEASE</MudButton>
+                        <MudButton Disabled="true">MOVE</MudButton>
+                        <MudButton Disabled="@(_selectedPokemonEvolutions.Count == 0)">
+                            @if (_selectedPokemonEvolutions.Count == 1)
+                            {
+                                <div>EVOLVE</div>
+                            }
+                            else
+                            {
+                                <MudMenu Label="EVOLVE" Disabled="@(_selectedPokemonEvolutions.Count == 0)">
+                                    @foreach (SmartPokemon evolution in _selectedPokemonEvolutions)
+                                    {
+                                        <MudMenuItem>
+                                            <PokemonMiniCard Pokemon="evolution" />
+                                        </MudMenuItem>
+                                    }
+                                </MudMenu>
+                            }
+                        </MudButton>                        
+                        <MudButton Color="Color.Error" Variant="Variant.Outlined" OnClick="OnClickReleaseAsync">RELEASE</MudButton>
                     </MudButtonGroup>
+                    <MudPopover Open="_isEvolveOpen" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Paper="false">
+                        <MudPaper Outlined="true">
+                            @foreach (SmartPokemon evolution in _selectedPokemonEvolutions)
+                            {
+                                <PokemonMiniCard Pokemon="evolution" />
+                            }
+                        </MudPaper>
+                    </MudPopover>
                 </div>
             </ActionsContent>
         </PokemonDetails>
     </MudPaper>
     <MudPaper Class="pa-1 d-flex flex-md-1" MinWidth="325px" Elevation="0" Square="true">
         <CascadingValue Value="@SelectedPokemon">
-            <StorageBox @ref="_storageBox" OnClickPokemon="OnSelectPokemon" />
+            <StorageBox OnClickPokemon="OnSelectPokemonAsync" />
         </CascadingValue>
     </MudPaper>
 </div>
@@ -49,9 +74,11 @@
         }
     }
 
-    private StorageBox? _storageBox;
+    private List<SmartPokemon> _selectedPokemonEvolutions = [];
 
     private string _messageBoxState = "Message box hasn't been opened yet";
+
+    private bool _isEvolveOpen = false;
 
     protected override Task OnAfterRenderAsync(bool firstRender)
     {
@@ -62,12 +89,14 @@
         return base.OnAfterRenderAsync(firstRender);
     }
 
-    protected void OnSelectPokemon(SmartPokemon selectedPokemon)
+    protected async Task OnSelectPokemonAsync(SmartPokemon selectedPokemon)
     {
         SelectedPokemon = selectedPokemon;
+        _selectedPokemonEvolutions = await PokeApiService.Instance!.GetNextEvolutions(SelectedPokemon);
+        StateHasChanged();
     }
 
-    protected async Task OnClickRelease()
+    protected async Task OnClickReleaseAsync()
     {
         if (SelectedPokemon is not null)
         {
@@ -86,5 +115,10 @@
                 StateHasChanged();
             }
         }
+    }
+
+    protected void OnClickEvolve()
+    {
+        _isEvolveOpen = true;
     }
 }
