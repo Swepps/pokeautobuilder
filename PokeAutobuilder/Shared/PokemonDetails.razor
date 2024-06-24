@@ -6,61 +6,95 @@
 @using PokeAutobuilder.Shared.Cards
 @using PokeApiNet;
 
-@if (Pokemon is not null)
-{
-    <MudGrid Justify="Justify.SpaceEvenly" Class="pa-2" Spacing="2">
-        <MudItem xs="6">
-            <MudStack Spacing="0">
+<MudGrid Justify="Justify.SpaceEvenly" Class="pa-2" Spacing="2">
+    <MudItem xs="6">
+        <MudStack Spacing="0">
+            @if (Pokemon is not null)
+            {
                 <MudSelect Disabled="@(Pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
                     @foreach (PokemonAbility a in Pokemon.Abilities)
                     {
                         <MudSelectItem Value="@a.Ability.Name" />
                     }
                 </MudSelect>
+                    
                 <MudDivider DividerType="DividerType.FullWidth" />
-                <MudAutocomplete T="PokemonMove" Label="Move 1" @bind-Value="Move1" SearchFunc="@SearchAvailableMoves"
-                                 ResetValueOnEmptyText="true" MaxItems="null" Dense="true"
-                                 CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
-                <MudAutocomplete T="PokemonMove" Label="Move 2" @bind-Value="Move2" SearchFunc="@SearchAvailableMoves"
-                                 ResetValueOnEmptyText="true" MaxItems="null" Dense="true"
-                                 CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
-                <MudAutocomplete T="PokemonMove" Label="Move 3" @bind-Value="Move3" SearchFunc="@SearchAvailableMoves"
-                                 ResetValueOnEmptyText="true" MaxItems="null" Dense="true"
-                                 CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
-                <MudAutocomplete T="PokemonMove" Label="Move 4" @bind-Value="Move4" SearchFunc="@SearchAvailableMoves"
-                                 ResetValueOnEmptyText="true" MaxItems="null" Dense="true"
-                                 CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
-            </MudStack>
-        </MudItem>
-        <MudItem xs="4">
-            <div style="max-width: 145px;">
-                <PokemonCard Pokemon="@Pokemon" />
-            </div>
-        </MudItem>
-        <MudItem xs="6">
-            <MudPaper Height="100%" Style="background-color: var(--mud-palette-background)" 
-                      Outlined="true" Square="true">
-                <PokemonDefensePane Pokemon="@Pokemon" />
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="6">
-            <MudPaper Height="100%" Style="background-color: var(--mud-palette-background)"
-                      Outlined="true" Square="true">
-                <PokemonCoveragePane Pokemon="@Pokemon" />
-            </MudPaper>
-        </MudItem>
-        <MudItem xs="12" sm="6">
-            <PokemonStatsChartPane Pokemon="@Pokemon" />
-        </MudItem>
-        @if (ActionsContent is not null)
-        {
-            <MudItem xs="12" sm="6">
-                @ActionsContent
-            </MudItem>
-        }
 
-    </MudGrid>
-}
+                <MudAutocomplete T="PokemonMove" Label="Move 1" @bind-Value="Move1" SearchFunc="@SearchAvailableMoves"
+                    ResetValueOnEmptyText="true" MaxItems="null" Dense="true"
+                    CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
+                <MudAutocomplete T="PokemonMove" Label="Move 2" @bind-Value="Move2" SearchFunc="@SearchAvailableMoves"
+                    ResetValueOnEmptyText="true" MaxItems="null" Dense="true"
+                    CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
+                <MudAutocomplete T="PokemonMove" Label="Move 3" @bind-Value="Move3" SearchFunc="@SearchAvailableMoves"
+                    ResetValueOnEmptyText="true" MaxItems="null" Dense="true"
+                    CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
+                <MudAutocomplete T="PokemonMove" Label="Move 4" @bind-Value="Move4" SearchFunc="@SearchAvailableMoves"
+                    ResetValueOnEmptyText="true" MaxItems="null" Dense="true"
+                    CoerceText="true" CoerceValue="false" ToStringFunc="MoveToString" />
+            }
+            else
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="270px" />
+            }
+        </MudStack>
+    </MudItem>
+    <MudItem xs="4">
+        <div style="max-width: 145px;">
+            @if (Pokemon is not null)
+            {
+                <PokemonCard Pokemon="@Pokemon" />
+            }
+            else
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="270px" />
+            }
+        </div>
+    </MudItem>
+    <MudItem xs="6">
+        <MudPaper Height="100%" Style="background-color: var(--mud-palette-background)"
+                  Outlined="true" Square="true">
+            @if (Pokemon is not null)
+            {
+                <PokemonDefensePane Pokemon="@Pokemon" />
+            }
+            else
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="153px" />
+            }
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="6">
+        <MudPaper Height="100%" Style="background-color: var(--mud-palette-background)"
+                  Outlined="true" Square="true">            
+            @if (Pokemon is not null)
+            {
+                <PokemonCoveragePane Pokemon="@Pokemon" />
+            }
+            else
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="153px" />
+            }
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6">        
+        @if (Pokemon is not null)
+        {
+            <PokemonStatsChartPane Pokemon="@Pokemon" />
+        }
+        else
+        {
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="232px" />
+        }
+    </MudItem>
+    @if (ActionsContent is not null)
+    {
+        <MudItem xs="12" sm="6">
+            @ActionsContent
+        </MudItem>
+    }
+
+</MudGrid>
 
 @code {
     [Parameter]

@@ -12,7 +12,7 @@
 <PageTitle>Pokémon Storage</PageTitle>
 
 <div class="d-flex flex-wrap gap-4">
-    <MudPaper MinWidth="320px" MaxWidth="600px" Height="fit-content">
+    <MudPaper MinWidth="320px" MaxWidth="600px" Height="fit-content" Class="flex-auto">
         <PokemonDetails Pokemon="SelectedPokemon">
             <ActionsContent>
                 <div class="d-flex justify-center align-end mud-height-full">
@@ -22,24 +22,23 @@
                                     Class="mud-width-full"
                                     >
                         <MudButton Disabled="true">MOVE</MudButton>
-                        <MudButton Disabled="@(_selectedPokemonEvolutions.Count == 0)">
-                            @if (_selectedPokemonEvolutions.Count == 1)
+                        <MudMenu Label="EVOLVE" Disabled="@(_selectedPokemonEvolutions.Count == 0)"
+                            Variant="Variant.Outlined"
+                            Class="mud-width-full mud-height-full">
+                            @foreach (SmartPokemon evolution in _selectedPokemonEvolutions)
                             {
-                                <div>EVOLVE</div>
+                                <MudMenuItem>
+                                    <PokemonMiniCard Pokemon="evolution" />
+                                </MudMenuItem>
                             }
-                            else
-                            {
-                                <MudMenu Label="EVOLVE" Disabled="@(_selectedPokemonEvolutions.Count == 0)">
-                                    @foreach (SmartPokemon evolution in _selectedPokemonEvolutions)
-                                    {
-                                        <MudMenuItem>
-                                            <PokemonMiniCard Pokemon="evolution" />
-                                        </MudMenuItem>
-                                    }
-                                </MudMenu>
-                            }
-                        </MudButton>                        
-                        <MudButton Color="Color.Error" Variant="Variant.Outlined" OnClick="OnClickReleaseAsync">RELEASE</MudButton>
+                        </MudMenu>
+                        <MudButton 
+                            Color="Color.Error" 
+                            Variant="Variant.Outlined" 
+                            OnClick="OnClickReleaseAsync" 
+                            Disabled="@(SelectedPokemon is null)">
+                            RELEASE
+                        </MudButton>
                     </MudButtonGroup>
                     <MudPopover Open="_isEvolveOpen" OverflowBehavior="OverflowBehavior.FlipAlways" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" Paper="false">
                         <MudPaper Outlined="true">
@@ -62,6 +61,13 @@
 
 <PageFooter />
 
+<style>
+    .mud-menu button
+    {
+        width: 100%;
+    }
+</style>
+
 @code {
     private SmartPokemon? _selectedPokemon;
     public SmartPokemon? SelectedPokemon 
@@ -70,7 +76,6 @@
         set
         {
             _selectedPokemon = value;
-            StateHasChanged();
         }
     }
 
@@ -80,19 +85,24 @@
 
     private bool _isEvolveOpen = false;
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            SelectedPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
+            SmartPokemon? initialPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
+            if (initialPokemon is not null)
+            {
+                await OnSelectPokemonAsync(initialPokemon);
+            }
         }
-        return base.OnAfterRenderAsync(firstRender);
     }
 
     protected async Task OnSelectPokemonAsync(SmartPokemon selectedPokemon)
     {
+        _selectedPokemonEvolutions.Clear();
+        SelectedPokemon = null;
+        _selectedPokemonEvolutions = await PokeApiService.Instance!.GetNextEvolutions(selectedPokemon);
         SelectedPokemon = selectedPokemon;
-        _selectedPokemonEvolutions = await PokeApiService.Instance!.GetNextEvolutions(SelectedPokemon);
         StateHasChanged();
     }
 
