@@ -10,7 +10,7 @@
 	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
 		@foreach (SmartPokemon? p in Profile.PokemonStorage.Pokemon)
 		{
-			<PokemonMiniCard Pokemon="p" OnClick="OnClickPokemonCard" />
+			<PokemonMiniCard Pokemon="p" OnClick="OnClickPokemonCard" Variant="@(SelectedPokemon == p ? Variant.Outlined : Variant.Filled)"/>
 		}
 	</div>
 </MudPaper>
@@ -18,6 +18,9 @@
 @code {
 	[Parameter]
 	public EventCallback<SmartPokemon> OnClickPokemon { get; set; }
+
+	[CascadingParameter]
+	public SmartPokemon? SelectedPokemon { get; set; }
 
 	protected override void OnInitialized()
 	{

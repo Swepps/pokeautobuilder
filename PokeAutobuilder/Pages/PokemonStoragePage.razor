@@ -29,7 +29,9 @@
         </PokemonDetails>
     </MudPaper>
     <MudPaper Class="pa-1 d-flex flex-md-1" MinWidth="325px" Elevation="0" Square="true">
-        <StorageBox @ref="_storageBox" OnClickPokemon="OnSelectPokemon" />
+        <CascadingValue Value="@SelectedPokemon">
+            <StorageBox @ref="_storageBox" OnClickPokemon="OnSelectPokemon" />
+        </CascadingValue>
     </MudPaper>
 </div>
 
