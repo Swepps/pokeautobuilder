@@ -244,5 +244,81 @@ namespace PokemonDataModel
                 return null;
             }
         }
-    }
+
+        private static ChainLink? FindPokemonChainLink(ChainLink parentLink, string speciesName)
+        {
+            if (parentLink.Species.Name == speciesName)
+                return parentLink;
+
+            ChainLink? chainLink = parentLink.EvolvesTo.FirstOrDefault((c) => c.Species.Name == speciesName);
+			if (chainLink is not null)
+                return chainLink;
+
+            foreach (ChainLink childLink in parentLink.EvolvesTo)
+            {
+				chainLink = FindPokemonChainLink(childLink, speciesName);
+                if (chainLink is not null)
+                    return chainLink;
+			}
+
+            return null;
+        }
+
+		public async Task<List<SmartPokemon>> GetNextEvolutions(SmartPokemon pokemon)
+		{
+            List<SmartPokemon> result = [];
+			try
+			{
+                PokemonSpecies species = await pokemon.GetSpeciesAsync();
+				EvolutionChain chain = await ApiClient.GetResourceAsync(species.EvolutionChain);
+
+                ChainLink? chainLink = FindPokemonChainLink(chain.Chain, species.Name);
+                if (chainLink is not null)
+                {
+                    foreach (ChainLink evolution in chainLink.EvolvesTo)
+                    {
+                        PokemonSpecies? evolvedSpecies = await GetPokemonSpeciesAsync(evolution.Species.Name);
+                        if (evolvedSpecies is not null)
+                        {
+                            SmartPokemon? evolvedPokemon = await GetPokemonAsync(evolvedSpecies.Varieties[0].Pokemon.Name);
+                            if (evolvedPokemon is not null)
+                            {
+                                result.Add(evolvedPokemon);
+                            }
+                        }                        
+                    }
+                }
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
+			}
+
+            return result;
+		}
+
+        public async Task<bool> CanEvolve(SmartPokemon pokemon)
+        {
+            try
+            {
+                PokemonSpecies species = await pokemon.GetSpeciesAsync();
+                EvolutionChain chain = await ApiClient.GetResourceAsync(species.EvolutionChain);
+
+                ChainLink? chainLink = FindPokemonChainLink(chain.Chain, species.Name);
+                if (chainLink is not null)
+                {
+                    if (chainLink.EvolvesTo.Count > 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            return false;
+        }
+	}
 }

@@ -1,90 +1,137 @@
 ﻿@page "/storage"
-@using PokeApiNet
-@using PokeAutobuilder.Source.Services;
-@using PokemonDataModel
 
+@using PokemonDataModel
+@using PokeAutobuilder.Source.Services
+@using PokeAutobuilder.Shared;
 
 @inject NavigationManager NavigationManager
 @inject ProfileService Profile
-@inject SessionService Session
-@inject PokeApiService PokeApiService
+@inject IDialogService DialogService
 
 <PageTitle>Pokémon Storage</PageTitle>
 
-<MudText Typo="Typo.h6">Pokémon Storage</MudText>
-<MudPaper Height="calc(100vh - 140px)" Class="pa-1" Style="position: relative; overflow:hidden; background: var(--mud-palette-background)" Elevation="0" Square="true">
-    <MudDrawerContainer Class="mud-height-full">
-        <MudDrawer @bind-Open="@_openAddPokemonDrawer" Anchor="Anchor.End" Elevation="0" Variant="@DrawerVariant.Persistent" Color="Color.Transparent" Width="200px">
-            <MudPaper Class="d-flex flex-column justify-start gap-1 align-content-center mud-height-full py-2 px-1 mb-2 ml-n1"  Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
-                <MudText Typo="Typo.h6" Align="Align.Center">Pokémon Picker</MudText>
-                <PokemonSearchBox @ref="_pokemonCard" NeverUseStorage="true"/>
-                <MudStack Row="true" AlignItems="AlignItems.Center">
-                    <MudToggleIconButton @bind-Toggled="@_deleteMode"
-                                         Icon="@Icons.Material.Filled.DeleteOutline" Color="@Color.Success" Title="Enable Delete Mode"
-                                         ToggledIcon="@Icons.Material.Filled.Delete" ToggledColor="@Color.Error" ToggledTitle="Disable Delete Mode" />
-                    <MudText Typo="Typo.body1">@(_deleteMode ? "Disable Delete Mode" : "Enable Delete Mode")</MudText>
-                </MudStack>
-            </MudPaper>
-        </MudDrawer>
-        <div class="d-flex justify-center gap-0 align-content-start mud-height-full">
-            <StorageBox @ref="_storageBox" DeleteMode="@_deleteMode"/>
-            <MudPaper Square="true" Elevation="0" Class="d-flex justify-center align-center mud-height-full cursor-pointer mx-0" @onclick="ToggleOpenAddPokemonDrawer">
-                <MudIcon Icon="@(_openAddPokemonDrawer ? @Icons.Material.Filled.KeyboardArrowRight : @Icons.Material.Filled.KeyboardArrowLeft)" />
-            </MudPaper>
-        </div>
-    </MudDrawerContainer>
-</MudPaper>
+<div class="d-flex flex-wrap gap-4">
+    <MudPaper MinWidth="320px" MaxWidth="600px" Height="fit-content" Class="flex-auto">
+        <PokemonDetails Pokemon="SelectedPokemon">
+            <ActionsContent>
+                <div class="d-flex justify-center align-end mud-height-full">
+                    <MudButtonGroup VerticalAlign="true" 
+                                    OverrideStyles="false"
+                                    Size="Size.Large"
+                                    Class="mud-width-full"
+                                    >
+                        <MudButton Variant="Variant.Outlined"
+                                   Disabled="true">
+                            MOVE
+                        </MudButton>
+                        <MudButton 
+                                   Variant="Variant.Outlined"
+                                   OnClick="OnClickEvolveAsync"
+                                   Disabled="@(!_selectedPokemonCanEvolve)">
+                            EVOLVE
+                        </MudButton>
+                        <MudButton Color="Color.Error"
+                                   Variant="Variant.Outlined"
+                                   OnClick="OnClickReleaseAsync"
+                                   Disabled="@(SelectedPokemon is null)">
+                            RELEASE
+                        </MudButton>
+                    </MudButtonGroup>
+                </div>
+            </ActionsContent>
+        </PokemonDetails>
+    </MudPaper>
+    <MudPaper Class="pa-1 d-flex flex-md-1" MinWidth="325px" Elevation="0" Square="true">
+        <CascadingValue Value="@SelectedPokemon">
+            <PokemonStorageBox PokemonCollection="Profile.PokemonStorage.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
+        </CascadingValue>
+    </MudPaper>
+</div>
 
 <PageFooter />
 
 @code {
-    private StorageBox? _storageBox;
-    private PokemonSearchBox? _pokemonCard;
-
-    private bool _openAddPokemonDrawer = true;
-    private bool _deleteMode = false;
-
-    public void ToggleOpenAddPokemonDrawer()
+    private SmartPokemon? _selectedPokemon;
+    public SmartPokemon? SelectedPokemon 
     {
-        _openAddPokemonDrawer = !_openAddPokemonDrawer;
-    }
-
-    public async Task OnClickAddRandomPokemon()
-    {
-        NamedApiResource<Pokemon>? pokemonResource = null;
-        SmartPokemonEntry? entry = Session.NationalDex.RandomPokemon();
-        if (entry != null)
+        get => _selectedPokemon;
+        set
         {
-            Random rand = new Random();
-            List<NamedApiResource<Pokemon>> varieties = await entry.GetAllVarieties();
-            pokemonResource = varieties[rand.Next(varieties.Count)];
-        }
-
-        if (pokemonResource != null)
-        {
-            SmartPokemon? pokemon = await PokeApiService.GetPokemonAsync(pokemonResource.Name);
-            if (pokemon != null)
-            {
-                await Profile.AddPokemonToStorageAsync(pokemon);
-            }
+            _selectedPokemon = value;
         }
     }
 
-    public async Task OnClickAddPokemon()
-    {
-        if (_pokemonCard is not null)
-        {
-            SmartPokemon? pokemon = _pokemonCard._Pokemon;
-            if (pokemon is not null)
-            {
-                await Profile.AddPokemonToStorageAsync(pokemon);
-            }
-        }
-    }
+    private bool _selectedPokemonCanEvolve = false;
+
+    private string _messageBoxState = "Message box hasn't been opened yet";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && _pokemonCard is not null)
-            await _pokemonCard.OnClickRandomize();
+        if (firstRender)
+        {
+            SmartPokemon? initialPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
+            if (initialPokemon is not null)
+            {
+                await OnSelectPokemonAsync(initialPokemon);
+            }
+        }
+    }
+
+    protected async Task OnSelectPokemonAsync(SmartPokemon selectedPokemon)
+    {
+        SelectedPokemon = null;
+        _selectedPokemonCanEvolve = await PokeApiService.Instance!.CanEvolve(selectedPokemon);
+        SelectedPokemon = selectedPokemon;
+        StateHasChanged();
+    }
+
+    protected async Task OnClickReleaseAsync()
+    {
+        if (SelectedPokemon is not null)
+        {
+            bool? result = await DialogService.ShowMessageBox(
+                "Warning"
+                , "Are you sure you want to release " + SelectedPokemon.ToString() + "?"
+                , yesText: "Release!"
+                , cancelText: "Cancel"
+                , options: new() { MaxWidth = MaxWidth.ExtraSmall }
+            );
+            _messageBoxState = result == null ? "Canceled" : "Released";
+            if (_messageBoxState == "Released")
+            {
+                await Profile.RemovePokemonFromStorageAsync(SelectedPokemon);
+                SmartPokemon? newSelectedPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
+                if (newSelectedPokemon is not null)
+                {
+                    await OnSelectPokemonAsync(newSelectedPokemon);
+                }
+            }
+        }
+    }
+
+    protected async Task OnClickEvolveAsync()
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Pokemon", SelectedPokemon);
+
+        var dialog = await DialogService.ShowAsync<EvolvePokemonDialog>("Evolving " + SelectedPokemon!.ToString() + "..."
+        , parameters
+        , options: new() { MaxWidth = MaxWidth.Medium });
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is SmartPokemon)
+        {
+            // replace old pokemon with evolved version
+            SmartPokemon? pokemon = result.Data as SmartPokemon;
+            if (pokemon is not null)
+            {
+                // add and remove pokemon from storage to "update" it
+                // we can directly remove it here because it's about to be updated
+                // properly by AddPokemonToStorageAsync anyway
+                if (Profile.PokemonStorage.Pokemon.Remove(SelectedPokemon))
+                    await Profile.AddPokemonToStorageAsync(pokemon);
+                await OnSelectPokemonAsync(pokemon);
+            }
+        }
     }
 }

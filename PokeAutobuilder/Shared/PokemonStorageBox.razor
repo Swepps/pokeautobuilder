@@ -1,0 +1,28 @@
+﻿@using PokeAutobuilder.Shared.Cards
+@using PokeAutobuilder.Source.Services;
+@using PokemonDataModel
+
+<MudPaper Class="d-flex mud-width-full mud-height-full pa-2" Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
+	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
+		@foreach (SmartPokemon? p in PokemonCollection!)
+		{
+			<PokemonMiniCard Pokemon="p" OnClick="OnClickPokemonCard" Variant="@(SelectedPokemon == p ? Variant.Outlined : Variant.Filled)"/>
+		}
+	</div>
+</MudPaper>
+
+@code {
+	[Parameter, EditorRequired]
+	public IEnumerable<SmartPokemon>? PokemonCollection { get; set; }
+
+	[Parameter]
+	public EventCallback<SmartPokemon> OnClickPokemon { get; set; }
+
+	[CascadingParameter]
+	public SmartPokemon? SelectedPokemon { get; set; }
+
+	public Task OnClickPokemonCard(SmartPokemon pokemon)
+	{
+		return OnClickPokemon.InvokeAsync(pokemon);
+	}
+}
