@@ -6,8 +6,7 @@
 @using Utility
 
 <MudTooltip Text="@Pokemon!.Name">
-	<MudButton Class="ma-2" Color="Color.Surface" OnClick="OnClickCard" Variant="@Variant"
-			   Style="@(Variant != Variant.Outlined ? "padding: 5px!important;" : "padding: 4px!important;")">
+	<MudButton Class="ma-2" Color="Color.Surface" OnClick="OnClickCard" Variant="@Variant">
 		<MudImage
 			Src="@(String.IsNullOrEmpty(Pokemon!.Sprites.FrontDefault) ? Pokemon!.Sprites.Other.OfficialArtwork.FrontDefault : Pokemon!.Sprites.FrontDefault)"
 				  Style="width: 50px; height: 50px" />
@@ -18,6 +17,16 @@
 	.mud-button
 	{
 		min-width: 50px;
+		transition: none!important;
+	}
+
+	.mud-button-outlined
+	{
+		padding: 4px !important;
+	}
+
+	.mud-button-filled {
+		padding: 5px !important;
 	}
 </style>
 
