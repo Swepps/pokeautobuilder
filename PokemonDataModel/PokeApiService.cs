@@ -247,6 +247,9 @@ namespace PokemonDataModel
 
         private static ChainLink? FindPokemonChainLink(ChainLink parentLink, string speciesName)
         {
+            if (parentLink.Species.Name == speciesName)
+                return parentLink;
+
             ChainLink? chainLink = parentLink.EvolvesTo.FirstOrDefault((c) => c.Species.Name == speciesName);
 			if (chainLink is not null)
                 return chainLink;
