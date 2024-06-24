@@ -237,7 +237,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-gp0apeZBU5rVCyRxuhbc+6o4yp\/+uARCypuIlZN98xs=",
+      "hash": "sha256-Wh92Y7UWEB+LephuUj2ACyw7P8LwmiIlHBT+vMq7Z9o=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -245,7 +245,7 @@
       "url": "_framework\/dotnet.native.8.0.6.koinleev67.js"
     },
     {
-      "hash": "sha256-YtgIzEgjjGmo2kr1fiwNhcfxxWhbBDKcACv0icRnf\/8=",
+      "hash": "sha256-bwF\/rpe0XSXjhC7GjZwvwNJzUMniDt6B+Vr4FkaLVyQ=",
       "url": "_framework\/dotnet.native.wasm"
     },
     {
@@ -265,7 +265,7 @@
       "url": "_framework\/Accord.wasm"
     },
     {
-      "hash": "sha256-IJKoOpnRnrEm9DKfBBJ5+IWzFvqSHPM1QG\/SEvD9qMA=",
+      "hash": "sha256-RzK8PYOSD9VVpUAimGqI343n70eFY\/E6FpoeS5BC2Bk=",
       "url": "_framework\/AutoBuilder.wasm"
     },
     {
@@ -401,7 +401,7 @@
       "url": "_framework\/Microsoft.JSInterop.WebAssembly.wasm"
     },
     {
-      "hash": "sha256-BfvH9bbOTykZy9bgaaf92kl6ELOrZ\/WVpeBasiGNCPY=",
+      "hash": "sha256-KG7M67kC8di7epTbtuYo8HJGRV0ETaa+iKcjy5Jylc8=",
       "url": "_framework\/MudBlazor.wasm"
     },
     {
@@ -413,11 +413,11 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-RxZhuBMipBQNQPGITI+5csOBt3Qn29559Kj8SN7CqFQ=",
+      "hash": "sha256-fgJHoZ\/XTtVgOB19vjC\/59EUlAcnXOJ2Y5dgrpDskoA=",
       "url": "_framework\/PokeAutobuilder.wasm"
     },
     {
-      "hash": "sha256-\/Mt3J5GRn57erVkKGFyg6WtR3h24Dkojrox0kSiq4Vw=",
+      "hash": "sha256-GtjL8ljP9r5ffft9HhbBPxIDnYp4wPGuBwr7kncCfzs=",
       "url": "_framework\/PokemonDataModel.wasm"
     },
     {
@@ -605,7 +605,7 @@
       "url": "_framework\/Toolbelt.Blazor.PWA.Updater.wasm"
     },
     {
-      "hash": "sha256-4BCfeWCALDRT31Ylak06\/BJ3cxkX4j1enCM+\/AKJEPU=",
+      "hash": "sha256-7QXp3PTDLto4Vd4qTgo0PwBcPIBmZqFbch+jhoeJOCE=",
       "url": "_framework\/Utility.wasm"
     },
     {
@@ -641,5 +641,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "84Zmjlpd"
+  "version": "yPV1byeO"
 };
