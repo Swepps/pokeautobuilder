@@ -7,7 +7,7 @@ namespace PokemonDataModel
         [JsonPropertyName("pokemon")]
         public List<SmartPokemon> Pokemon { get; set; }
 
-        public PokemonStorage() { Pokemon = new(); }
+        public PokemonStorage() { Pokemon = []; }
 
         // used when getting cached pokemon storage list
         public PokemonStorage(List<SmartPokemon> pokemonList) 
@@ -28,12 +28,12 @@ namespace PokemonDataModel
             }
 
             // generate the random members and stick into an array for later
-            Random rand = new Random();
+            Random rand = new();
             int numOfRandMembers = PokemonTeam.MaxTeamSize - lockedMembers.CountPokemon();
             List<SmartPokemon> randomMembers = Pokemon.OrderBy(p => rand.Next()).Take(numOfRandMembers).ToList();
 
             // create a new team using lockedMembers and random members
-            PokemonTeam newTeam = new PokemonTeam();
+            PokemonTeam newTeam = new();
             int randIdx = 0;
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
@@ -53,7 +53,7 @@ namespace PokemonDataModel
 
         public SmartPokemon GetRandomPokemon()
         {
-            Random rand = new Random();
+            Random rand = new();
             SmartPokemon randPokemon = Pokemon[rand.Next(0, Pokemon.Count)];
             return randPokemon;
         }
