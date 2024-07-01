@@ -5,14 +5,14 @@
 <MudDialog>
     <DialogContent>
         <MudGrid>
-            <MudItem xs="6">
+            <MudItem xs="12" sm="6">
                 <MudStack Row="true" AlignItems="AlignItems.Center">
                     <PokemonCard Pokemon="@Pokemon" />
                     <MudIcon Icon="@Icons.Material.Filled.DoubleArrow" Size="Size.Large"/>
                     <PokemonCard Pokemon="@SelectedPokemon" />                    
                 </MudStack>                
             </MudItem>
-            <MudItem xs="6">
+            <MudItem xs="12" sm="6">
                 @if (_noEvolutions)
                 {
                     <MudText Typo="Typo.body2">@(Pokemon!.ToString()) has no evolutions!</MudText>
