@@ -8,6 +8,8 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 
+@implements IDisposable
+
 @page "/"
 
 <PageTitle>Team Builder</PageTitle>
@@ -15,10 +17,19 @@
 <MudStack Spacing="5" Class="mt-4 mb-4" AlignItems="AlignItems.Center">
     <MudGrid Justify="Justify.FlexEnd">
         <MudItem xs="12" sm="6" Class="d-flex align-end justify-start mud-width-full">
-            <MudRadioGroup @bind-SelectedOption="@Session.SearchLocation">
+@*             <MudRadioGroup @bind-SelectedOption="@Session.SearchLocation">
                 <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
                 <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
-            </MudRadioGroup>
+            </MudRadioGroup> *@
+            <MudSelect T="IEnumerable<IPokemonSearchable>" Label="Search Location" AnchorOrigin="Origin.TopCenter"
+                       @bind-Value="_searchLocation">
+                <MudSelectItem T="IEnumerable<IPokemonSearchable>" Value="Session.NationalDex" >
+                    National Pokédex
+                </MudSelectItem>
+                <MudSelectItem T="IEnumerable<IPokemonSearchable>" Value="Profile.PokemonStorage.Pokemon" >
+                    Pokémon Storage
+                </MudSelectItem>
+            </MudSelect>
         </MudItem>
         <MudItem xs="12" sm="6" Class="d-flex align-end justify-center mud-width-full">
             <MudTextField @bind-Value="_teamName" Label="Team Name" Variant="Variant.Text"></MudTextField>
@@ -28,14 +39,12 @@
     <MudGrid Justify="Justify.SpaceEvenly">
         @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
-            int index = i;
             <MudItem xs="6" sm="4" lg="2">
-
-                <PokemonSearchBox @ref="tempCard" PokemonTeamIndex="index" />
+                <PokemonSearchBox @ref="tempCard" SearchList="_searchLocation" OnPokemonChanged="PokemonSearchBoxUpdatedAsync" />
             </MudItem>
         }
     </MudGrid>
-    @if (Profile.PokemonStorage.Pokemon.Count < 7 || GetLockedMembers().CountPokemon() > 4)
+    @if (Profile.PokemonStorage.Pokemon.Count < 7 || GetLockedMembers().CountPokemon() >= PokemonTeam.MaxTeamSize - 1)
     {
         <MudTooltip Text="@GetAutoBuilderTooltipMessage()">
             <MudButton Disabled="true" OnClick="OnClickAutoBuilder" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Variant="Variant.Filled" Style="max-width: 500px;">Auto Builder</MudButton>
@@ -63,18 +72,13 @@
 @code {
     private string _teamName { get; set; } = "";
 
-    List<PokemonSearchBox?> cards = new List<PokemonSearchBox?>();
-    PokemonSearchBox? tempCard
+    List<PokemonSearchBox> cards = [];
+    PokemonSearchBox tempCard
     {
         set { cards.Add(value); }
     }
 
-    public enum SearchLocation
-    {
-        NationalPokedex = 0,
-        PokemonStorage = 1
-    };
-
+    IEnumerable<IPokemonSearchable>? _searchLocation;
 
     public async void OnClickAddTeamToStorage()
     {
@@ -94,8 +98,8 @@
 
         for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
-            if (cards[i]!._Locked)
-                lockedMembers.Pokemon[i] = cards[i]!._Pokemon;
+            if (cards[i]!.Locked)
+                lockedMembers.Pokemon[i] = cards[i]!.Pokemon;
         }
         return lockedMembers;
     }
@@ -105,7 +109,7 @@
         if (Profile.PokemonStorage.Pokemon.Count < 7)
             return "Please fill Pokémon storage with at least 7 Pokémon before using the Auto Builder";
 
-        if (GetLockedMembers().CountPokemon() > 4)
+        if (GetLockedMembers().CountPokemon() >= PokemonTeam.MaxTeamSize - 1)
             return "Please unlock some more Pokémon before using the Auto Builder";
 
         return "";
@@ -124,28 +128,54 @@
         StateHasChanged();
     }
 
-    protected override void OnInitialized()
+    public void SetSelectedPokemon()
     {
-        // register interest in session changing to update this page
-        Session.OnTeamChange += StateHasChanged;
+        if (cards.Count != PokemonTeam.MaxTeamSize)
+            return;
 
-        // if the storage has updated any pokemon the changes need to be reflected here
-        if (Session.SearchLocation == SearchLocation.PokemonStorage)
+        bool anyPokemonChanged = false;
+        for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
-            // arrgh this is a bit shit but not sure how else to approach it at the moment
-            // ... we're just going to find a pokemon in storage with a matching name
-            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            if (cards[i].Pokemon != Session.Team.Pokemon[i])
             {
-                SmartPokemon? pokemon = Session.Team.Pokemon[i];
-                if (pokemon is not null)
-                {
-                    SmartPokemon? foundPokemon = Profile.PokemonStorage.Pokemon.Find(p => p.Name == pokemon.Name);
-                    if (foundPokemon is not null)
-                        Session.Team.Pokemon[i] = foundPokemon;
-                }
+                cards[i].Pokemon = Session.Team.Pokemon[i];
+                anyPokemonChanged = true;
             }
         }
 
+        if (anyPokemonChanged)
+            StateHasChanged();
+    }
+
+    protected async Task PokemonSearchBoxUpdatedAsync(PokemonSearchBox card)
+    {
+        int teamIndex = cards.IndexOf(card);
+        if (teamIndex >= 0 && teamIndex < PokemonTeam.MaxTeamSize)
+        {
+            if (Session.Team.Pokemon[teamIndex] != card.Pokemon)
+            {
+                // this function call will trigger OnTeamChanged event
+                await Session.SetTeamPokemonAsync(teamIndex, card.Pokemon);
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {        
+        // register interest in session changing to update this page
+        Session.OnTeamChange += SetSelectedPokemon;
+
         _teamName = Session.Team.Name;
+        _searchLocation = Session.NationalDex;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        SetSelectedPokemon();
+    }
+
+    public void Dispose()
+    {
+        Session.OnTeamChange -= SetSelectedPokemon;
     }
 }

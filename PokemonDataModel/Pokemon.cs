@@ -23,7 +23,7 @@ namespace PokemonDataModel
             Defense.Clear(); Attack.Clear();
         }
     }
-    public class SmartPokemon : Pokemon
+    public class SmartPokemon : Pokemon, IPokemonSearchable
     {
         public PokemonAbility SelectedAbility { get; set; }
         public PokemonMoveset SelectedMoves { get; set; }
@@ -625,6 +625,37 @@ namespace PokemonDataModel
         public override string ToString()
         {
             return StringUtils.FirstCharToUpper(Name);
+        }
+
+        public IEnumerable<NamedApiResource<Pokemon>> GetAllVarieties()
+        {
+            if (_loadedSpecies is null)
+            {
+                return [];
+            }
+
+            List<NamedApiResource<Pokemon>> varieties = [];
+
+            foreach (PokemonSpeciesVariety variety in _loadedSpecies.Varieties)
+            {
+                varieties.Add(variety.Pokemon);
+            }
+
+            return varieties;
+        }
+
+        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync()
+        {
+            PokemonSpecies species = await GetSpeciesAsync();
+
+            List<NamedApiResource<Pokemon>> varieties = [];
+
+            foreach (PokemonSpeciesVariety variety in species.Varieties)
+            {
+                varieties.Add(variety.Pokemon);
+            }
+
+            return varieties;
         }
     }
 }

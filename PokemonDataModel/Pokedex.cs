@@ -8,7 +8,7 @@ namespace PokemonDataModel
     // however there are some pokemon with multiple varieties (e.g. rotom) which is
     // not stored in the pokedex so we can use this class to get each variety
 
-    public class SmartPokemonEntry
+    public class SmartPokemonEntry : IPokemonSearchable
     {
         [JsonPropertyName("id")]
         public int Id { get; set; }
@@ -37,11 +37,16 @@ namespace PokemonDataModel
             return Species ?? throw new Exception($"Could not load pokemon species: {SpeciesResource.Name}");
 		}
 
-        public async Task<List<NamedApiResource<Pokemon>>> GetAllVarieties()
+        public override string ToString()
         {
-            if (Species == null) await GetSpecies();
+            return StringUtils.FirstCharToUpper(SpeciesResource.Name);
+        }
 
-            List<NamedApiResource<Pokemon>> varieties = new List<NamedApiResource<Pokemon>>();
+        IEnumerable<NamedApiResource<Pokemon>> IPokemonSearchable.GetAllVarieties()
+        {
+            if (Species is null) return [];
+
+            List<NamedApiResource<Pokemon>> varieties = [];
 
             foreach (PokemonSpeciesVariety variety in Species!.Varieties)
             {
@@ -51,9 +56,18 @@ namespace PokemonDataModel
             return varieties;
         }
 
-        public override string ToString()
+        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync()
         {
-            return StringUtils.FirstCharToUpper(SpeciesResource.Name);
+            if (Species == null) await GetSpecies();
+
+            List<NamedApiResource<Pokemon>> varieties = [];
+
+            foreach (PokemonSpeciesVariety variety in Species!.Varieties)
+            {
+                varieties.Add(variety.Pokemon);
+            }
+
+            return varieties;
         }
     }
 

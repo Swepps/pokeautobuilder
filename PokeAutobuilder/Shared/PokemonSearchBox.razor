@@ -15,16 +15,8 @@
 
 <MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 
-    @if (!NeverUseStorage && Session.SearchLocation == SearchLocation.PokemonStorage)
-    {
-        <MudAutocomplete T="SmartPokemon" Label="Pokémon" @bind-Value="_Pokemon" SearchFunc="@SearchStorage"
-                         ResetValueOnEmptyText="true" Disabled="_Locked"
-                         CoerceText="true" CoerceValue="false" MaxItems="null" />
-    }
-    else
-    {
-        <MudAutocomplete T="SmartPokemonEntry" Label="Pokémon" @bind-Value="_PokemonSearchValue" SearchFunc="@SearchPokedex"
-                         ResetValueOnEmptyText="true" Disabled="_Locked" MaxItems="50"
+        <MudAutocomplete T="IPokemonSearchable" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@Search"
+                         ResetValueOnEmptyText="true" Disabled="Locked" MaxItems="50"
                          CoerceText="true" CoerceValue="false">
             <MoreItemsTemplate>
                 <MudText Align="Align.Center" Typo="Typo.caption">
@@ -32,10 +24,9 @@
                 </MudText>
             </MoreItemsTemplate>
         </MudAutocomplete>
-    }
 
     <div style="height: 50px">
-        @if (_pokemonSearchValueVarieties.Count > 1 && Session.SearchLocation == SearchLocation.NationalPokedex)
+        @if (_pokemonSearchValueVarieties.Count > 1)
         {
             <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter"
                        @bind-Value="_PokemonFormName">
@@ -46,12 +37,12 @@
             </MudSelect>
         }
     </div>
-    @if (_pokemon is not null)
+    @if (Pokemon is not null)
     {
-        <PokemonCard Pokemon="_pokemon" IsNameDisplayed="false" />
-        @if (PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
+        <PokemonCard Pokemon="Pokemon" IsNameDisplayed="false" />
+        @if (Lockable)
         {
-            <MudToggleIconButton @bind-Toggled="@_Locked"
+            <MudToggleIconButton @bind-Toggled="@Locked"
                                  Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Dark"
                                  ToggledIcon="@Icons.Material.Filled.Lock" ToggledColor="@Color.Primary" />
         }
@@ -60,20 +51,20 @@
                 <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
             </MudTooltip>
             <MudTooltip Text="Add To Storage">
-                <MudIconButton Disabled="@((!NeverUseStorage && Session.SearchLocation == SearchLocation.PokemonStorage) || Profile.PokemonStorage.Pokemon.Contains(_pokemon))"
+                <MudIconButton Disabled="@(Profile.PokemonStorage.Pokemon.Contains(Pokemon))"
                 Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
             </MudTooltip>
             <MudTooltip Text="Randomize">
-                <MudIconButton Disabled="_Locked" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
+                <MudIconButton Disabled="Locked" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
             </MudTooltip>
         </MudButtonGroup>
     }
-    else if (_PokemonSearchValue is not null)
+    else if (PokemonSearchValue is not null)
     {
         if (_errorFetchingPokemon)
         {
             <MudText Typo="Typo.caption">
-                Error Fetching @_PokemonSearchValue.Name
+                Error Fetching @PokemonSearchValue.ToString()
                 from API
             </MudText>
         }
@@ -90,19 +81,18 @@
 </MudPaper>
 
 @code {
-    // if the card has a reference team it needs to know its position within the team using this index
     [Parameter]
-    public int PokemonTeamIndex { get; set; } = -1;
+    public IEnumerable<IPokemonSearchable>? SearchList { get; set; }
 
     [Parameter]
-    public EventCallback OnPokemonChanged { get; set; }
+    public EventCallback<PokemonSearchBox> OnPokemonChanged { get; set; }
 
     [Parameter]
-    public bool NeverUseStorage { get; set; } = false;
+    public bool Lockable { get; set; }
 
     // currently selected pokemon
     private SmartPokemon? _pokemon;
-    public SmartPokemon? _Pokemon
+    public SmartPokemon? Pokemon
     {
         get => _pokemon;
         set
@@ -115,11 +105,10 @@
     private List<NamedApiResource<Pokemon>> _pokemonSearchValueVarieties = new();
     private bool _pokemonSearchValueVarietiesChanged = true;
 
-    private SearchLocation _prevPokemonSearchLocation;
-
     // the string which holds the last valid search result from the search bar
-    private SmartPokemonEntry? _pokemonSearchValue;
-    public SmartPokemonEntry? _PokemonSearchValue { 
+    private IPokemonSearchable? _pokemonSearchValue;
+    public IPokemonSearchable? PokemonSearchValue
+    {
         get { return _pokemonSearchValue; }
         set 
         {
@@ -127,7 +116,7 @@
             _ = OnUpdatedSearchValue();
         }
     }
-    private SmartPokemonEntry? _prevPokemonSearchValue;
+    private IPokemonSearchable? _prevPokemonSearchValue;
 
     // the string used in the form selector
     private string? _pokemonFormName;
@@ -145,7 +134,7 @@
 
     // only relevant if this search box is part of a team
     private bool _locked = false;
-    public bool _Locked
+    public bool Locked
     {
         get { return _locked; }
         set
@@ -161,31 +150,24 @@
         StateHasChanged();
     }
 
-    // pokemon search functionality
-    private async Task<IEnumerable<SmartPokemonEntry>> SearchPokedex(string value)
+    private async Task<IEnumerable<IPokemonSearchable>> Search(string value)
     {
+        // return an empty list if one hasn't been provided
+        if (SearchList is null)
+            return new List<IPokemonSearchable>();
+
         // if text is null or empty, show complete list
         if (string.IsNullOrEmpty(value))
-            return Session.NationalDex;
-
-        // search the pokedex in a background thread
-        return await Task.Run(() => Session.NationalDex.SearchPokedex(value.ToLower()));
-    }
-
-    private async Task<IEnumerable<SmartPokemon>> SearchStorage(string value)
-    {
-        // if text is null or empty, show complete list
-        if (string.IsNullOrEmpty(value))
-            return Profile.PokemonStorage.Pokemon;
+            return SearchList;
 
         // search the storage in a background thread
-        return await Task.Run(() => Profile.PokemonStorage.Pokemon.Where(p => p.Name.Contains(value.ToLower())).OrderBy(p => p.Name));
+        return await Task.Run(() => SearchList.Where(p => p.ToString()!.ToLower().Contains(value.ToLower())).OrderBy(p => p.ToString()!.ToLower()));
     }
 
     public async Task OnUpdatedPokemonForm()
     {        
         // don't bother if the form name is the same as the current pokemon
-        if (_PokemonFormName is null || (_Pokemon != null && _PokemonFormName == _Pokemon.Name))
+        if (_PokemonFormName is null || (Pokemon != null && _PokemonFormName == Pokemon.Name))
             return;
 
         string form = _PokemonFormName;
@@ -195,9 +177,9 @@
 
     public async Task OnUpdatedSearchValue()
     {
-        if (_PokemonSearchValue is not null)
+        if (PokemonSearchValue is not null)
         {
-            _pokemonSearchValueVarieties = await _PokemonSearchValue.GetAllVarieties();
+            _pokemonSearchValueVarieties = (await PokemonSearchValue.GetAllVarietiesAsync()).ToList();
             await SearchPokemon(_pokemonSearchValueVarieties[0].Name);
         }
         else
@@ -234,7 +216,7 @@
         _pokemon = pokemon;
         if (_pokemon is not null)
         {
-            _pokemonSearchValue = Session.NationalDex.FindPokemon(_pokemon.Species.Name);
+            _pokemonSearchValue = SearchList!.Where(entry => entry.ToString()!.ToLower().Equals(_pokemon.Species.Name)).FirstOrDefault();
             _pokemonFormName = _pokemon.Name;
             _pokemonSearchValueVarieties.Clear();
             PokemonSpecies species = await _pokemon.GetSpeciesAsync();
@@ -250,15 +232,9 @@
             _pokemonSearchValueVarieties.Clear();
         }
 
-        if (Session.Team is not null && PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
-        {
-            // this function call will trigger OnTeamChanged event
-            await Session.SetTeamPokemonAsync(PokemonTeamIndex, _pokemon);
-        }
-
         if (before != _pokemon)
         {
-            _ = OnPokemonChanged.InvokeAsync();
+            _ = OnPokemonChanged.InvokeAsync(this);
         }
 
         StateHasChanged();
@@ -274,20 +250,20 @@
 
     public async Task OnClickAddToStorage()
     {
-        if (_pokemon is null)
+        if (Pokemon is null)
             return;
 
-        await Profile.AddPokemonToStorageAsync(_pokemon);
+        await Profile.AddPokemonToStorageAsync(Pokemon);
 
-        Snackbar.Add("Added " + _pokemon.Name + " to Pokémon Storage", Severity.Success);
+        Snackbar.Add("Added " + Pokemon.ToString() + " to Pokémon Storage", Severity.Success);
     }
 
     public async Task OnClickDetails()
     {
         var parameters = new DialogParameters();
-        parameters.Add("Pokemon", _Pokemon);
+        parameters.Add("Pokemon", Pokemon);
 
-        var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(_Pokemon!.Name), parameters);
+        var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
         var result = await dialog.Result;
 
         if (!result.Canceled && result.Data is SmartPokemon)
@@ -301,7 +277,7 @@
                 // properly by AddPokemonToStorageAsync anyway
                 if (Profile.PokemonStorage.Pokemon.Remove(pokemon))
                     await Profile.AddPokemonToStorageAsync(pokemon);
-                _Pokemon = pokemon;
+                Pokemon = pokemon;
             }
             StateHasChanged();
         }
@@ -311,57 +287,15 @@
     {
         await SearchPokemon(null);
 
-        _pokemonSearchValue = Session.NationalDex.RandomPokemon();
+        Random rand = new Random();
+        
+        _pokemonSearchValue = SearchList!.ElementAt(rand.Next(SearchList!.Count()));
 
         if (_pokemonSearchValue != null)
         {            
-            _pokemonSearchValueVarieties = await _pokemonSearchValue.GetAllVarieties();
-            Random rand = new Random();
+            _pokemonSearchValueVarieties = (await _pokemonSearchValue.GetAllVarietiesAsync()).ToList();
             await SearchPokemon(_pokemonSearchValueVarieties[rand.Next(_pokemonSearchValueVarieties.Count)].Name);
         }
-    }
-
-    private async Task FetchPokemonFromStorageAsync()
-    {
-        if (PokemonTeamIndex >= 0 && PokemonTeamIndex < PokemonTeam.MaxTeamSize)
-        {
-            // does pretty much the same as SetPokemonAsync but without updating the
-            // session team (which would create an inf loop)
-            _pokemon = Session.Team.Pokemon[PokemonTeamIndex];
-            if (_pokemon is not null)
-            {
-                _pokemonSearchValue = Session.NationalDex.FindPokemon(_pokemon.Species.Name);
-                _pokemonFormName = _pokemon.Name;
-                _pokemonSearchValueVarieties.Clear();
-                PokemonSpecies species = await _pokemon.GetSpeciesAsync();
-                foreach (PokemonSpeciesVariety variety in species.Varieties)
-                {
-                    _pokemonSearchValueVarieties.Add(variety.Pokemon);
-                }
-            }
-            else
-            {
-                _pokemonSearchValue = null;
-                _pokemonFormName = null;
-                _pokemonSearchValueVarieties.Clear();
-            }
-
-            StateHasChanged();
-        }
-    }
-
-    protected override void OnInitialized()
-    {
-        Session.OnSearchLocationChange += StateHasChanged;
-        Session.OnTeamChange += (async() => await FetchPokemonFromStorageAsync());
-        base.OnInitialized();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await FetchPokemonFromStorageAsync();
-
-        base.OnParametersSet();
     }
 
     protected override bool ShouldRender()
@@ -369,8 +303,7 @@
         return _prevPokemon != _pokemon ||
         _prevPokemonSearchValue != _pokemonSearchValue ||
         _prevPokemonFormName != _pokemonFormName ||
-        _pokemonSearchValueVarietiesChanged ||
-        _prevPokemonSearchLocation != Session.SearchLocation;
+        _pokemonSearchValueVarietiesChanged;
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -378,7 +311,6 @@
         _prevPokemon = _pokemon;
         _prevPokemonSearchValue = _pokemonSearchValue;
         _prevPokemonFormName = _pokemonFormName;
-        _prevPokemonSearchLocation = Session.SearchLocation;
         _pokemonSearchValueVarietiesChanged = false;
     }
 }

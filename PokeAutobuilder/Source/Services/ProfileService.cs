@@ -1,4 +1,5 @@
-﻿using Blazored.LocalStorage;
+﻿using Accord.IO;
+using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using PokemonDataModel;
 using System.Diagnostics.Contracts;
@@ -151,7 +152,7 @@ namespace PokeAutobuilder.Source.Services
         }
         public async Task AddTeamToStorageAsync(PokemonTeam team)
         {
-            TeamStorage.Add(team);
+            TeamStorage.Add(team.DeepClone());
             await SetTeamStorageAsync(TeamStorage);
         }
         public async Task<bool> RemoveTeamFromStorageAsync(PokemonTeam team)
