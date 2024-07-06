@@ -22,13 +22,12 @@
                 <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
             </MudRadioGroup> *@
             <MudSelect T="IEnumerable<IPokemonSearchable>" Label="Search Location" AnchorOrigin="Origin.TopCenter"
-                       @bind-Value="_searchLocation">
-                <MudSelectItem T="IEnumerable<IPokemonSearchable>" Value="Session.NationalDex" >
-                    National Pokédex
-                </MudSelectItem>
-                <MudSelectItem T="IEnumerable<IPokemonSearchable>" Value="Profile.PokemonStorage.Pokemon" >
-                    Pokémon Storage
-                </MudSelectItem>
+                       @bind-Value="SearchLocation">
+                @foreach (var sl in _searchLocations){
+                    <MudSelectItem T="IEnumerable<IPokemonSearchable>" Value="sl.Value">
+                        @sl.Key
+                    </MudSelectItem>
+                }
             </MudSelect>
         </MudItem>
         <MudItem xs="12" sm="6" Class="d-flex align-end justify-center mud-width-full">
@@ -78,7 +77,17 @@
         set { cards.Add(value); }
     }
 
+    private Dictionary<string, IEnumerable<IPokemonSearchable>> _searchLocations = new();
     IEnumerable<IPokemonSearchable>? _searchLocation;
+    IEnumerable<IPokemonSearchable>? SearchLocation
+    {
+        get => _searchLocation;
+        set
+        {
+            _searchLocation = value;
+            _ = Session.SetSearchLocationAsync(_searchLocations.FirstOrDefault(x => x.Value == value).Key);
+        }
+    }    
 
     public async void OnClickAddTeamToStorage()
     {
@@ -165,8 +174,15 @@
         // register interest in session changing to update this page
         Session.OnTeamChange += SetSelectedPokemon;
 
+        _searchLocations.Add("National Pokédex", Session.NationalDex);
+        _searchLocations.Add("Pokémon Storage", Profile.PokemonStorage.Pokemon);
+
         _teamName = Session.Team.Name;
-        _searchLocation = Session.NationalDex;
+        _searchLocation = null;
+        if (!_searchLocations.TryGetValue(Session.SearchLocation, out _searchLocation))
+        {
+            _searchLocation = Session.NationalDex;
+        }
     }
 
     protected override void OnAfterRender(bool firstRender)

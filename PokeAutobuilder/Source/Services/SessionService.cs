@@ -19,6 +19,7 @@ namespace PokeAutobuilder.Source.Services
         private static readonly string NATIONAL_DEX_KEY = "national_pokedex";
         private static readonly string POKEMON_TYPES_KEY = "pokemon_types";
         private static readonly string AUTOBUILDER_PARAMS = "autobuilder_params";
+        private static readonly string SEARCH_LOCATION = "search_location";
 
         private PokemonTeam _pokemonTeam = new(); 
         public PokemonTeam Team 
@@ -57,7 +58,17 @@ namespace PokeAutobuilder.Source.Services
             set
             {
                 if (value is not null)
-                    _ = SetAutobuilderParams(value);
+                    _ = SetAutobuilderParamsAsync(value);
+            }
+        }
+
+        private string _searchLocation = "National Pokédex";
+        public string SearchLocation
+        {
+            get => _searchLocation;
+            set
+            {
+                _ = SetSearchLocationAsync(value);
             }
         }
 
@@ -130,10 +141,16 @@ namespace PokeAutobuilder.Source.Services
 			await _sessionStorageService.SetItemAsync(POKEMON_TYPES_KEY, allTypes);
         }
 
-        public async Task SetAutobuilderParams(AutoBuilderWeightings autobuilderParams)
+        public async Task SetAutobuilderParamsAsync(AutoBuilderWeightings autobuilderParams)
         {
             _autobuilderParams = autobuilderParams;
             await _sessionStorageService.SetItemAsync(AUTOBUILDER_PARAMS, autobuilderParams);
+        }
+
+        public async Task SetSearchLocationAsync(string searchLocation)
+        {
+            _searchLocation = searchLocation;
+            await _sessionStorageService.SetItemAsync(SEARCH_LOCATION, searchLocation);
         }
     }
 }
