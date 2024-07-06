@@ -15,13 +15,16 @@
 
 <MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 
-        <MudAutocomplete T="IPokemonSearchable" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@Search"
+        <MudAutocomplete T="IPokemonSearchable" Label="Search for a Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@Search"
                          ResetValueOnEmptyText="true" Disabled="Locked" MaxItems="50"
                          CoerceText="true" CoerceValue="false">
             <MoreItemsTemplate>
-                <MudText Align="Align.Center" Typo="Typo.caption">
-                    Only the first 50 Pokémon are shown...
+                <MudText Align="Align.Center" Typo="Typo.body1">
+                    ...                    
                 </MudText>
+                <MudText Align="Align.Center" Typo="Typo.body2">
+                50 results shown. Start typing to look for more.
+            </MudText>
             </MoreItemsTemplate>
         </MudAutocomplete>
 

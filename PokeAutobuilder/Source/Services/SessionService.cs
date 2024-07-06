@@ -1,6 +1,7 @@
 ﻿using Accord.IO;
 using AutoBuilder;
 using Blazored.SessionStorage;
+using PokeApiNet;
 using PokemonDataModel;
 using Utility;
 using static MudBlazor.Colors;
@@ -17,6 +18,7 @@ namespace PokeAutobuilder.Source.Services
         // global variables
         private static readonly string POKEMON_TEAM_KEY = "pokemon_team";
         private static readonly string NATIONAL_DEX_KEY = "national_pokedex";
+        private static readonly string VERSION_GROUP_DEXES_KEY = "version_group_dexes";
         private static readonly string POKEMON_TYPES_KEY = "pokemon_types";
         private static readonly string AUTOBUILDER_PARAMS = "autobuilder_params";
         private static readonly string SEARCH_LOCATION = "search_location";
@@ -31,13 +33,23 @@ namespace PokeAutobuilder.Source.Services
             }
         }
 
-        private SmartPokedex _nationalDex = new();
+        private SmartPokedex _nationalDex = new("");
         public SmartPokedex NationalDex
         {
             get => _nationalDex;
             set
             {                
                 _ = SetNationalDexAsync(value);
+            }
+        }
+
+        private List<SmartPokedex> _versionGroupDexes = new();
+        public List<SmartPokedex> VersionGroupDexes
+        {
+            get => _versionGroupDexes;
+            set
+            {
+                _ = SetVersionGroupDexesAsync(value);
             }
         }
 
@@ -90,22 +102,61 @@ namespace PokeAutobuilder.Source.Services
 
             var taskPokemonTeam = _sessionStorageService.GetItemAsync<PokemonTeam>(POKEMON_TEAM_KEY);
             var taskNationDex = _sessionStorageService.GetItemAsync<SmartPokedex>(NATIONAL_DEX_KEY);
+            var taskVersionGroupDexes = _sessionStorageService.GetItemAsync<List<SmartPokedex>>(VERSION_GROUP_DEXES_KEY);
             var taskAutobuilderParams = _sessionStorageService.GetItemAsync<AutoBuilderWeightings>(AUTOBUILDER_PARAMS);
+            var taskSearchLocation = _sessionStorageService.GetItemAsync<string>(SEARCH_LOCATION);
 
             await Task.WhenAll(
                 taskPokemonTeam.AsTask()
                 , taskNationDex.AsTask()
+                , taskVersionGroupDexes.AsTask()
                 , taskAutobuilderParams.AsTask()
+                , taskSearchLocation.AsTask()
                 );
 
             _pokemonTeam = taskPokemonTeam.Result ?? new();
-            _nationalDex = taskNationDex.Result ?? new();
+            _nationalDex = taskNationDex.Result ?? new("");
+            _versionGroupDexes = taskVersionGroupDexes.Result ?? [];
             _autobuilderParams = taskAutobuilderParams.Result ?? null;
+            _searchLocation = taskSearchLocation.Result ?? "National Pokédex";
 
             // if session doesn't contain the national dex, generate it
             if (NationalDex is null || NationalDex.Count == 0)
             {
                 NationalDex = (await PokeApiService.Instance!.GetNationalDexAsync())!;
+            }
+
+            // if the session doesn't contain the dexes for the version groups, generate those
+            if (VersionGroupDexes.Count == 0)
+            {
+                NamedApiResourceList<VersionGroup> games = await PokeApiService.Instance!.GetVersionGroupsAsync();
+
+                List<Task<VersionGroup>> versionGroupTasks = [];
+                foreach (var game in games.Results)
+                {
+                    versionGroupTasks.Add(PokeApiService.Instance.GetVersionGroupAsync(game));
+                }
+                await Task.WhenAll(versionGroupTasks);
+
+                List<Task<Pokedex?>> pokedexTasks = [];
+                foreach (var versionGroupTask in versionGroupTasks)
+                {
+                    pokedexTasks.Clear();
+                    foreach (var pokedex in versionGroupTask.Result.Pokedexes)
+                    {
+                        pokedexTasks.Add(PokeApiService.Instance.GetPokedexAsync(pokedex));
+                    }
+                    await Task.WhenAll(pokedexTasks);
+
+                    SmartPokedex versionGroupDex = new(StringUtils.FirstCharToUpper(versionGroupTask.Result.Name));
+                    foreach (var pokedexTask in pokedexTasks)
+                    {
+                        if (pokedexTask.Result is not null)
+                            versionGroupDex.AddPokedex(pokedexTask.Result);
+                    }
+
+                    _versionGroupDexes.Add(versionGroupDex);
+                }
             }
         }
 
@@ -133,6 +184,12 @@ namespace PokeAutobuilder.Source.Services
         {
 			_nationalDex = nationalDex;
 			await _sessionStorageService.SetItemAsync(NATIONAL_DEX_KEY, nationalDex);
+        }
+
+        public async Task SetVersionGroupDexesAsync(List<SmartPokedex> versionGroupDexes)
+        {
+            _versionGroupDexes = versionGroupDexes;
+            await _sessionStorageService.SetItemAsync(VERSION_GROUP_DEXES_KEY, versionGroupDexes);
         }
 
         public async Task SetAllTypesAsync(List<PokeApiNet.Type> allTypes)

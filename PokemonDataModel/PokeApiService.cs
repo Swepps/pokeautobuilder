@@ -39,6 +39,16 @@ namespace PokemonDataModel
             return pokemonTypes;
         }
 
+        public async Task<NamedApiResourceList<VersionGroup>> GetVersionGroupsAsync()
+        {
+            return await ApiClient.GetNamedResourcePageAsync<VersionGroup>(100, 0);
+        }
+
+        public async Task<VersionGroup> GetVersionGroupAsync(NamedApiResource<VersionGroup> apiResource)
+        {
+            return await ApiClient.GetResourceAsync(apiResource);
+        }
+
         // we will cache the national pokedex between sessions for faster loading time
         public async Task<SmartPokedex?> GetNationalDexAsync()
         {
@@ -46,7 +56,7 @@ namespace PokemonDataModel
 
             if (nationalDex is not null)
             {
-                SmartPokedex smNatDex = new SmartPokedex(nationalDex);
+                SmartPokedex smNatDex = new SmartPokedex("National Pokédex", nationalDex);
                 return smNatDex;
             }
 
@@ -57,6 +67,20 @@ namespace PokemonDataModel
             try
             {
                 Pokedex pokedex = await ApiClient.GetResourceAsync<Pokedex>(i);
+                return pokedex;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+
+        public async Task<Pokedex?> GetPokedexAsync(NamedApiResource<Pokedex> apiResource)
+        {
+            try
+            {
+                Pokedex pokedex = await ApiClient.GetResourceAsync(apiResource);
                 return pokedex;
             }
             catch (Exception ex)

@@ -2,11 +2,13 @@
 @using PokeAutobuilder.Source.Services;
 @using PokeAutobuilder.Shared;
 @using PokemonDataModel
+@using Utility
 
 @inject SessionService Session
 @inject ProfileService Profile
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
+@inject PokeApiService PokeApi
 
 @implements IDisposable
 
@@ -23,9 +25,10 @@
             </MudRadioGroup> *@
             <MudSelect T="IEnumerable<IPokemonSearchable>" Label="Search Location" AnchorOrigin="Origin.TopCenter"
                        @bind-Value="SearchLocation">
-                @foreach (var sl in _searchLocations){
-                    <MudSelectItem T="IEnumerable<IPokemonSearchable>" Value="sl.Value">
-                        @sl.Key
+                @foreach (SmartPokedex dex in Session.VersionGroupDexes)
+                {
+                    <MudSelectItem T="IEnumerable<IPokemonSearchable>" Value="dex">
+                        @dex.Name
                     </MudSelectItem>
                 }
             </MudSelect>
@@ -176,6 +179,14 @@
 
         _searchLocations.Add("National Pokédex", Session.NationalDex);
         _searchLocations.Add("Pokémon Storage", Profile.PokemonStorage.Pokemon);
+
+        foreach (var pokedex in Session.VersionGroupDexes)
+        {
+            if (pokedex.Count > 0)
+            {
+                _searchLocations.Add(pokedex.Name, pokedex);
+            }
+        }       
 
         _teamName = Session.Team.Name;
         _searchLocation = null;

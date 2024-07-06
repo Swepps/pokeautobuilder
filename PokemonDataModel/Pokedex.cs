@@ -75,16 +75,18 @@ namespace PokemonDataModel
     // for the pokedex combobox
     public class SmartPokedex : List<SmartPokemonEntry>
     {
-        public SmartPokedex() { }
-        public SmartPokedex(Pokedex pokedex) 
+        public SmartPokedex(string name) { Name = name; }
+        public SmartPokedex(string name, Pokedex pokedex) 
         {
-            SetPokedex(pokedex);
+            Name = name;
+            AddPokedex(pokedex);
         }
 
-        public void SetPokedex(Pokedex pokedex)
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        public void AddPokedex(Pokedex pokedex)
         {
-            this.Clear();
-            
             foreach (var entry in pokedex.PokemonEntries)
             {
                 Add(new SmartPokemonEntry(entry.EntryNumber, entry.PokemonSpecies));
