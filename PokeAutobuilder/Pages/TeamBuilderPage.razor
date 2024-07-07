@@ -197,7 +197,35 @@
         Session.OnTeamChange += SetSelectedPokemon;
 
         _searchLocations.Add(new SmartPokedex("National Pokédex", new NamedApiResource<Pokedex> { Name = "national", Url = "https://pokeapi.co/api/v2/pokedex/1/" }));
-        _searchLocations.Add(Profile.PokemonStorage);     
+        _searchLocations.Add(Profile.PokemonStorage);
+        _searchLocations.Add(new SmartPokedex("Red & Blue", new NamedApiResource<VersionGroup> { Name = "red-blue", Url = "https://pokeapi.co/api/v2/version-group/1/" }));
+        _searchLocations.Add(new SmartPokedex("Yellow", new NamedApiResource<VersionGroup> { Name = "yellow", Url = "https://pokeapi.co/api/v2/version-group/2/" }));
+        _searchLocations.Add(new SmartPokedex("Gold & Silver", new NamedApiResource<VersionGroup> { Name = "gold-silver", Url = "https://pokeapi.co/api/v2/version-group/3/" }));
+        _searchLocations.Add(new SmartPokedex("Crystal", new NamedApiResource<VersionGroup> { Name = "crystal", Url = "https://pokeapi.co/api/v2/version-group/4/" }));
+        _searchLocations.Add(new SmartPokedex("Ruby & Sapphire", new NamedApiResource<VersionGroup> { Name = "ruby-sapphire", Url = "https://pokeapi.co/api/v2/version-group/5/" }));
+        _searchLocations.Add(new SmartPokedex("Emerald", new NamedApiResource<VersionGroup> { Name = "emerald", Url = "https://pokeapi.co/api/v2/version-group/6/" }));
+        _searchLocations.Add(new SmartPokedex("FireRed & LeafGreen", new NamedApiResource<VersionGroup> { Name = "firered-leafgreen", Url = "https://pokeapi.co/api/v2/version-group/7/" }));
+        _searchLocations.Add(new SmartPokedex("Diamond & Pearl", new NamedApiResource<VersionGroup> { Name = "diamond-pearl", Url = "https://pokeapi.co/api/v2/version-group/8/" }));
+        _searchLocations.Add(new SmartPokedex("Platinum", new NamedApiResource<VersionGroup> { Name = "platinum", Url = "https://pokeapi.co/api/v2/version-group/9/" }));
+        _searchLocations.Add(new SmartPokedex("HeartGold & SoulSilver", new NamedApiResource<VersionGroup> { Name = "heartgold-soulsilver", Url = "https://pokeapi.co/api/v2/version-group/10/" }));
+        _searchLocations.Add(new SmartPokedex("Black & White", new NamedApiResource<VersionGroup> { Name = "black-white", Url = "https://pokeapi.co/api/v2/version-group/11/" }));
+        _searchLocations.Add(new SmartPokedex("Colosseum", new NamedApiResource<VersionGroup> { Name = "colosseum", Url = "https://pokeapi.co/api/v2/version-group/12/" }));
+        _searchLocations.Add(new SmartPokedex("XD", new NamedApiResource<VersionGroup> { Name = "xd", Url = "https://pokeapi.co/api/v2/version-group/13/" }));
+        _searchLocations.Add(new SmartPokedex("Black 2 & White 2", new NamedApiResource<VersionGroup> { Name = "black-2-white-2", Url = "https://pokeapi.co/api/v2/version-group/14/" }));
+        _searchLocations.Add(new SmartPokedex("X & Y", new NamedApiResource<VersionGroup> { Name = "x-y", Url = "https://pokeapi.co/api/v2/version-group/15/" }));
+        _searchLocations.Add(new SmartPokedex("Omega Ruby & Alpha Sapphire", new NamedApiResource<VersionGroup> { Name = "omega-ruby-alpha-sapphire", Url = "https://pokeapi.co/api/v2/version-group/16/" }));
+        _searchLocations.Add(new SmartPokedex("Sun & Moon", new NamedApiResource<VersionGroup> { Name = "sun-moon", Url = "https://pokeapi.co/api/v2/version-group/17/" }));
+        _searchLocations.Add(new SmartPokedex("Ultra Sun & Ultra Moon", new NamedApiResource<VersionGroup> { Name = "ultra-sun-ultra-moon", Url = "https://pokeapi.co/api/v2/version-group/18/" }));
+        _searchLocations.Add(new SmartPokedex("Let's Go, Pikachu! & Let's Go, Eevee!", new NamedApiResource<VersionGroup> { Name = "lets-go-pikachu-lets-go-eevee", Url = "https://pokeapi.co/api/v2/version-group/19/" }));
+        _searchLocations.Add(new SmartPokedex("Sword & Shield", new NamedApiResource<VersionGroup> { Name = "sword-shield", Url = "https://pokeapi.co/api/v2/version-group/20/" }));
+        _searchLocations.Add(new SmartPokedex("The Isle of Armor", new NamedApiResource<VersionGroup> { Name = "the-isle-of-armor", Url = "https://pokeapi.co/api/v2/version-group/21/" }));
+        _searchLocations.Add(new SmartPokedex("The Crown Tundra", new NamedApiResource<VersionGroup> { Name = "the-crown-tundra", Url = "https://pokeapi.co/api/v2/version-group/22/" }));
+        _searchLocations.Add(new SmartPokedex("Brilliant Diamond and Shining Pearl", new NamedApiResource<VersionGroup> { Name = "brilliant-diamond-and-shining-pearl", Url = "https://pokeapi.co/api/v2/version-group/23/" }));
+        _searchLocations.Add(new SmartPokedex("Legends: Arceus", new NamedApiResource<VersionGroup> { Name = "legends-arceus", Url = "https://pokeapi.co/api/v2/version-group/24/" }));
+        _searchLocations.Add(new SmartPokedex("Scarlet & Violet", new NamedApiResource<VersionGroup> { Name = "scarlet-violet", Url = "https://pokeapi.co/api/v2/version-group/25/" }));
+        _searchLocations.Add(new SmartPokedex("The Teal Mask", new NamedApiResource<VersionGroup> { Name = "the-teal-mask", Url = "https://pokeapi.co/api/v2/version-group/26/" }));
+        _searchLocations.Add(new SmartPokedex("The Indigo Disk", new NamedApiResource<VersionGroup> { Name = "the-indigo-disk", Url = "https://pokeapi.co/api/v2/version-group/27/" }));
+
 
         _teamName = Session.Team.Name;
         _searchLocation = _searchLocations.Where((s) => s.Name.Equals(Session.SearchLocation)).FirstOrDefault();
