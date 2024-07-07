@@ -15,9 +15,9 @@
 
 <MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 
-        <MudAutocomplete T="IPokemonSearchable" Label="Search for a Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@Search"
+        <MudAutocomplete T="IPokemonSearchable" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@(SearchFunc!)"
                          ResetValueOnEmptyText="true" Disabled="Locked" MaxItems="50"
-                         CoerceText="true" CoerceValue="false">
+                     CoerceText="true" CoerceValue="false" ShowProgressIndicator="true">
             <MoreItemsTemplate>
                 <MudText Align="Align.Center" Typo="Typo.body1">
                     ...                    
@@ -55,11 +55,9 @@
             </MudTooltip>
             <MudTooltip Text="Add To Storage">
                 <MudIconButton Disabled="@(Profile.PokemonStorage.Pokemon.Contains(Pokemon))"
-                Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
+                               Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
             </MudTooltip>
-            <MudTooltip Text="Randomize">
-                <MudIconButton Disabled="Locked" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
-            </MudTooltip>
+            @ExtraButtons
         </MudButtonGroup>
     }
     else if (PokemonSearchValue is not null)
@@ -76,22 +74,20 @@
             <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" />
         }        
     }
-    else
-    {
-        
-    }
-
 </MudPaper>
 
 @code {
+    [Parameter, EditorRequired]
+    public Func<string, Task<IEnumerable<IPokemonSearchable>>>? SearchFunc { get; set; }
+
     [Parameter]
-    public IEnumerable<IPokemonSearchable>? SearchList { get; set; }
+    public RenderFragment? ExtraButtons { get; set; }
 
     [Parameter]
     public EventCallback<PokemonSearchBox> OnPokemonChanged { get; set; }
 
     [Parameter]
-    public bool Lockable { get; set; }
+    public bool Lockable { get; set; } = false;
 
     // currently selected pokemon
     private SmartPokemon? _pokemon;
@@ -153,20 +149,6 @@
         StateHasChanged();
     }
 
-    private async Task<IEnumerable<IPokemonSearchable>> Search(string value)
-    {
-        // return an empty list if one hasn't been provided
-        if (SearchList is null)
-            return new List<IPokemonSearchable>();
-
-        // if text is null or empty, show complete list
-        if (string.IsNullOrEmpty(value))
-            return SearchList;
-
-        // search the storage in a background thread
-        return await Task.Run(() => SearchList.Where(p => p.ToString()!.ToLower().Contains(value.ToLower())).OrderBy(p => p.ToString()!.ToLower()));
-    }
-
     public async Task OnUpdatedPokemonForm()
     {        
         // don't bother if the form name is the same as the current pokemon
@@ -219,7 +201,7 @@
         _pokemon = pokemon;
         if (_pokemon is not null)
         {
-            _pokemonSearchValue = SearchList!.Where(entry => entry.ToString()!.ToLower().Equals(_pokemon.Species.Name)).FirstOrDefault();
+            _pokemonSearchValue = pokemon;
             _pokemonFormName = _pokemon.Name;
             _pokemonSearchValueVarieties.Clear();
             PokemonSpecies species = await _pokemon.GetSpeciesAsync();
@@ -283,21 +265,6 @@
                 Pokemon = pokemon;
             }
             StateHasChanged();
-        }
-    }
-
-    public async Task OnClickRandomize()
-    {
-        await SearchPokemon(null);
-
-        Random rand = new Random();
-        
-        _pokemonSearchValue = SearchList!.ElementAt(rand.Next(SearchList!.Count()));
-
-        if (_pokemonSearchValue != null)
-        {            
-            _pokemonSearchValueVarieties = (await _pokemonSearchValue.GetAllVarietiesAsync()).ToList();
-            await SearchPokemon(_pokemonSearchValueVarieties[rand.Next(_pokemonSearchValueVarieties.Count)].Name);
         }
     }
 

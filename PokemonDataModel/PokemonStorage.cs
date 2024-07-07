@@ -1,17 +1,36 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace PokemonDataModel
 {
-    public class PokemonStorage
+    public class PokemonStorage : ILazyPokemonList
     {
         [JsonPropertyName("pokemon")]
         public List<SmartPokemon> Pokemon { get; set; }
 
-        public PokemonStorage() { Pokemon = []; }
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        public PokemonStorage()
+        {
+            Pokemon = [];
+        }
+        public PokemonStorage(string name) 
+        {
+            Name = name;
+            Pokemon = [];
+        }
 
         // used when getting cached pokemon storage list
-        public PokemonStorage(List<SmartPokemon> pokemonList) 
+        public PokemonStorage(string name, List<SmartPokemon> pokemonList) 
         {
+            Name = name;
+            Pokemon = pokemonList;
+        }
+
+        public PokemonStorage(List<SmartPokemon> pokemonList)
+        {
+            Name = "Storage";
             Pokemon = pokemonList;
         }
 
@@ -56,6 +75,11 @@ namespace PokemonDataModel
             Random rand = new();
             SmartPokemon randPokemon = Pokemon[rand.Next(0, Pokemon.Count)];
             return randPokemon;
+        }
+
+        public Task<IEnumerable<IPokemonSearchable>> GetListAsync()
+        {
+            return Task.Run(() => Pokemon.AsEnumerable<IPokemonSearchable>());
         }
     }
 }

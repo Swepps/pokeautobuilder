@@ -19,16 +19,12 @@
 <MudStack Spacing="5" Class="mt-4 mb-4" AlignItems="AlignItems.Center">
     <MudGrid Justify="Justify.FlexEnd">
         <MudItem xs="12" sm="6" Class="d-flex align-end justify-start mud-width-full">
-@*             <MudRadioGroup @bind-SelectedOption="@Session.SearchLocation">
-                <MudRadio Option="@SearchLocation.NationalPokedex" Color="Color.Primary">National Pokédex</MudRadio>
-                <MudRadio Option="@SearchLocation.PokemonStorage" Color="Color.Primary">Pokémon Storage</MudRadio>
-            </MudRadioGroup> *@
-            <MudSelect T="IEnumerable<IPokemonSearchable>" Label="Search Location" AnchorOrigin="Origin.TopCenter"
+            <MudSelect T="ILazyPokemonList" Label="Search Location" AnchorOrigin="Origin.TopCenter"
                        @bind-Value="SearchLocation">
-                @foreach (SmartPokedex dex in Session.VersionGroupDexes)
+                @foreach (ILazyPokemonList list in _searchLocations)
                 {
-                    <MudSelectItem T="IEnumerable<IPokemonSearchable>" Value="dex">
-                        @dex.Name
+                    <MudSelectItem T="ILazyPokemonList" Value="list">
+                        @list.Name
                     </MudSelectItem>
                 }
             </MudSelect>
@@ -42,7 +38,13 @@
         @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
             <MudItem xs="6" sm="4" lg="2">
-                <PokemonSearchBox @ref="tempCard" SearchList="_searchLocation" OnPokemonChanged="PokemonSearchBoxUpdatedAsync" />
+                <PokemonSearchBox @ref="tempCard" SearchFunc="SearchAsync" OnPokemonChanged="PokemonSearchBoxUpdatedAsync" >
+                    <ExtraButtons>
+@*                         <MudTooltip Text="Randomize">
+                            <MudIconButton Disabled="Locked" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
+                        </MudTooltip> *@
+                    </ExtraButtons>
+                </PokemonSearchBox>
             </MudItem>
         }
     </MudGrid>
@@ -80,15 +82,18 @@
         set { cards.Add(value); }
     }
 
-    private Dictionary<string, IEnumerable<IPokemonSearchable>> _searchLocations = new();
-    IEnumerable<IPokemonSearchable>? _searchLocation;
-    IEnumerable<IPokemonSearchable>? SearchLocation
+    private List<ILazyPokemonList> _searchLocations = new();
+    ILazyPokemonList? _searchLocation;
+    ILazyPokemonList? SearchLocation
     {
         get => _searchLocation;
         set
         {
             _searchLocation = value;
-            _ = Session.SetSearchLocationAsync(_searchLocations.FirstOrDefault(x => x.Value == value).Key);
+            if (value is not null)
+            {
+                _ = Session.SetSearchLocationAsync(value.Name);
+            }
         }
     }    
 
@@ -159,6 +164,20 @@
             StateHasChanged();
     }
 
+    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString)
+    {
+        if (_searchLocation is not null)
+        {
+            IEnumerable<IPokemonSearchable> list = await _searchLocation.GetListAsync();
+            if (String.IsNullOrEmpty(searchString))
+                return list;
+
+            return list.Where((p) => p.Name.ToLower().Contains(searchString.ToLower()));
+        }
+
+        return Enumerable.Empty<SmartPokemonEntry>();
+    }
+
     protected async Task PokemonSearchBoxUpdatedAsync(PokemonSearchBox card)
     {
         int teamIndex = cards.IndexOf(card);
@@ -177,23 +196,11 @@
         // register interest in session changing to update this page
         Session.OnTeamChange += SetSelectedPokemon;
 
-        _searchLocations.Add("National Pokédex", Session.NationalDex);
-        _searchLocations.Add("Pokémon Storage", Profile.PokemonStorage.Pokemon);
-
-        foreach (var pokedex in Session.VersionGroupDexes)
-        {
-            if (pokedex.Count > 0)
-            {
-                _searchLocations.Add(pokedex.Name, pokedex);
-            }
-        }       
+        _searchLocations.Add(new SmartPokedex("National Pokédex", new NamedApiResource<Pokedex> { Name = "national", Url = "https://pokeapi.co/api/v2/pokedex/1/" }));
+        _searchLocations.Add(Profile.PokemonStorage);     
 
         _teamName = Session.Team.Name;
-        _searchLocation = null;
-        if (!_searchLocations.TryGetValue(Session.SearchLocation, out _searchLocation))
-        {
-            _searchLocation = Session.NationalDex;
-        }
+        _searchLocation = _searchLocations.Where((s) => s.Name.Equals(Session.SearchLocation)).FirstOrDefault();
     }
 
     protected override void OnAfterRender(bool firstRender)

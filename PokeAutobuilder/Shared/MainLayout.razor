@@ -148,9 +148,7 @@
             await Session.LoadSessionStorage();
             await ProfileService.LoadProfileStorage();        
 
-            if (Session.NationalDex.Count > 0
-                &&
-                Session.AllTypes.Count > 0)
+            if (Session.AllTypes.Count > 0)
             {
                 _state = Init.Done;
             }

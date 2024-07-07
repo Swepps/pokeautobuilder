@@ -26,7 +26,7 @@ namespace PokeAutobuilder.Source.Services
         private static readonly string POKEMON_STORAGE_KEY = "pokemon_storage";
         private static readonly string TEAM_STORAGE_KEY = "pokemon_team_storage";
 
-        private PokemonStorage _pokemonStorage = new();
+        private PokemonStorage _pokemonStorage = new(POKEMON_STORAGE_KEY);
         public PokemonStorage PokemonStorage
         {
             get => _pokemonStorage;
@@ -63,7 +63,11 @@ namespace PokeAutobuilder.Source.Services
                 taskTeamStorage.AsTask()
                 );
 
-            _pokemonStorage = taskPokemonStorage.Result ?? new();
+            _pokemonStorage = taskPokemonStorage.Result ?? new("Pokémon Storage");
+            if (String.IsNullOrEmpty(_pokemonStorage.Name))
+            {
+                _pokemonStorage.Name = "Pokémon Storage";
+            }
             _teamStorage = taskTeamStorage.Result ?? new();
         }
 
@@ -152,7 +156,7 @@ namespace PokeAutobuilder.Source.Services
         }
         public async Task AddTeamToStorageAsync(PokemonTeam team)
         {
-            TeamStorage.Add(team.DeepClone());
+            TeamStorage.Add(new PokemonTeam(team));
             await SetTeamStorageAsync(TeamStorage);
         }
         public async Task<bool> RemoveTeamFromStorageAsync(PokemonTeam team)
