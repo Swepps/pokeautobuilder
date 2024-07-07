@@ -9,8 +9,9 @@
             { 1.0, true },
             { 1.1, true },
             { 1.2, true },
+            { 1.3, false },
         };
-        public static readonly double Version = 1.2;
+        public static readonly double Version = 1.3;
         public static readonly string Language = "en";
 
         // ah f*ck it... I'm just gonna hard code the type names in instead
