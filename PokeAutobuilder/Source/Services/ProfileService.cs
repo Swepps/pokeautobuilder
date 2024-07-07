@@ -26,7 +26,7 @@ namespace PokeAutobuilder.Source.Services
         private static readonly string POKEMON_STORAGE_KEY = "pokemon_storage";
         private static readonly string TEAM_STORAGE_KEY = "pokemon_team_storage";
 
-        private PokemonStorage _pokemonStorage = new(POKEMON_STORAGE_KEY);
+        private PokemonStorage _pokemonStorage = new("Pokémon Storage");
         public PokemonStorage PokemonStorage
         {
             get => _pokemonStorage;

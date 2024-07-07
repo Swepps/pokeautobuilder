@@ -17,7 +17,7 @@
 
         <MudAutocomplete T="IPokemonSearchable" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@(SearchFunc!)"
                          ResetValueOnEmptyText="true" Disabled="Locked" MaxItems="50"
-                     CoerceText="true" CoerceValue="false" ShowProgressIndicator="true">
+                         CoerceText="true" CoerceValue="false" ShowProgressIndicator="true">
             <MoreItemsTemplate>
                 <MudText Align="Align.Center" Typo="Typo.body1">
                     ...                    
@@ -201,7 +201,7 @@
         _pokemon = pokemon;
         if (_pokemon is not null)
         {
-            _pokemonSearchValue = pokemon;
+            _pokemonSearchValue = new SmartPokemonEntry(_pokemon.Id, _pokemon.Species);
             _pokemonFormName = _pokemon.Name;
             _pokemonSearchValueVarieties.Clear();
             PokemonSpecies species = await _pokemon.GetSpeciesAsync();

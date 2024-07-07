@@ -8,40 +8,82 @@
 @inject ProfileService Profile
 @inject IDialogService DialogService
 
+@implements IDisposable
+
 <PageTitle>Pokémon Storage</PageTitle>
 
-<div class="d-flex flex-wrap gap-4">
-    <MudPaper MinWidth="320px" MaxWidth="600px" Height="fit-content" Class="flex-auto">
-        <PokemonDetails Pokemon="SelectedPokemon">
-            <ActionsContent>
-                <div class="d-flex justify-center align-end mud-height-full">
-                    <MudButtonGroup VerticalAlign="true" 
-                                    OverrideStyles="false"
-                                    Size="Size.Large"
-                                    Class="mud-width-full"
-                                    >
-                        <MudButton Variant="Variant.Outlined"
-                                   Disabled="true">
-                            MOVE
-                        </MudButton>
-                        <MudButton 
-                                   Variant="Variant.Outlined"
-                                   OnClick="OnClickEvolveAsync"
-                                   Disabled="@(!_selectedPokemonCanEvolve)">
-                            EVOLVE
-                        </MudButton>
-                        <MudButton Color="Color.Error"
-                                   Variant="Variant.Outlined"
-                                   OnClick="OnClickReleaseAsync"
-                                   Disabled="@(SelectedPokemon is null)">
-                            RELEASE
-                        </MudButton>
-                    </MudButtonGroup>
-                </div>
-            </ActionsContent>
-        </PokemonDetails>
+<MudPaper Elevation="25" Square="true">
+    <MudToolBar>
+        <MudIconButton Icon="@Icons.Material.Outlined.Add" OnClick="@(() => _storagePanel = StoragePanel.Add)" Title="Import Pokémon"/>
+        <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => _storagePanel = StoragePanel.Edit)" Title="Edit selected Pokémon" />
+    </MudToolBar>
+</MudPaper>
+<div class="d-flex flex-wrap">
+    <MudPaper MaxWidth="600px" Height="fit-content" Square="true">
+        @switch (_storagePanel)
+        {
+            case StoragePanel.Add: 
+                <MudStack Class="pa-2" Style="max-width: 250px;">
+                    <MudText Typo="Typo.caption" Color="Color.Info">
+                        Use the controls below to find Pokémon to add to storage
+                    </MudText>
+                    <MudSelect T="ILazyPokemonList" Label="Search Location" AnchorOrigin="Origin.TopCenter" FullWidth="false"
+                               @bind-Value="_searchLocation">
+                        @foreach (ILazyPokemonList list in SearchLocations!)
+                        {
+                            <MudSelectItem T="ILazyPokemonList" Value="list">
+                                @list.Name
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                    <div style="max-width: 250px;">
+                        <PokemonSearchBox @ref="_pokemonSearchBox" SearchFunc="SearchAsync">
+                            <ExtraButtons>
+                                <MudTooltip Text="Randomize">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomizeAsync"></MudIconButton>
+                                </MudTooltip>
+                            </ExtraButtons>
+                        </PokemonSearchBox>
+                    </div>
+                </MudStack>
+                break;
+
+            case StoragePanel.Edit:
+                <PokemonDetails Pokemon="SelectedPokemon">
+                        <ActionsContent>
+                        <div class="d-flex justify-center align-end mud-height-full">
+                            <MudButtonGroup VerticalAlign="true" 
+                                            OverrideStyles="false"
+                                            Size="Size.Large"
+                                            Class="mud-width-full"
+                                            >
+                                <MudButton Variant="Variant.Outlined"
+                                           Disabled="true">
+                                    MOVE
+                                </MudButton>
+                                <MudButton 
+                                           Variant="Variant.Outlined"
+                                           OnClick="OnClickEvolveAsync"
+                                           Disabled="@(!_selectedPokemonCanEvolve)">
+                                    EVOLVE
+                                </MudButton>
+                                <MudButton Color="Color.Error"
+                                           Variant="Variant.Outlined"
+                                           OnClick="OnClickReleaseAsync"
+                                           Disabled="@(SelectedPokemon is null)">
+                                    RELEASE
+                                </MudButton>
+                            </MudButtonGroup>
+                        </div>
+                    </ActionsContent>
+                </PokemonDetails>
+                break;
+
+            default:
+                break;
+        }
     </MudPaper>
-    <MudPaper Class="pa-1 d-flex flex-md-1" MinWidth="325px" Elevation="0" Square="true">
+    <MudPaper Class="pa-1 d-flex flex-1" MinWidth="325px" Elevation="0" Square="true">
         <CascadingValue Value="@SelectedPokemon">
             <PokemonStorageBox PokemonCollection="Profile.PokemonStorage.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
         </CascadingValue>
@@ -51,6 +93,13 @@
 <PageFooter />
 
 @code {
+    [CascadingParameter]
+    public List<ILazyPokemonList>? SearchLocations { get; set; }
+
+    ILazyPokemonList? _searchLocation;
+
+    private PokemonSearchBox? _pokemonSearchBox;
+
     private SmartPokemon? _selectedPokemon;
     public SmartPokemon? SelectedPokemon 
     {
@@ -63,18 +112,24 @@
 
     private bool _selectedPokemonCanEvolve = false;
 
+    protected enum StoragePanel { Edit, Add }
+    protected StoragePanel _storagePanel = StoragePanel.Add;
+
     private string _messageBoxState = "Message box hasn't been opened yet";
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (firstRender)
+        // register interest in session changing to update this page
+        Profile.OnStorageChange += StateHasChanged;
+        if (SearchLocations is not null)
         {
-            SmartPokemon? initialPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
-            if (initialPokemon is not null)
-            {
-                await OnSelectPokemonAsync(initialPokemon);
-            }
+            _searchLocation = SearchLocations.FirstOrDefault();
         }
+    }
+
+    public void Dispose()
+    {
+        Profile.OnStorageChange -= StateHasChanged;
     }
 
     protected async Task OnSelectPokemonAsync(SmartPokemon selectedPokemon)
@@ -82,6 +137,7 @@
         SelectedPokemon = null;
         _selectedPokemonCanEvolve = await PokeApiService.Instance!.CanEvolve(selectedPokemon);
         SelectedPokemon = selectedPokemon;
+        _storagePanel = StoragePanel.Edit;
         StateHasChanged();
     }
 
@@ -133,5 +189,30 @@
                 await OnSelectPokemonAsync(pokemon);
             }
         }
+    }
+
+    protected async Task OnClickRandomizeAsync()
+    {
+        if (_pokemonSearchBox is not null && _searchLocation is not null)
+        {
+            IEnumerable<IPokemonSearchable> list = await _searchLocation.GetListAsync();
+            Random rand = new Random();
+            int index = rand.Next(0, list.Count());
+            _pokemonSearchBox.PokemonSearchValue = list.ElementAt(index);
+        }
+    }
+
+    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString)
+    {
+        if (_searchLocation is not null)
+        {
+            IEnumerable<IPokemonSearchable> list = await _searchLocation.GetListAsync();
+            if (String.IsNullOrEmpty(searchString))
+                return list;
+
+            return list.Where((p) => p.Name.ToLower().Contains(searchString.ToLower()));
+        }
+
+        return Enumerable.Empty<SmartPokemonEntry>();
     }
 }
