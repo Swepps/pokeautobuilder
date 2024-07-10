@@ -1,6 +1,7 @@
 ﻿using Accord.IO;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
+using Microsoft.VisualBasic;
 using PokemonDataModel;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
@@ -23,8 +24,19 @@ namespace PokeAutobuilder.Source.Services
         public event Action? OnTeamStorageChange;
 
         // global variables
+        private static readonly string POKEMON_TYPES_KEY = "pokemon_types";
         private static readonly string POKEMON_STORAGE_KEY = "pokemon_storage";
         private static readonly string TEAM_STORAGE_KEY = "pokemon_team_storage";
+
+        private List<PokeApiNet.Type> _allTypes = new();
+        public List<PokeApiNet.Type> AllTypes
+        {
+            get => _allTypes;
+            set
+            {
+                _ = SetAllTypesAsync(value);
+            }
+        }
 
         private PokemonStorage _pokemonStorage = new();
         public PokemonStorage PokemonStorage
@@ -58,6 +70,20 @@ namespace PokeAutobuilder.Source.Services
             try
             {
                 double profileStorageVersion = await GetVersionAsync();
+
+                // we want to refresh the cached types each time there is a version update to ensure
+                // the types are fresh from the API
+                if (profileStorageVersion == Globals.Version)
+                {                    
+                    _allTypes = await _localStorageService.GetItemAsync<List<PokeApiNet.Type>>(POKEMON_TYPES_KEY);
+                }
+
+                // if profile doesn't contain pokemon types, generate them
+                if (AllTypes is null || AllTypes.Count == 0)
+                {
+                    AllTypes = await PokeApiService.Instance!.GetAllTypesAsync();
+                }
+                DataModelCache.LoadedTypes = AllTypes;
 
                 // load pokemon storage
                 if (profileStorageVersion <= 1.3)
@@ -129,6 +155,12 @@ namespace PokeAutobuilder.Source.Services
             { DarkMode = isDarkMode };
 
             await _localStorageService.SetItemAsync("preferences", newPrefs);
+        }
+
+        public async Task SetAllTypesAsync(List<PokeApiNet.Type> allTypes)
+        {
+            _allTypes = allTypes;
+            await _localStorageService.SetItemAsync(POKEMON_TYPES_KEY, allTypes);
         }
 
         public async Task SetPokemonStorageAsync(PokemonStorage storage)
