@@ -107,7 +107,7 @@ namespace PokeAutobuilder.Source.Services
                 Console.WriteLine(ex.Message);
 
                 // if loading storage fails we'll just have to reset it so users don't get stuck
-                // * Only in DEBUG
+                // * Only in RELEASE
 #if DEBUG
 
 #else
