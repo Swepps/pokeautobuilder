@@ -175,14 +175,14 @@ namespace PokeAutobuilderTests
         [Fact]
         public async Task BasicGeneration()
         {
-            PokemonStorage storage = new();
-            storage.Pokemon.Add((await apiService!.GetPokemonAsync("pikachu"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("gyarados"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("swampert"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("salamence"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("golem"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("skarmory"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("kyogre"))!);
+            PokemonBox box = new();
+            box.Pokemon.Add((await apiService!.GetPokemonAsync("pikachu"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("gyarados"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("swampert"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("salamence"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("golem"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("skarmory"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("kyogre"))!);
 
             PokemonTeamGeneticAlgorithm GA = new();
             AutoBuilderWeightings weightings = new();
@@ -195,7 +195,7 @@ namespace PokeAutobuilderTests
 
                 BestTeam = g.BestChromosome.GetTeam();
             };
-            GA.Initialize(50, storage, new PokemonTeam(), weightings);
+            GA.Initialize(50, box, new PokemonTeam(), weightings);
             GA.Run(10);
 
             // check that the final team has 6 unique members
@@ -205,15 +205,15 @@ namespace PokeAutobuilderTests
         [Fact]
         public async Task NormalGeneration()
         {
-            PokemonStorage storage = new();
+            PokemonBox box = new();
             // add a selection of "bad" pokemon
-            storage.Pokemon.Add((await apiService!.GetPokemonAsync("rattata"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("wurmple"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("pidgey"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("zigzagoon"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("magikarp"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("whismur"))!);
-            storage.Pokemon.Add((await apiService.GetPokemonAsync("spearow"))!);
+            box.Pokemon.Add((await apiService!.GetPokemonAsync("rattata"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("wurmple"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("pidgey"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("zigzagoon"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("magikarp"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("whismur"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("spearow"))!);
 
             // add 6 "good" pokemon that should theoretically get picked
             SmartPokemon lapras = (await apiService.GetPokemonAsync("lapras"))!;
@@ -222,12 +222,12 @@ namespace PokeAutobuilderTests
             SmartPokemon talonflame = (await apiService.GetPokemonAsync("talonflame"))!;
             SmartPokemon ferrothorn = (await apiService.GetPokemonAsync("ferrothorn"))!;
             SmartPokemon gliscor = (await apiService.GetPokemonAsync("gliscor"))!;
-            storage.Pokemon.Add(lapras);
-            storage.Pokemon.Add(gardevoir);
-            storage.Pokemon.Add(gengar);
-            storage.Pokemon.Add(talonflame);
-            storage.Pokemon.Add(ferrothorn);
-            storage.Pokemon.Add(gliscor);
+            box.Pokemon.Add(lapras);
+            box.Pokemon.Add(gardevoir);
+            box.Pokemon.Add(gengar);
+            box.Pokemon.Add(talonflame);
+            box.Pokemon.Add(ferrothorn);
+            box.Pokemon.Add(gliscor);
 
             PokemonTeamGeneticAlgorithm GA = new();
             AutoBuilderWeightings weightings = new();
@@ -253,7 +253,7 @@ namespace PokeAutobuilderTests
                     );
             };
             output.WriteLine("Gen |G.Fitness|Best Fitness  |Best Team");
-            GA.Initialize(250, storage, new PokemonTeam(), weightings);
+            GA.Initialize(250, box, new PokemonTeam(), weightings);
             GA.Run(50);
 
             // check that the final team has 6 unique members

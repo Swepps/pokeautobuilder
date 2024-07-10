@@ -380,7 +380,7 @@
 
         GeneticAlgorithm.Initialize(
             PopulationSize
-            , Profile.PokemonStorage
+            , Profile.PokemonStorage.Boxes[0]
             , LockedMembers is null ? new PokemonTeam() : LockedMembers
             , weightingsCopy);
         GeneticAlgorithm.RunInBackground();

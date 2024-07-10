@@ -26,21 +26,21 @@ namespace AutoBuilder
         // pokemon chromosome vars
         static Random Random = new Random();
 
-        private readonly PokemonStorage _storage;
+        private readonly PokemonBox _box;
         private readonly PokemonTeam _lockedMembers;
 
         public double Score { get; internal set; }
 
-        public PokemonTeamChromosome(PokemonStorage storage, PokemonTeam lockedMembers)
+        public PokemonTeamChromosome(PokemonBox box, PokemonTeam lockedMembers)
         {
             int length = PokemonTeam.MaxTeamSize;
             ValidateLength(length);
             m_length = length;
             m_genes = new Gene[length];
-            _storage = storage;
+            _box = box;
             _lockedMembers = lockedMembers;
 
-            PokemonTeam randomTeam = _storage.GetRandomTeam();
+            PokemonTeam randomTeam = _box.GetRandomTeam();
 
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
@@ -56,7 +56,7 @@ namespace AutoBuilder
                 return GetGene(geneIndex);
             }
 
-            return new Gene(_storage.GetRandomPokemon());
+            return new Gene(_box.GetRandomPokemon());
         }
 
         // modified from normal ChromosomeBase function to not replace locked members
@@ -84,12 +84,12 @@ namespace AutoBuilder
 
         public IChromosome CreateNew()
         {
-            return new PokemonTeamChromosome(_storage, _lockedMembers);
+            return new PokemonTeamChromosome(_box, _lockedMembers);
         }
 
         public IChromosome Clone()
         {
-            var clone = new PokemonTeamChromosome(_storage, _lockedMembers);
+            var clone = new PokemonTeamChromosome(_box, _lockedMembers);
             var genes = GetGenes();
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {

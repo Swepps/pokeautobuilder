@@ -2,16 +2,17 @@
 {
     public class Globals
 	{
-        public static readonly Dictionary<double, bool> Versions = new Dictionary<double, bool>()
-        {
-            { 0.1, true },
-            { 0.2, false },
-            { 1.0, true },
-            { 1.1, true },
-            { 1.2, true },
-            { 1.3, false },
-        };
-        public static readonly double Version = 1.3;
+        public static readonly List<double> Versions =
+        [
+            0.1,
+            0.2,
+            1.0,
+            1.1,
+            1.2,
+            1.3,
+            1.4,
+        ];
+        public static readonly double Version = Versions.Last();
         public static readonly string Language = "en";
 
         // ah f*ck it... I'm just gonna hard code the type names in instead

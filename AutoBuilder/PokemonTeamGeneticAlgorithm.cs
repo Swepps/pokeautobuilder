@@ -13,11 +13,11 @@ namespace AutoBuilder
         public int GenerationsNumber => _ga != null ? _ga.GenerationsNumber : 0;
         public bool IsRunning => _timer != null;
 
-        public void Initialize(int populationsize, PokemonStorage storage, PokemonTeam lockedMembers, AutoBuilderWeightings weightings)
+        public void Initialize(int populationsize, PokemonBox box, PokemonTeam lockedMembers, AutoBuilderWeightings weightings)
         {
             Stop();
             Fitness = new PokemonTeamFitness(weightings);
-            var chromosome = new PokemonTeamChromosome(storage, lockedMembers);
+            var chromosome = new PokemonTeamChromosome(box, lockedMembers);
 
             // This operators are classic genetic algorithm operators that lead to a good solution on TSP,
             // but you can try others combinations and see what result you get.

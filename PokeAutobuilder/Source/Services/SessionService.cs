@@ -19,7 +19,6 @@ namespace PokeAutobuilder.Source.Services
         private static readonly string POKEMON_TEAM_KEY = "pokemon_team";
         private static readonly string POKEMON_TYPES_KEY = "pokemon_types";
         private static readonly string AUTOBUILDER_PARAMS = "autobuilder_params";
-        private static readonly string LOADED_SEARCH_LOCATIONS = "loaded_search_locations";
         private static readonly string SEARCH_LOCATION = "search_location";
 
         private PokemonTeam _pokemonTeam = new(); 

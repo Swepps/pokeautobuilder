@@ -54,7 +54,7 @@
                 <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
             </MudTooltip>
             <MudTooltip Text="Add To Storage">
-                <MudIconButton Disabled="@(Profile.PokemonStorage.Pokemon.Contains(Pokemon))"
+                <MudIconButton Disabled="@(Profile.PokemonStorage.Boxes[0].Pokemon.Contains(Pokemon))"
                                Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
             </MudTooltip>
             @ExtraButtons
@@ -260,7 +260,7 @@
                 // add and remove pokemon from storage to "update" it
                 // we can directly remove it here because it's about to be updated
                 // properly by AddPokemonToStorageAsync anyway
-                if (Profile.PokemonStorage.Pokemon.Remove(pokemon))
+                if (Profile.PokemonStorage.Boxes[0].Pokemon.Remove(pokemon))
                     await Profile.AddPokemonToStorageAsync(pokemon);
                 Pokemon = pokemon;
             }

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace PokemonDataModel
 {
-    public class PokemonStorage : ILazyPokemonList
+    public class PokemonBox : ILazyPokemonList
     {
         [JsonPropertyName("pokemon")]
         public List<SmartPokemon> Pokemon { get; set; }
@@ -11,27 +11,34 @@ namespace PokemonDataModel
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
-        public PokemonStorage()
+        public PokemonBox()
         {
             Pokemon = [];
         }
-        public PokemonStorage(string name) 
+
+        public PokemonBox(string name)
         {
             Name = name;
             Pokemon = [];
         }
 
-        // used when getting cached pokemon storage list
-        public PokemonStorage(string name, List<SmartPokemon> pokemonList) 
+        public PokemonBox(string name, List<SmartPokemon> pokemonList)
         {
             Name = name;
             Pokemon = pokemonList;
         }
 
-        public PokemonStorage(List<SmartPokemon> pokemonList)
+        public PokemonBox(List<SmartPokemon> pokemonList)
         {
-            Name = "Storage";
+            Name = "Box";
             Pokemon = pokemonList;
+        }
+
+        public SmartPokemon GetRandomPokemon()
+        {
+            Random rand = new();
+            SmartPokemon randPokemon = Pokemon[rand.Next(0, Pokemon.Count)];
+            return randPokemon;
         }
 
         public PokemonTeam GetRandomTeam(PokemonTeam? lockedMembers = null)
@@ -70,16 +77,20 @@ namespace PokemonDataModel
             return newTeam;
         }
 
-        public SmartPokemon GetRandomPokemon()
-        {
-            Random rand = new();
-            SmartPokemon randPokemon = Pokemon[rand.Next(0, Pokemon.Count)];
-            return randPokemon;
-        }
-
         public Task<IEnumerable<IPokemonSearchable>> GetListAsync()
         {
             return Task.Run(() => Pokemon.AsEnumerable<IPokemonSearchable>());
+        }
+    }
+
+    public class PokemonStorage
+    {
+        [JsonPropertyName("boxes")]
+        public List<PokemonBox> Boxes { get; set; }
+
+        public PokemonStorage()
+        {
+            Boxes = [];
         }
     }
 }

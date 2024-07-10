@@ -85,7 +85,7 @@
     </MudPaper>
     <MudPaper Class="pa-1 d-flex flex-1" MinWidth="325px" Elevation="0" Square="true">
         <CascadingValue Value="@SelectedPokemon">
-            <PokemonStorageBox PokemonCollection="Profile.PokemonStorage.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
+            <PokemonStorageBox PokemonCollection="Profile.PokemonStorage.Boxes[0].Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
         </CascadingValue>
     </MudPaper>
 </div>
@@ -156,7 +156,7 @@
             if (_messageBoxState == "Released")
             {
                 await Profile.RemovePokemonFromStorageAsync(SelectedPokemon);
-                SmartPokemon? newSelectedPokemon = Profile.PokemonStorage.Pokemon.FirstOrDefault();
+                SmartPokemon? newSelectedPokemon = Profile.PokemonStorage.Boxes[0].Pokemon.FirstOrDefault();
                 if (newSelectedPokemon is not null)
                 {
                     await OnSelectPokemonAsync(newSelectedPokemon);
@@ -184,7 +184,7 @@
                 // add and remove pokemon from storage to "update" it
                 // we can directly remove it here because it's about to be updated
                 // properly by AddPokemonToStorageAsync anyway
-                if (Profile.PokemonStorage.Pokemon.Remove(SelectedPokemon))
+                if (Profile.PokemonStorage.Boxes[0].Pokemon.Remove(SelectedPokemon))
                     await Profile.AddPokemonToStorageAsync(pokemon);
                 await OnSelectPokemonAsync(pokemon);
             }
