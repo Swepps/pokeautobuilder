@@ -42,6 +42,7 @@ namespace PokemonDataModel
             set { name = value; }
         }
 
+        [JsonIgnore]
         public bool IsEmpty
         {
             get

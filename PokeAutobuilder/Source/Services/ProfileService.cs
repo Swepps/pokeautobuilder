@@ -97,10 +97,16 @@ namespace PokeAutobuilder.Source.Services
                 else
                 {
                     _pokemonStorage = await _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY);
+                    if (_pokemonStorage is null)
+                    {
+                        _pokemonStorage = new();
+                        _pokemonStorage.Boxes.Add(new PokemonBox("Pokémon Storage"));
+                    }
                 }
 
                 // load team storage
                 _teamStorage = await _localStorageService.GetItemAsync<List<PokemonTeam>>(TEAM_STORAGE_KEY);
+                _teamStorage ??= new();
             }
             catch (Exception ex)
             {                

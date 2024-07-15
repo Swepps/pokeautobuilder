@@ -195,6 +195,7 @@
     {
         if (_pokemonSearchBox is not null && _searchLocation is not null)
         {
+            _pokemonSearchBox.PokemonSearchValue = null;
             IEnumerable<IPokemonSearchable> list = await _searchLocation.GetListAsync();
             Random rand = new Random();
             int index = rand.Next(0, list.Count());
