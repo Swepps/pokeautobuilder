@@ -1,18 +1,58 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace PokemonDataModel
 {
-    public class PokemonStorage
+    public class PokemonBox : ILazyPokemonList
     {
         [JsonPropertyName("pokemon")]
         public List<SmartPokemon> Pokemon { get; set; }
 
-        public PokemonStorage() { Pokemon = new(); }
+        private string _name = string.Empty;
+        [JsonPropertyName("name")]
+        public string Name 
+        { 
+            get
+            {
+                if (String.IsNullOrEmpty(_name))
+                    return "Unnamed Box";
 
-        // used when getting cached pokemon storage list
-        public PokemonStorage(List<SmartPokemon> pokemonList) 
+                return _name;
+            }
+            set
+            {
+                _name = value;
+            }
+        }
+
+        public PokemonBox()
         {
+            Pokemon = [];
+        }
+
+        public PokemonBox(string name)
+        {
+            Name = name;
+            Pokemon = [];
+        }
+
+        public PokemonBox(string name, List<SmartPokemon> pokemonList)
+        {
+            Name = name;
             Pokemon = pokemonList;
+        }
+
+        public PokemonBox(List<SmartPokemon> pokemonList)
+        {
+            Name = "Box";
+            Pokemon = pokemonList;
+        }
+
+        public SmartPokemon GetRandomPokemon()
+        {
+            Random rand = new();
+            SmartPokemon randPokemon = Pokemon[rand.Next(0, Pokemon.Count)];
+            return randPokemon;
         }
 
         public PokemonTeam GetRandomTeam(PokemonTeam? lockedMembers = null)
@@ -28,12 +68,12 @@ namespace PokemonDataModel
             }
 
             // generate the random members and stick into an array for later
-            Random rand = new Random();
+            Random rand = new();
             int numOfRandMembers = PokemonTeam.MaxTeamSize - lockedMembers.CountPokemon();
             List<SmartPokemon> randomMembers = Pokemon.OrderBy(p => rand.Next()).Take(numOfRandMembers).ToList();
 
             // create a new team using lockedMembers and random members
-            PokemonTeam newTeam = new PokemonTeam();
+            PokemonTeam newTeam = new();
             int randIdx = 0;
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
@@ -51,11 +91,20 @@ namespace PokemonDataModel
             return newTeam;
         }
 
-        public SmartPokemon GetRandomPokemon()
+        public Task<IEnumerable<IPokemonSearchable>> GetListAsync()
         {
-            Random rand = new Random();
-            SmartPokemon randPokemon = Pokemon[rand.Next(0, Pokemon.Count)];
-            return randPokemon;
+            return Task.Run(() => Pokemon.AsEnumerable<IPokemonSearchable>());
+        }
+    }
+
+    public class PokemonStorage
+    {
+        [JsonPropertyName("boxes")]
+        public List<PokemonBox> Boxes { get; set; }
+
+        public PokemonStorage()
+        {
+            Boxes = [];
         }
     }
 }

@@ -8,13 +8,14 @@ namespace PokemonDataModel
     // however there are some pokemon with multiple varieties (e.g. rotom) which is
     // not stored in the pokedex so we can use this class to get each variety
 
-    public class SmartPokemonEntry
+    public class SmartPokemonEntry : IPokemonSearchable
     {
         [JsonPropertyName("id")]
         public int Id { get; set; }
         [JsonIgnore]
         public string Name {
             get => SpeciesResource.Name;
+            set => SpeciesResource.Name = value;
         }
 
         [JsonPropertyName("species_resource")]
@@ -37,11 +38,16 @@ namespace PokemonDataModel
             return Species ?? throw new Exception($"Could not load pokemon species: {SpeciesResource.Name}");
 		}
 
-        public async Task<List<NamedApiResource<Pokemon>>> GetAllVarieties()
+        public override string ToString()
         {
-            if (Species == null) await GetSpecies();
+            return StringUtils.FirstCharToUpper(SpeciesResource.Name);
+        }
 
-            List<NamedApiResource<Pokemon>> varieties = new List<NamedApiResource<Pokemon>>();
+        IEnumerable<NamedApiResource<Pokemon>> IPokemonSearchable.GetAllVarieties()
+        {
+            if (Species is null) return [];
+
+            List<NamedApiResource<Pokemon>> varieties = [];
 
             foreach (PokemonSpeciesVariety variety in Species!.Varieties)
             {
@@ -51,26 +57,49 @@ namespace PokemonDataModel
             return varieties;
         }
 
-        public override string ToString()
+        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync()
         {
-            return StringUtils.FirstCharToUpper(SpeciesResource.Name);
+            if (Species == null) await GetSpecies();
+
+            List<NamedApiResource<Pokemon>> varieties = [];
+
+            foreach (PokemonSpeciesVariety variety in Species!.Varieties)
+            {
+                varieties.Add(variety.Pokemon);
+            }
+
+            return varieties;
         }
     }
 
     // an observable collection of SmartPokemonEntry objects which is used as a binding
     // for the pokedex combobox
-    public class SmartPokedex : List<SmartPokemonEntry>
+    public class SmartPokedex : List<SmartPokemonEntry>, ILazyPokemonList
     {
-        public SmartPokedex() { }
-        public SmartPokedex(Pokedex pokedex) 
+        public SmartPokedex(string name, NamedApiResource<Pokedex> pokedexResource) 
+        { 
+            Name = name; 
+            PokedexResource = pokedexResource;
+        }
+        public SmartPokedex(string name, NamedApiResource<VersionGroup> versionGroupResource)
         {
-            SetPokedex(pokedex);
+            Name = name;
+            VersionGroupResource = versionGroupResource;
+        }
+        public SmartPokedex(string name, Pokedex pokedex) 
+        {
+            Name = name;
+            AddPokedex(pokedex);
         }
 
-        public void SetPokedex(Pokedex pokedex)
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        private readonly NamedApiResource<Pokedex>? PokedexResource;
+        private readonly NamedApiResource<VersionGroup>? VersionGroupResource;
+
+        public void AddPokedex(Pokedex pokedex)
         {
-            this.Clear();
-            
             foreach (var entry in pokedex.PokemonEntries)
             {
                 Add(new SmartPokemonEntry(entry.EntryNumber, entry.PokemonSpecies));
@@ -102,6 +131,40 @@ namespace PokemonDataModel
         {
             Random rand = new Random();
             return this[rand.Next(Count)];
+        }
+
+        public async Task<IEnumerable<IPokemonSearchable>> GetListAsync()
+        {
+            if (this.Count == 0)
+            {
+                if (PokedexResource is not null)
+                {
+                    Pokedex? fetchedDex = await PokeApiService.Instance!.GetPokedexAsync(PokedexResource);
+                    if (fetchedDex is not null)
+                    {
+                        AddPokedex(fetchedDex);
+                    }
+                }
+                else if (VersionGroupResource is not null)
+                {
+                    VersionGroup group = await PokeApiService.Instance!.GetVersionGroupAsync(VersionGroupResource);
+
+                    List<Task<Pokedex?>> pokedexTasks = [];
+                    foreach (var pokedex in group.Pokedexes)
+                    {
+                        pokedexTasks.Add(PokeApiService.Instance.GetPokedexAsync(pokedex));
+                    }
+                    await Task.WhenAll(pokedexTasks);
+
+                    foreach (var pokedexTask in pokedexTasks)
+                    {
+                        if (pokedexTask.Result is not null)
+                            AddPokedex(pokedexTask.Result);
+                    }
+                }
+            }
+
+            return this;
         }
     }
 }

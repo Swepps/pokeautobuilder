@@ -42,6 +42,7 @@ namespace PokemonDataModel
             set { name = value; }
         }
 
+        [JsonIgnore]
         public bool IsEmpty
         {
             get
@@ -64,7 +65,19 @@ namespace PokemonDataModel
             }
         }
 
-        public bool ContainsDuplicates()
+        // copy constructor
+		public PokemonTeam(PokemonTeam team)
+		{
+			// fill team with 6 null pokemon
+			for (int i = 0; i < MaxTeamSize; i++)
+			{
+                Pokemon.Add(team.Pokemon[i]);
+			}
+
+            Name = team.Name;
+		}
+
+		public bool ContainsDuplicates()
         {
             return Pokemon.Distinct().Count() != Pokemon.Count;
         }

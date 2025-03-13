@@ -1,5 +1,7 @@
-﻿using AutoBuilder;
+﻿using Accord.IO;
+using AutoBuilder;
 using Blazored.SessionStorage;
+using PokeApiNet;
 using PokemonDataModel;
 using Utility;
 using static MudBlazor.Colors;
@@ -12,14 +14,11 @@ namespace PokeAutobuilder.Source.Services
         private readonly ISessionStorageService _sessionStorageService;
 
         public event Action? OnTeamChange;
-        public event Action? OnSearchLocationChange;
 
         // global variables
         private static readonly string POKEMON_TEAM_KEY = "pokemon_team";
-        private static readonly string NATIONAL_DEX_KEY = "national_pokedex";
-        private static readonly string SEARCH_LOCATION_KEY = "search_location";
-        private static readonly string POKEMON_TYPES_KEY = "pokemon_types";
         private static readonly string AUTOBUILDER_PARAMS = "autobuilder_params";
+        private static readonly string SEARCH_LOCATION = "search_location";
 
         private PokemonTeam _pokemonTeam = new(); 
         public PokemonTeam Team 
@@ -31,36 +30,6 @@ namespace PokeAutobuilder.Source.Services
             }
         }
 
-        private SmartPokedex _nationalDex = new();
-        public SmartPokedex NationalDex
-        {
-            get => _nationalDex;
-            set
-            {                
-                _ = SetNationalDexAsync(value);
-            }
-        }
-
-        private SearchLocation _searchLoc = 0;
-        public SearchLocation SearchLocation
-        {
-            get => _searchLoc;
-            set
-            {
-                _ = SetSearchLocationAsync(value);
-            }
-        }
-
-        private List<PokeApiNet.Type> _allTypes = new();
-        public List<PokeApiNet.Type> AllTypes
-        {
-            get => _allTypes;
-            set
-            {                
-                _ = SetAllTypesAsync(value);
-            }
-        }
-
         private AutoBuilderWeightings? _autobuilderParams = new();
         public AutoBuilderWeightings? AutobuilderParams
         {
@@ -68,7 +37,17 @@ namespace PokeAutobuilder.Source.Services
             set
             {
                 if (value is not null)
-                    _ = SetAutobuilderParams(value);
+                    _ = SetAutobuilderParamsAsync(value);
+            }
+        }
+
+        private string _searchLocation = "National Pokédex";
+        public string SearchLocation
+        {
+            get => _searchLocation;
+            set
+            {
+                _ = SetSearchLocationAsync(value);
             }
         }
 
@@ -79,37 +58,19 @@ namespace PokeAutobuilder.Source.Services
 
         public async Task LoadSessionStorage()
         {
-            // need to fetch all types before we can load any pokemon
-            _allTypes = await _sessionStorageService.GetItemAsync<List<PokeApiNet.Type>>(POKEMON_TYPES_KEY);
-            // if session doesn't contain pokemon types, generate them
-            if (AllTypes is null || AllTypes.Count == 0)
-            {
-                AllTypes = await PokeApiService.Instance!.GetAllTypesAsync();
-            }
-            DataModelCache.LoadedTypes = AllTypes;
-
             var taskPokemonTeam = _sessionStorageService.GetItemAsync<PokemonTeam>(POKEMON_TEAM_KEY);
-            var taskNationDex = _sessionStorageService.GetItemAsync<SmartPokedex>(NATIONAL_DEX_KEY);
-            var taskSearchLocation = _sessionStorageService.GetItemAsync<SearchLocation>(SEARCH_LOCATION_KEY);
             var taskAutobuilderParams = _sessionStorageService.GetItemAsync<AutoBuilderWeightings>(AUTOBUILDER_PARAMS);
+            var taskSearchLocation = _sessionStorageService.GetItemAsync<string>(SEARCH_LOCATION);
 
             await Task.WhenAll(
                 taskPokemonTeam.AsTask()
-                , taskNationDex.AsTask()
-                , taskSearchLocation.AsTask()
                 , taskAutobuilderParams.AsTask()
+                , taskSearchLocation.AsTask()
                 );
 
             _pokemonTeam = taskPokemonTeam.Result ?? new();
-            _nationalDex = taskNationDex.Result ?? new();
-            _searchLoc = taskSearchLocation.Result;
             _autobuilderParams = taskAutobuilderParams.Result ?? null;
-
-            // if session doesn't contain the national dex, generate it
-            if (NationalDex is null || NationalDex.Count == 0)
-            {
-                NationalDex = (await PokeApiService.Instance!.GetNationalDexAsync())!;
-            }
+            _searchLocation = taskSearchLocation.Result ?? "National Pokédex";
         }
 
         public async Task ClearSessionDataAsync()
@@ -132,29 +93,16 @@ namespace PokeAutobuilder.Source.Services
             await SetTeamAsync(Team);
         }
 
-        public async Task SetNationalDexAsync(SmartPokedex nationalDex)
-        {
-			_nationalDex = nationalDex;
-			await _sessionStorageService.SetItemAsync(NATIONAL_DEX_KEY, nationalDex);
-        }
-
-        public async Task SetSearchLocationAsync(SearchLocation location)
-        {
-			_searchLoc = location;
-            OnSearchLocationChange?.Invoke();
-            await _sessionStorageService.SetItemAsync(SEARCH_LOCATION_KEY, location);
-        }
-
-        public async Task SetAllTypesAsync(List<PokeApiNet.Type> allTypes)
-        {
-			_allTypes = allTypes;
-			await _sessionStorageService.SetItemAsync(POKEMON_TYPES_KEY, allTypes);
-        }
-
-        public async Task SetAutobuilderParams(AutoBuilderWeightings autobuilderParams)
+        public async Task SetAutobuilderParamsAsync(AutoBuilderWeightings autobuilderParams)
         {
             _autobuilderParams = autobuilderParams;
             await _sessionStorageService.SetItemAsync(AUTOBUILDER_PARAMS, autobuilderParams);
+        }
+
+        public async Task SetSearchLocationAsync(string searchLocation)
+        {
+            _searchLocation = searchLocation;
+            await _sessionStorageService.SetItemAsync(SEARCH_LOCATION, searchLocation);
         }
     }
 }

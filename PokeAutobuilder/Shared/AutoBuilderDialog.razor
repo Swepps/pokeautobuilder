@@ -380,7 +380,7 @@
 
         GeneticAlgorithm.Initialize(
             PopulationSize
-            , Profile.PokemonStorage
+            , Profile.PokemonStorage.Boxes[0]
             , LockedMembers is null ? new PokemonTeam() : LockedMembers
             , weightingsCopy);
         GeneticAlgorithm.RunInBackground();
@@ -406,7 +406,7 @@
     public async Task OnClickLoadIntoEditor()
     {
         await Session.SetTeamAsync(BestTeam);
-        await Session.SetAutobuilderParams(GenerationParameters);
+        await Session.SetAutobuilderParamsAsync(GenerationParameters);
         MudDialog!.Close(DialogResult.Ok(true));
     }
 
@@ -443,7 +443,7 @@
     async Task Submit() 
     {
         GeneticAlgorithm.Stop();
-        await Session.SetAutobuilderParams(GenerationParameters);
+        await Session.SetAutobuilderParamsAsync(GenerationParameters);
         MudDialog!.Close(DialogResult.Ok(true)); 
     }
     void Cancel() 

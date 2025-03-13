@@ -61,7 +61,7 @@
 
 	public async void OnClickLoadInEditor()
 	{
-		await SessionService.SetTeamAsync(Team!);
+		await SessionService.SetTeamAsync(new PokemonTeam(Team!));
 		NavigationManager.NavigateTo(NavigationManager.BaseUri);
 	}
 

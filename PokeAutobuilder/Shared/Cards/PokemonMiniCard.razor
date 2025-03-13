@@ -9,7 +9,7 @@
 	<MudButton Class="ma-2" Color="Color.Surface" OnClick="OnClickCard" Variant="@Variant">
 		<MudImage
 			Src="@(String.IsNullOrEmpty(Pokemon!.Sprites.FrontDefault) ? Pokemon!.Sprites.Other.OfficialArtwork.FrontDefault : Pokemon!.Sprites.FrontDefault)"
-				  Style="width: 50px; height: 50px" />
+				  Style="width: 50px; height: 50px; image-rendering: pixelated;" />
 	</MudButton>
 </MudTooltip>
 

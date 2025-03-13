@@ -1,5 +1,7 @@
-﻿using Blazored.LocalStorage;
+﻿using Accord.IO;
+using Blazored.LocalStorage;
 using Blazored.SessionStorage;
+using Microsoft.VisualBasic;
 using PokemonDataModel;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
@@ -22,8 +24,19 @@ namespace PokeAutobuilder.Source.Services
         public event Action? OnTeamStorageChange;
 
         // global variables
+        private static readonly string POKEMON_TYPES_KEY = "pokemon_types";
         private static readonly string POKEMON_STORAGE_KEY = "pokemon_storage";
         private static readonly string TEAM_STORAGE_KEY = "pokemon_team_storage";
+
+        private List<PokeApiNet.Type> _allTypes = new();
+        public List<PokeApiNet.Type> AllTypes
+        {
+            get => _allTypes;
+            set
+            {
+                _ = SetAllTypesAsync(value);
+            }
+        }
 
         private PokemonStorage _pokemonStorage = new();
         public PokemonStorage PokemonStorage
@@ -54,48 +67,73 @@ namespace PokeAutobuilder.Source.Services
 
         public async Task LoadProfileStorage()
         {
-            var taskPokemonStorage = _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY);
-            var taskTeamStorage = _localStorageService.GetItemAsync<List<PokemonTeam>>(TEAM_STORAGE_KEY);
-
-            await Task.WhenAll(
-                taskPokemonStorage.AsTask(),
-                taskTeamStorage.AsTask()
-                );
-
-            _pokemonStorage = taskPokemonStorage.Result ?? new();
-            _teamStorage = taskTeamStorage.Result ?? new();
-        }
-
-        public async Task<bool> CheckVersion()
-        {
-            bool dataFormatUpdate = false;
-            double cachedVer = 0;
-            if (await _localStorageService.ContainKeyAsync("version"))
-                cachedVer = await _localStorageService.GetItemAsync<double>("version");
-
-            if (cachedVer < Globals.Version)
+            try
             {
-                
-                foreach (KeyValuePair<double, bool> entry in Globals.Versions)
+                double profileStorageVersion = await GetVersionAsync();
+
+                // we want to refresh the cached types each time there is a version update to ensure
+                // the types are fresh from the API
+                if (profileStorageVersion == Globals.Version)
+                {                    
+                    _allTypes = await _localStorageService.GetItemAsync<List<PokeApiNet.Type>>(POKEMON_TYPES_KEY);
+                }
+
+                // if profile doesn't contain pokemon types, generate them
+                if (AllTypes is null || AllTypes.Count == 0)
                 {
-                    if (entry.Key > cachedVer && entry.Value == true)
+                    AllTypes = await PokeApiService.Instance!.GetAllTypesAsync();
+                }
+                DataModelCache.LoadedTypes = AllTypes;
+
+                // load pokemon storage
+                if (profileStorageVersion <= 1.3)
+                {
+                    PokemonBox box = await _localStorageService.GetItemAsync<PokemonBox>(POKEMON_STORAGE_KEY);
+                    _pokemonStorage.Boxes.Add(box);
+                    // replace old storage format with new format
+                    await SetPokemonStorageAsync(_pokemonStorage);
+                    await UpdateVersionAsync();
+                }
+                else
+                {
+                    _pokemonStorage = await _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY);
+                    if (_pokemonStorage is null)
                     {
-                        dataFormatUpdate = true;
-                        break;
+                        _pokemonStorage = new();
+                        _pokemonStorage.Boxes.Add(new PokemonBox("Pokémon Storage"));
                     }
                 }
 
-                // clear the cache if any newer versions than the cached one require format update
-                if (dataFormatUpdate)
-                {
-                    await _localStorageService.ClearAsync();
-                }
+                // load team storage
+                _teamStorage = await _localStorageService.GetItemAsync<List<PokemonTeam>>(TEAM_STORAGE_KEY);
+                _teamStorage ??= new();
             }
+            catch (Exception ex)
+            {                
+                Console.WriteLine(ex.Message);
 
+                // if loading storage fails we'll just have to reset it so users don't get stuck
+                // * Only in RELEASE
+#if DEBUG
+
+#else
+                await _localStorageService.ClearAsync();          
+#endif
+            }
+        }
+
+        public async Task<double> GetVersionAsync()
+        {
+            if (await _localStorageService.ContainKeyAsync("version"))
+                return await _localStorageService.GetItemAsync<double>("version");
+
+            return Globals.Version;
+        }
+
+        public async Task UpdateVersionAsync()
+        {
             // store the current version in the cache
             await _localStorageService.SetItemAsync("version", Globals.Version);
-
-            return dataFormatUpdate;
         }
 
         // --- Preferences ---
@@ -125,23 +163,46 @@ namespace PokeAutobuilder.Source.Services
             await _localStorageService.SetItemAsync("preferences", newPrefs);
         }
 
+        public async Task SetAllTypesAsync(List<PokeApiNet.Type> allTypes)
+        {
+            _allTypes = allTypes;
+            await _localStorageService.SetItemAsync(POKEMON_TYPES_KEY, allTypes);
+        }
+
         public async Task SetPokemonStorageAsync(PokemonStorage storage)
         {
             OnStorageChange?.Invoke();
             await _localStorageService.SetItemAsync(POKEMON_STORAGE_KEY, storage);
         }
+        public async Task UpdatePokemonStorageAsync()
+        {
+            await SetPokemonStorageAsync(PokemonStorage);
+        }
         public async Task AddPokemonToStorageAsync(SmartPokemon pokemon)
         {
-            PokemonStorage.Pokemon.Add(pokemon);
+            PokemonStorage.Boxes[0].Pokemon.Add(pokemon);
             await SetPokemonStorageAsync(PokemonStorage);
         }
         public async Task<bool> RemovePokemonFromStorageAsync(SmartPokemon pokemon)
         {
-            bool removed = PokemonStorage.Pokemon.Remove(pokemon);
+            bool removed = PokemonStorage.Boxes[0].Pokemon.Remove(pokemon);
             if (removed)
                 await SetPokemonStorageAsync(PokemonStorage);
 
             return removed;
+        }
+        public async Task<bool> ReplacePokemonInStorageAsync(SmartPokemon oldPokemon, SmartPokemon newPokemon)
+        {
+            int pokemonIdx = PokemonStorage.Boxes[0].Pokemon.IndexOf(oldPokemon);
+
+            if (pokemonIdx < 0)
+                return false;
+
+            PokemonStorage.Boxes[0].Pokemon.RemoveAt(pokemonIdx);
+            PokemonStorage.Boxes[0].Pokemon.Insert(pokemonIdx, newPokemon);
+
+            await SetPokemonStorageAsync(PokemonStorage);
+            return true;
         }
 
         public async Task SetTeamStorageAsync(List<PokemonTeam> teamStorage)
@@ -151,7 +212,7 @@ namespace PokeAutobuilder.Source.Services
         }
         public async Task AddTeamToStorageAsync(PokemonTeam team)
         {
-            TeamStorage.Add(team);
+            TeamStorage.Add(new PokemonTeam(team));
             await SetTeamStorageAsync(TeamStorage);
         }
         public async Task<bool> RemoveTeamFromStorageAsync(PokemonTeam team)
