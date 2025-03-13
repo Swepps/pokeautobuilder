@@ -174,6 +174,10 @@ namespace PokeAutobuilder.Source.Services
             OnStorageChange?.Invoke();
             await _localStorageService.SetItemAsync(POKEMON_STORAGE_KEY, storage);
         }
+        public async Task UpdatePokemonStorageAsync()
+        {
+            await SetPokemonStorageAsync(PokemonStorage);
+        }
         public async Task AddPokemonToStorageAsync(SmartPokemon pokemon)
         {
             PokemonStorage.Boxes[0].Pokemon.Add(pokemon);
@@ -186,6 +190,19 @@ namespace PokeAutobuilder.Source.Services
                 await SetPokemonStorageAsync(PokemonStorage);
 
             return removed;
+        }
+        public async Task<bool> ReplacePokemonInStorageAsync(SmartPokemon oldPokemon, SmartPokemon newPokemon)
+        {
+            int pokemonIdx = PokemonStorage.Boxes[0].Pokemon.IndexOf(oldPokemon);
+
+            if (pokemonIdx < 0)
+                return false;
+
+            PokemonStorage.Boxes[0].Pokemon.RemoveAt(pokemonIdx);
+            PokemonStorage.Boxes[0].Pokemon.Insert(pokemonIdx, newPokemon);
+
+            await SetPokemonStorageAsync(PokemonStorage);
+            return true;
         }
 
         public async Task SetTeamStorageAsync(List<PokemonTeam> teamStorage)
