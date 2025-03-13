@@ -141,8 +141,6 @@
 
             StateHasChanged();
 
-            // session contains information about pokemon types that profile will use
-            // to load pokemon. Therefore session must be done first!
             await Profile.LoadProfileStorage();  
             await Session.LoadSessionStorage();
 

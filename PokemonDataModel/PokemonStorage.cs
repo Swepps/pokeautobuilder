@@ -8,8 +8,22 @@ namespace PokemonDataModel
         [JsonPropertyName("pokemon")]
         public List<SmartPokemon> Pokemon { get; set; }
 
+        private string _name = string.Empty;
         [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+        public string Name 
+        { 
+            get
+            {
+                if (String.IsNullOrEmpty(_name))
+                    return "Unnamed Box";
+
+                return _name;
+            }
+            set
+            {
+                _name = value;
+            }
+        }
 
         public PokemonBox()
         {
