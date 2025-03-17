@@ -197,7 +197,7 @@
       "url": "img\/Type-Water.png"
     },
     {
-      "hash": "sha256-gHblBLl200EsGzIF0ESWL6DreKaQwvqqUXbEYlfBrTQ=",
+      "hash": "sha256-eqXrZtB94TwXlaKQhwPwDlAjdv9IgCZUOyS732xOpI4=",
       "url": "index.html"
     },
     {
@@ -237,7 +237,7 @@
       "url": "_framework\/icudt_no_CJK.dat"
     },
     {
-      "hash": "sha256-2sCToiG6QDqrV0O9hEZUv\/mz\/cahL\/n\/sjyCvzo9YgE=",
+      "hash": "sha256-2xuRcHQ3xFtn\/SxhyISDRPcb+y4aeKEDEgPCXaJc6o4=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -245,7 +245,7 @@
       "url": "_framework\/dotnet.native.8.0.14.xs8tq1eocw.js"
     },
     {
-      "hash": "sha256-3ebzBK2shOQ0anX9yvPIK8nJZn+3ONk4VIvhu7Il3yQ=",
+      "hash": "sha256-Oo5XjdCiAqmSUG3jgkF3BN6+uT0+Qj6HSBMil0INCLo=",
       "url": "_framework\/dotnet.native.wasm"
     },
     {
@@ -265,7 +265,7 @@
       "url": "_framework\/Accord.wasm"
     },
     {
-      "hash": "sha256-WR9W7bbgIbu5kirMxgYziVfw+dwCtp\/ljwdGRCbF3og=",
+      "hash": "sha256-wlSfIRhjgyWhZzzK1AHbJ4Q9Pw7kftzXSXnWTHSfpj0=",
       "url": "_framework\/AutoBuilder.wasm"
     },
     {
@@ -413,11 +413,11 @@
       "url": "_framework\/PokeApiNet.wasm"
     },
     {
-      "hash": "sha256-RhwxmL979kz9blbIF1\/OaduguEXHNhDgCCwM\/7pjMEo=",
+      "hash": "sha256-tg+Ikhg6gC2muYpB1QvmWZej19nGxcjPCnNTc\/wx2Ec=",
       "url": "_framework\/PokeAutobuilder.wasm"
     },
     {
-      "hash": "sha256-iLZ0f+p5JBPXnl6P1qY9YS71i0VuopnCjoBnD10Z9Xs=",
+      "hash": "sha256-fN4AVq45MSD8g2PqVn7bQtAIuY23ZcrV7ko3+ld7nZs=",
       "url": "_framework\/PokemonDataModel.wasm"
     },
     {
@@ -605,7 +605,7 @@
       "url": "_framework\/Toolbelt.Blazor.PWA.Updater.wasm"
     },
     {
-      "hash": "sha256-I48xRdpRIfclBwfn\/YF5aHoVMbSO0H\/s\/E5IdzCDPcI=",
+      "hash": "sha256-Jc067spVSJuxubuSym7ZeFo77Xue+EJ09KRfiZjzx3A=",
       "url": "_framework\/Utility.wasm"
     },
     {
@@ -641,5 +641,5 @@
       "url": "_content\/Toolbelt.Blazor.PWA.Updater\/Toolbelt.Blazor.PWA.Updater.bundle.scp.css"
     }
   ],
-  "version": "JTiDX3u4"
+  "version": "Tjn3KsD+"
 };
