@@ -104,15 +104,19 @@ namespace AutoBuilder
         {
             var genes = GetGenes();
 
-            // put into a new team then sort it
-            PokemonTeam team = new PokemonTeam();
+            PokemonTeam team = new();
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
-                team.Pokemon[i] = genes[i].Value as SmartPokemon;
+                SmartPokemon? pokemon = genes[i].Value as SmartPokemon;
+                if (pokemon?.Id == SmartPokemon.GetLockedPokemon().Id)
+                {
+                    team.Pokemon[i] = null;
+                }
+                else
+                {
+                    team.Pokemon[i] = pokemon;
+                }
             }
-
-            // don't want to sort anymore because it messes up locked pokemon
-            //team.SortById();
 
             return team;
         }

@@ -267,5 +267,76 @@ namespace PokeAutobuilderTests
             Assert.Contains(ferrothorn, bestTeam.Pokemon);
             Assert.Contains(gliscor, bestTeam.Pokemon);
         }
+
+        [Fact]
+        public async Task LockedGeneration()
+        {
+            PokemonBox box = new();
+            // add a selection of "bad" pokemon
+            SmartPokemon spearow = (await apiService!.GetPokemonAsync("spearow"))!; // used for lock test
+            box.Pokemon.Add(spearow);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("rattata"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("wurmple"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("pidgey"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("zigzagoon"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("magikarp"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("whismur"))!);
+
+            // add 6 "good" pokemon that should theoretically get picked
+            SmartPokemon lapras = (await apiService.GetPokemonAsync("lapras"))!;
+            SmartPokemon gardevoir = (await apiService.GetPokemonAsync("gardevoir"))!;
+            SmartPokemon gengar = (await apiService.GetPokemonAsync("gengar"))!;
+            SmartPokemon talonflame = (await apiService.GetPokemonAsync("talonflame"))!;
+            SmartPokemon ferrothorn = (await apiService.GetPokemonAsync("ferrothorn"))!;
+            SmartPokemon gliscor = (await apiService.GetPokemonAsync("gliscor"))!;
+            box.Pokemon.Add(lapras);
+            box.Pokemon.Add(gardevoir);
+            box.Pokemon.Add(gengar);
+            box.Pokemon.Add(talonflame);
+            box.Pokemon.Add(ferrothorn);
+            box.Pokemon.Add(gliscor);
+
+            PokemonTeamGeneticAlgorithm GA = new();
+            AutoBuilderWeightings weightings = new();
+
+            PokemonTeam bestTeam = new();
+            double? bestScore = 0;
+            GA.GenerationRan += (g) =>
+            {
+                if (g.BestChromosome is null)
+                    return;
+
+                if (g.BestChromosome.Fitness > bestScore)
+                {
+                    bestScore = g.BestChromosome.Fitness;
+                    bestTeam = g.BestChromosome.GetTeam();
+                }
+
+                output.WriteLine("{0,-4}|{1,-9:0.000}|{2,-14:0.000}|{3,-30}"
+                    , g.GenerationsNumber
+                    , g.BestChromosome.Fitness
+                    , bestScore
+                    , bestTeam.ToString()
+                    );
+            };
+            output.WriteLine("Gen |G.Fitness|Best Fitness  |Best Team");
+
+            // lock some members of the team so they cannot change
+            PokemonTeam lockedMembers = new();
+            lockedMembers.Pokemon[0] = spearow;
+            lockedMembers.Pokemon[1] = SmartPokemon.GetLockedPokemon();
+            lockedMembers.Pokemon[4] = gliscor;
+
+            GA.Initialize(250, box, lockedMembers, weightings);
+            GA.Run(50);
+
+            // check that the final team has 6 unique members
+            Assert.False(bestTeam.ContainsDuplicates());
+
+            // check that the algorithm hasn't changed the locked members
+            Assert.True(bestTeam.Pokemon[0] == spearow);
+            Assert.True(bestTeam.Pokemon[1] is null);
+            Assert.True(bestTeam.Pokemon[4] == gliscor);
+        }
     }
 }

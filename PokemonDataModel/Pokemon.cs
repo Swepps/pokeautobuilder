@@ -148,6 +148,25 @@ namespace PokemonDataModel
             UpdateMultipliers();
 		}
 
+        // Returns a pokemon with no stats or type information
+        // This is useful for having "empty" slots in the team
+        public static SmartPokemon GetLockedPokemon()
+        {
+            return new SmartPokemon(-1, "locked", null, 0, true, 0, 0, [], [], []
+            , [], "", [], [], new PokemonSprites(), new NamedApiResource<PokemonSpecies>()
+
+            // stats
+            , [   new PokemonStat { Stat = new NamedApiResource<Stat> { Name = "hp" }, BaseStat = 0 } 
+                , new PokemonStat { Stat = new NamedApiResource<Stat> { Name = "attack" }, BaseStat = 0 }
+                , new PokemonStat { Stat = new NamedApiResource<Stat> { Name = "special-attack" }, BaseStat = 0 }
+                , new PokemonStat { Stat = new NamedApiResource<Stat> { Name = "defense" }, BaseStat = 0 }
+                , new PokemonStat { Stat = new NamedApiResource<Stat> { Name = "special-defense" }, BaseStat = 0 }
+                , new PokemonStat { Stat = new NamedApiResource<Stat> { Name = "speed" }, BaseStat = 0 }
+                ]
+
+                , [], new PokemonAbility { Ability = new NamedApiResource<Ability>() }, new PokemonMoveset(), [], [], [], []);
+        }
+
         public async Task<PokemonSpecies> GetSpeciesAsync()
         {
             if (_loadedSpecies is null)

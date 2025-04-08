@@ -18,6 +18,15 @@ namespace AutoBuilder
                 return 0.0;
 
             PokemonTeam team = pokemonTeamChromosome.GetTeam();
+            
+            // set all "blank" slots to null
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                if (team.Pokemon[i]?.Id == SmartPokemon.GetLockedPokemon().Id)
+                {
+                    team.Pokemon[i] = null;
+                }
+            }
 
             pokemonTeamChromosome.WeightingScores = AutoBuilder.CalculateScore(team, _weightings);
 
