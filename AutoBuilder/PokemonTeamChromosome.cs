@@ -33,7 +33,7 @@ namespace AutoBuilder
 
         public PokemonTeamChromosome(PokemonBox box, PokemonTeam lockedMembers)
         {
-            int length = PokemonTeam.MaxTeamSize;
+            int length = lockedMembers.Pokemon.Count;
             ValidateLength(length);
             m_length = length;
             m_genes = new Gene[length];
@@ -42,7 +42,7 @@ namespace AutoBuilder
 
             PokemonTeam randomTeam = _box.GetRandomTeam();
 
-            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            for (int i = 0; i < length; i++)
             {
                 ReplaceGene(i, new Gene(randomTeam.Pokemon[i]));
             }
@@ -91,7 +91,7 @@ namespace AutoBuilder
         {
             var clone = new PokemonTeamChromosome(_box, _lockedMembers);
             var genes = GetGenes();
-            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            for (int i = 0; i < m_length; i++)
             {
                 clone.ReplaceGene(i, new Gene((SmartPokemon?)genes[i].Value));
             }
@@ -105,17 +105,10 @@ namespace AutoBuilder
             var genes = GetGenes();
 
             PokemonTeam team = new();
-            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            for (int i = 0; i < m_length; i++)
             {
                 SmartPokemon? pokemon = genes[i].Value as SmartPokemon;
-                if (pokemon?.Id == SmartPokemon.GetLockedPokemon().Id)
-                {
-                    team.Pokemon[i] = null;
-                }
-                else
-                {
-                    team.Pokemon[i] = pokemon;
-                }
+                team.Pokemon.Add(pokemon);
             }
 
             return team;

@@ -195,7 +195,12 @@ namespace PokeAutobuilderTests
 
                 BestTeam = g.BestChromosome.GetTeam();
             };
-            GA.Initialize(50, box, new PokemonTeam(), weightings);
+            PokemonTeam lockedMembers = new();
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                lockedMembers.Pokemon.Add(null);
+            }
+            GA.Initialize(50, box, lockedMembers, weightings);
             GA.Run(10);
 
             // check that the final team has 6 unique members
@@ -253,7 +258,12 @@ namespace PokeAutobuilderTests
                     );
             };
             output.WriteLine("Gen |G.Fitness|Best Fitness  |Best Team");
-            GA.Initialize(250, box, new PokemonTeam(), weightings);
+            PokemonTeam lockedMembers = new();
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                lockedMembers.Pokemon.Add(null);
+            }
+            GA.Initialize(250, box, lockedMembers, weightings);
             GA.Run(50);
 
             // check that the final team has 6 unique members
@@ -323,20 +333,23 @@ namespace PokeAutobuilderTests
 
             // lock some members of the team so they cannot change
             PokemonTeam lockedMembers = new();
-            lockedMembers.Pokemon[0] = spearow;
-            lockedMembers.Pokemon[1] = SmartPokemon.GetLockedPokemon();
-            lockedMembers.Pokemon[4] = gliscor;
+            // 2 "modifiable" slots
+            for (int i = 0; i < 2; i++)
+            {
+                lockedMembers.Pokemon.Add(null);
+            }
+            lockedMembers.Pokemon.Add(spearow);
+            lockedMembers.Pokemon.Add(gliscor);
 
             GA.Initialize(250, box, lockedMembers, weightings);
             GA.Run(50);
 
-            // check that the final team has 6 unique members
+            // check that the final team has unique members
             Assert.False(bestTeam.ContainsDuplicates());
 
             // check that the algorithm hasn't changed the locked members
-            Assert.True(bestTeam.Pokemon[0] == spearow);
-            Assert.True(bestTeam.Pokemon[1] is null);
-            Assert.True(bestTeam.Pokemon[4] == gliscor);
+            Assert.True(bestTeam.Pokemon[2] == spearow);
+            Assert.True(bestTeam.Pokemon[3] == gliscor);
         }
     }
 }

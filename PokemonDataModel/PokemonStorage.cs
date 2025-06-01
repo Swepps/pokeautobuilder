@@ -61,7 +61,8 @@ namespace PokemonDataModel
             {
                 lockedMembers = new PokemonTeam();
             }
-            else if (lockedMembers.CountPokemon() >= PokemonTeam.MaxTeamSize || Pokemon.Count < PokemonTeam.MaxTeamSize)
+            else if (!lockedMembers.Pokemon.Any(p => p == null) 
+                || Pokemon.Count < PokemonTeam.MaxTeamSize)
             {
                 // they're all locked!
                 return lockedMembers;
@@ -77,13 +78,14 @@ namespace PokemonDataModel
             int randIdx = 0;
             for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
             {
-                if (lockedMembers.Pokemon[i] != null)
+                if (lockedMembers.Pokemon.Count > i
+                    && lockedMembers.Pokemon[i] != null)
                 {
-                    newTeam.Pokemon[i] = lockedMembers.Pokemon[i];
+                    newTeam.Pokemon.Add(lockedMembers.Pokemon[i]);
                 }
                 else if (randIdx < randomMembers.Count)
                 {
-                    newTeam.Pokemon[i] = randomMembers[randIdx];
+                    newTeam.Pokemon.Add(randomMembers[randIdx]);
                     randIdx++;
                 }
             }

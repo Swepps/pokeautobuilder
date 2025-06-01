@@ -36,7 +36,8 @@
     </MudAutocomplete>
 
     <div style="height: 50px">
-        @if (_pokemonSearchValueVarieties.Count > 1)
+        @if (_pokemonSearchValueVarieties.Count > 1
+            && !_locked)
         {
             <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter"
             @bind-Value="_PokemonFormName">
@@ -86,6 +87,9 @@
 
     [Parameter]
     public EventCallback<PokemonSearchBox> OnPokemonChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnLockChanged { get; set; }
 
     [Parameter]
     public bool Lockable { get; set; } = false;
@@ -140,8 +144,10 @@
         set
         {
             _locked = value;
+            _ = OnLockChanged.InvokeAsync(_locked);
         }
     }
+    private bool _prevLocked = false;
 
     private bool _errorFetchingPokemon = false;
 
@@ -271,10 +277,11 @@
 
     protected override bool ShouldRender()
     {
-        return _prevPokemon != _pokemon ||
-        _prevPokemonSearchValue != _pokemonSearchValue ||
-        _prevPokemonFormName != _pokemonFormName ||
-        _pokemonSearchValueVarietiesChanged;
+        return _prevPokemon != _pokemon 
+        || _prevPokemonSearchValue != _pokemonSearchValue
+        || _prevPokemonFormName != _pokemonFormName
+        || _prevLocked != _locked
+        || _pokemonSearchValueVarietiesChanged;
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -282,6 +289,7 @@
         _prevPokemon = _pokemon;
         _prevPokemonSearchValue = _pokemonSearchValue;
         _prevPokemonFormName = _pokemonFormName;
+        _prevLocked = _locked;
         _pokemonSearchValueVarietiesChanged = false;
     }
 }

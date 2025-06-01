@@ -38,7 +38,7 @@
         @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
             <MudItem xs="6" sm="4" lg="2">
-                <PokemonSearchBox @ref="tempCard" SearchFunc="SearchAsync" OnPokemonChanged="PokemonSearchBoxUpdatedAsync" Lockable="true">
+                <PokemonSearchBox @ref="tempCard" SearchFunc="SearchAsync" OnPokemonChanged="PokemonSearchBoxUpdatedAsync" OnLockChanged="StateHasChanged" Lockable="true">
                     <ExtraButtons>
                         @*                         <MudTooltip Text="Randomize">
                             <MudIconButton Disabled="Locked" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
@@ -48,7 +48,7 @@
             </MudItem>
         }
     </MudGrid>
-    @if (Profile.PokemonStorage.Boxes[0].Pokemon.Count < 7 || GetLockedMembers().CountPokemon() >= PokemonTeam.MaxTeamSize - 1)
+    @if (!CanRunAutoBuilder())
     {
         <MudTooltip Text="@GetAutoBuilderTooltipMessage()">
             <MudButton Disabled="true" OnClick="OnClickAutoBuilder" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Variant="Variant.Filled" Style="max-width: 500px;">Auto Builder</MudButton>
@@ -96,7 +96,7 @@
     List<PokemonSearchBox> cards = [];
     PokemonSearchBox tempCard
     {
-        set { cards.Add(value); }
+        set { cards.Add(value); StateHasChanged(); }
     }  
 
     public async void OnClickAddTeamToStorage()
@@ -107,33 +107,12 @@
         Snackbar.Add("Added team '" + Session.Team.Name + "' to Team Storage", Severity.Success);
     }
 
-    public PokemonTeam GetLockedMembers()
-    {
-        // build a team containing the locked members
-        PokemonTeam lockedMembers = new PokemonTeam();
-
-        if (cards.Count == 0)
-            return lockedMembers;
-
-        for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
-        {
-            if (cards[i]!.Locked)
-            {
-                if (cards[i]!.Pokemon is not null)
-                    lockedMembers.Pokemon[i] = cards[i]!.Pokemon;
-                else
-                    lockedMembers.Pokemon[i] = SmartPokemon.GetLockedPokemon();
-            }
-        }
-        return lockedMembers;
-    }
-
     public string GetAutoBuilderTooltipMessage()
     {
-        if (Profile.PokemonStorage.Boxes[0].Pokemon.Count < 7)
-            return "Please fill Pokémon storage with at least 7 Pokémon before using the Auto Builder";
+        if (Profile.PokemonStorage.Boxes[0].Pokemon.Count < cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1)
+            return "Please add more Pokémon to storage in order to use the Auto Builder";
 
-        if (GetLockedMembers().CountPokemon() >= PokemonTeam.MaxTeamSize - 1)
+        if (cards.Count(c => !c.Locked) < 2)
             return "Please unlock some more Pokémon before using the Auto Builder";
 
         return "";
@@ -142,7 +121,19 @@
     public async Task OnClickAutoBuilder()
     {
         var parameters = new DialogParameters();
-        parameters.Add("LockedMembers", GetLockedMembers());
+        List<Tuple<SmartPokemon?, int>> inputTeam = [];
+        for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+        {
+            if (!cards[i].Locked)
+            {
+                inputTeam.Add(new Tuple<SmartPokemon?, int>(null, i));
+            }
+            else if (cards[i].Pokemon is not null)
+            {
+                inputTeam.Add(new Tuple<SmartPokemon?, int>(cards[i].Pokemon, i));
+            }
+        }
+        parameters.Add("InputTeam", inputTeam);
 
 
         var dialog = await DialogService.ShowAsync<AutoBuilderDialog>("Automatic Team Builder", parameters);
@@ -160,9 +151,14 @@
         bool anyPokemonChanged = false;
         for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
-            if (cards[i].Pokemon != Session.Team.Pokemon[i])
+            SmartPokemon? selectedPokemon = null;
+            if (Session.Team.Pokemon.Count > i)
             {
-                cards[i].Pokemon = Session.Team.Pokemon[i];
+                selectedPokemon = Session.Team.Pokemon[i];
+            }
+            if (cards[i].Pokemon != selectedPokemon)
+            {
+                cards[i].Pokemon = selectedPokemon;
                 anyPokemonChanged = true;
             }
         }
@@ -196,6 +192,12 @@
                 await Session.SetTeamPokemonAsync(teamIndex, card.Pokemon);
             }
         }
+    }
+
+    protected bool CanRunAutoBuilder()
+    {
+        return Profile.PokemonStorage.Boxes[0].Pokemon.Count >= cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1
+        && cards.Count(c => !c.Locked) >= 2;
     }
 
     protected override void OnInitialized()
