@@ -15,12 +15,14 @@
 
 <MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 
+    <div style="width: 100%;">
     @if (Lockable)
     {
         <MudToggleIconButton @bind-Toggled="@Locked"
             Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Dark"
-            ToggledIcon="@Icons.Material.Filled.Lock" ToggledColor="@Color.Primary" />
+            ToggledIcon="@Icons.Material.Filled.Lock" ToggledColor="@Color.Primary" Style="padding: 0;"/>
     }
+    </div>
 
     <MudAutocomplete T="IPokemonSearchable" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@(SearchFunc!)"
     ResetValueOnEmptyText="true" Disabled="@_locked" MaxItems="50"
