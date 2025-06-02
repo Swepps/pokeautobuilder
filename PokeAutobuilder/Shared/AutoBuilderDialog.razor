@@ -17,13 +17,13 @@
             <MudGrid Class="mb-2">
                 <MudItem xs="12">
                     <MudGrid Justify="Justify.SpaceEvenly">
-                        @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+                        @for (int i = 0; i < InputTeam!.Count; i++)
                         {
                             SmartPokemon? p = null;
                             bool locked = false;
-                            if (LockedMembers is not null && LockedMembers.Pokemon[i] is not null)
+                            if (InputTeam![i].Item1 is not null)
                             {
-                                p = LockedMembers.Pokemon[i];
+                                p = InputTeam![i].Item1;
                                 locked = true;
                             }
                             else
@@ -301,7 +301,7 @@
     MudDialogInstance? MudDialog { get; set; }
 
     [Parameter]
-    public PokemonTeam? LockedMembers { get; set; }
+    public List<Tuple<SmartPokemon?, int>>? InputTeam { get; set; }
 
     private PokemonTeamGeneticAlgorithm GeneticAlgorithm = new PokemonTeamGeneticAlgorithm();
     private PokemonTeam BestTeam = new PokemonTeam();
@@ -363,6 +363,15 @@
         }
     }
 
+    protected override Task OnParametersSetAsync()
+    {
+        foreach ( var(pokemon, teamIdx) in InputTeam!)
+        {
+            BestTeam.Pokemon.Add(pokemon);
+        }
+        return base.OnParametersSetAsync();
+    }
+
     public void OnClickType(string typeName)
     {
         GenerationParameters.Types[typeName] = !GenerationParameters.Types[typeName];
@@ -378,10 +387,16 @@
 
         AutoBuilderWeightings weightingsCopy = new(GenerationParameters);
 
+        PokemonTeam lockedMembers = new();
+        foreach (var (pokemon, teamIdx) in InputTeam!)
+        {
+            lockedMembers.Pokemon.Add(pokemon);
+        }
+
         GeneticAlgorithm.Initialize(
             PopulationSize
             , Profile.PokemonStorage.Boxes[0]
-            , LockedMembers is null ? new PokemonTeam() : LockedMembers
+            , lockedMembers
             , weightingsCopy);
         GeneticAlgorithm.RunInBackground();
 
@@ -405,7 +420,22 @@
 
     public async Task OnClickLoadIntoEditor()
     {
-        await Session.SetTeamAsync(BestTeam);
+        PokemonTeam outputTeam = new();
+        int bestTeamIdx = 0;
+        for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+        {
+            int teamIdx = InputTeam!.FindIndex(t => t.Item2 == i);
+            if (teamIdx != -1)
+            {
+                outputTeam.Pokemon.Add(BestTeam.Pokemon[bestTeamIdx]);
+                bestTeamIdx++;
+            }
+            else
+            {
+                outputTeam.Pokemon.Add(null);
+            }
+        }
+        await Session.SetTeamAsync(outputTeam);
         await Session.SetAutobuilderParamsAsync(GenerationParameters);
         MudDialog!.Close(DialogResult.Ok(true));
     }

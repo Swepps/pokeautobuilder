@@ -15,24 +15,34 @@
 
 <MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
 
-        <MudAutocomplete T="IPokemonSearchable" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@(SearchFunc!)"
-                         ResetValueOnEmptyText="true" Disabled="Locked" MaxItems="50"
-                         CoerceText="true" CoerceValue="false" ShowProgressIndicator="true">
-            <MoreItemsTemplate>
-                <MudText Align="Align.Center" Typo="Typo.body1">
-                    ...                    
-                </MudText>
-                <MudText Align="Align.Center" Typo="Typo.body2">
+    <div style="width: 100%;">
+    @if (Lockable)
+    {
+        <MudToggleIconButton @bind-Toggled="@Locked"
+            Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Dark"
+            ToggledIcon="@Icons.Material.Filled.Lock" ToggledColor="@Color.Primary" Style="padding: 0;"/>
+    }
+    </div>
+
+    <MudAutocomplete T="IPokemonSearchable" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@(SearchFunc!)"
+    ResetValueOnEmptyText="true" Disabled="@_locked" MaxItems="50"
+    CoerceText="true" CoerceValue="false" ShowProgressIndicator="true">
+        <MoreItemsTemplate>
+            <MudText Align="Align.Center" Typo="Typo.body1">
+                ...                    
+            </MudText>
+            <MudText Align="Align.Center" Typo="Typo.body2">
                 50 results shown. Start typing to look for more.
             </MudText>
-            </MoreItemsTemplate>
-        </MudAutocomplete>
+        </MoreItemsTemplate>
+    </MudAutocomplete>
 
     <div style="height: 50px">
-        @if (_pokemonSearchValueVarieties.Count > 1)
+        @if (_pokemonSearchValueVarieties.Count > 1
+            && !_locked)
         {
             <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter"
-                       @bind-Value="_PokemonFormName">
+            @bind-Value="_PokemonFormName">
                 @foreach (var v in _pokemonSearchValueVarieties)
                 {
                     <MudSelectItem Value="@v.Name" />
@@ -43,19 +53,13 @@
     @if (Pokemon is not null)
     {
         <PokemonCard Pokemon="Pokemon" IsNameDisplayed="false" />
-        @if (Lockable)
-        {
-            <MudToggleIconButton @bind-Toggled="@Locked"
-                                 Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Dark"
-                                 ToggledIcon="@Icons.Material.Filled.Lock" ToggledColor="@Color.Primary" />
-        }
         <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
             <MudTooltip Text="Details">
                 <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
             </MudTooltip>
             <MudTooltip Text="Add To Storage">
                 <MudIconButton Disabled="@(Profile.PokemonStorage.Boxes[0].Pokemon.Contains(Pokemon))"
-                               Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
+                Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
             </MudTooltip>
             @ExtraButtons
         </MudButtonGroup>
@@ -85,6 +89,9 @@
 
     [Parameter]
     public EventCallback<PokemonSearchBox> OnPokemonChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> OnLockChanged { get; set; }
 
     [Parameter]
     public bool Lockable { get; set; } = false;
@@ -139,8 +146,10 @@
         set
         {
             _locked = value;
+            _ = OnLockChanged.InvokeAsync(_locked);
         }
     }
+    private bool _prevLocked = false;
 
     private bool _errorFetchingPokemon = false;
 
@@ -270,10 +279,11 @@
 
     protected override bool ShouldRender()
     {
-        return _prevPokemon != _pokemon ||
-        _prevPokemonSearchValue != _pokemonSearchValue ||
-        _prevPokemonFormName != _pokemonFormName ||
-        _pokemonSearchValueVarietiesChanged;
+        return _prevPokemon != _pokemon 
+        || _prevPokemonSearchValue != _pokemonSearchValue
+        || _prevPokemonFormName != _pokemonFormName
+        || _prevLocked != _locked
+        || _pokemonSearchValueVarietiesChanged;
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -281,6 +291,7 @@
         _prevPokemon = _pokemon;
         _prevPokemonSearchValue = _pokemonSearchValue;
         _prevPokemonFormName = _pokemonFormName;
+        _prevLocked = _locked;
         _pokemonSearchValueVarietiesChanged = false;
     }
 }

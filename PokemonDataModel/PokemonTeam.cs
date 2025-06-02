@@ -8,7 +8,7 @@ namespace PokemonDataModel
         public static readonly int MaxTeamSize = 6;
 
         [JsonPropertyName("pokemon")]
-        public List<SmartPokemon?> Pokemon { get; set; } = new();
+        public List<SmartPokemon?> Pokemon { get; set; } = [];
 
         [JsonPropertyName("team_name")]
         private string name = "";
@@ -58,18 +58,12 @@ namespace PokemonDataModel
 
         public PokemonTeam() 
         {
-            // fill team with 6 null pokemon
-            for (int i = 0; i < MaxTeamSize; i++)
-            {
-                Pokemon.Add(null);
-            }
         }
 
         // copy constructor
 		public PokemonTeam(PokemonTeam team)
 		{
-			// fill team with 6 null pokemon
-			for (int i = 0; i < MaxTeamSize; i++)
+			for (int i = 0; i < team.Pokemon.Count; i++)
 			{
                 Pokemon.Add(team.Pokemon[i]);
 			}
@@ -79,16 +73,18 @@ namespace PokemonDataModel
 
 		public bool ContainsDuplicates()
         {
-            return Pokemon.Distinct().Count() != Pokemon.Count;
+            return Pokemon
+                .Where(p => p != null)
+                .Distinct()
+                .Count() != Pokemon.Count(p => p != null);
         }
 
         public int CountPokemon()
         {
             int count = 0;
-            for (int i = 0; i < MaxTeamSize; i++)
+            for (int i = 0; i < Pokemon.Count; i++)
             {
-                SmartPokemon? p = Pokemon[i];
-                if (p != null) count++;
+                if (Pokemon[i] != null) count++;
             }
             return count;
         }
@@ -97,7 +93,7 @@ namespace PokemonDataModel
         public int CountWeaknesses(string typeName)
         {
             int weaknesses = 0;
-            for (int i = 0; i < MaxTeamSize; i++)
+            for (int i = 0; i < Pokemon.Count; i++)
             {
                 SmartPokemon? p = Pokemon[i];
                 if (p == null) continue;
@@ -116,7 +112,7 @@ namespace PokemonDataModel
         public int CountResistances(string typeName)
         {
             int resistances = 0;
-            for (int i = 0; i < MaxTeamSize; i++)
+            for (int i = 0; i < Pokemon.Count; i++)
             {
                 SmartPokemon? p = Pokemon[i];
                 if (p == null) continue;
@@ -135,7 +131,7 @@ namespace PokemonDataModel
         public int CountSTABCoverage(string typeName)
         {
             int coverage = 0;
-            for (int i = 0; i < MaxTeamSize; i++)
+            for (int i = 0; i < Pokemon.Count; i++)
             {
                 SmartPokemon? p = Pokemon[i];
                 if (p == null) continue;
@@ -152,7 +148,7 @@ namespace PokemonDataModel
 		public int CountMoveCoverage(string typeName)
 		{
 			int coverage = 0;
-			for (int i = 0; i < MaxTeamSize; i++)
+			for (int i = 0; i < Pokemon.Count; i++)
 			{
 				SmartPokemon? p = Pokemon[i];
 				if (p == null) continue;
@@ -173,7 +169,7 @@ namespace PokemonDataModel
 
             // now empty this team and refill with sorted list
             Pokemon.Clear();
-            for (int i = 0; i < MaxTeamSize; ++i)
+            for (int i = 0; i < Pokemon.Count; ++i)
             {
                 if (i < team.Count)
                     Pokemon.Add(team[i]);

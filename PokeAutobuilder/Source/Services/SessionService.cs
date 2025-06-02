@@ -1,4 +1,5 @@
-﻿using Accord.IO;
+﻿using Accord;
+using Accord.IO;
 using AutoBuilder;
 using Blazored.SessionStorage;
 using PokeApiNet;
@@ -20,6 +21,7 @@ namespace PokeAutobuilder.Source.Services
         private static readonly string AUTOBUILDER_PARAMS = "autobuilder_params";
         private static readonly string SEARCH_LOCATION = "search_location";
 
+        // the session team should always contain 6 members
         private PokemonTeam _pokemonTeam = new(); 
         public PokemonTeam Team 
         {
@@ -69,6 +71,14 @@ namespace PokeAutobuilder.Source.Services
                 );
 
             _pokemonTeam = taskPokemonTeam.Result ?? new();
+            if (_pokemonTeam.Pokemon.Count == 0)
+            {
+                // initialize with an empty team of 6
+                for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+                {
+                    _pokemonTeam.Pokemon.Add(null);
+                }
+            }
             _autobuilderParams = taskAutobuilderParams.Result ?? null;
             _searchLocation = taskSearchLocation.Result ?? "National Pokédex";
         }
@@ -81,6 +91,14 @@ namespace PokeAutobuilder.Source.Services
         public async Task SetTeamAsync(PokemonTeam team)
         {
             _pokemonTeam = team;
+            // ensure the team has the correct number of Pokemon
+            if (_pokemonTeam.Pokemon.Count < PokemonTeam.MaxTeamSize)
+            {
+                for (int i = _pokemonTeam.Pokemon.Count; i < PokemonTeam.MaxTeamSize; i++)
+                {
+                    _pokemonTeam.Pokemon.Add(null);
+                }
+            }
             OnTeamChange?.Invoke();
             await _sessionStorageService.SetItemAsync(POKEMON_TEAM_KEY, team);
         }
