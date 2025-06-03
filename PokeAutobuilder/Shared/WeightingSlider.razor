@@ -9,7 +9,7 @@
 </MudTooltip>
 
 @code {
-    protected double? _value;
+    protected double _value;
 
     [Parameter]
     public string? Name { get; set; }
@@ -19,7 +19,7 @@
 
     #pragma warning disable BL0007
     [Parameter]
-    public double? Value
+    public double Value
     {
         get => _value;
         set
@@ -27,14 +27,7 @@
             if (_value != value)
             {
                 _value = value;
-                if (value is not null)
-                {
-                    ValueChanged.InvokeAsync((double)value);
-                }
-                else
-                {
-                    ValueChanged.InvokeAsync(0.0);
-                }
+                ValueChanged.InvokeAsync((double)value);
             }
         }
     }

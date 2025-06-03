@@ -28,7 +28,7 @@ namespace PokeAutobuilder.Source.Services
         private static readonly string POKEMON_STORAGE_KEY = "pokemon_storage";
         private static readonly string TEAM_STORAGE_KEY = "pokemon_team_storage";
 
-        private List<PokeApiNet.Type> _allTypes = new();
+        private List<PokeApiNet.Type> _allTypes = [];
         public List<PokeApiNet.Type> AllTypes
         {
             get => _allTypes;
@@ -49,7 +49,7 @@ namespace PokeAutobuilder.Source.Services
             }
         }
 
-        private List<PokemonTeam> _teamStorage = new();
+        private List<PokemonTeam> _teamStorage = [];
         public List<PokemonTeam> TeamStorage
         {
             get => _teamStorage;
@@ -74,12 +74,12 @@ namespace PokeAutobuilder.Source.Services
                 // we want to refresh the cached types each time there is a version update to ensure
                 // the types are fresh from the API
                 if (profileStorageVersion == Globals.Version)
-                {                    
-                    _allTypes = await _localStorageService.GetItemAsync<List<PokeApiNet.Type>>(POKEMON_TYPES_KEY);
+                {
+                    _allTypes = await _localStorageService.GetItemAsync<List<PokeApiNet.Type>>(POKEMON_TYPES_KEY) is { } allTypes ? allTypes : [];
                 }
 
                 // if profile doesn't contain pokemon types, generate them
-                if (AllTypes is null || AllTypes.Count == 0)
+                if (AllTypes.Count == 0)
                 {
                     AllTypes = await PokeApiService.Instance!.GetAllTypesAsync();
                 }
@@ -88,15 +88,19 @@ namespace PokeAutobuilder.Source.Services
                 // load pokemon storage
                 if (profileStorageVersion <= 1.3)
                 {
-                    PokemonBox box = await _localStorageService.GetItemAsync<PokemonBox>(POKEMON_STORAGE_KEY);
-                    _pokemonStorage.Boxes.Add(box);
-                    // replace old storage format with new format
-                    await SetPokemonStorageAsync(_pokemonStorage);
-                    await UpdateVersionAsync();
+                    PokemonBox? box = await _localStorageService.GetItemAsync<PokemonBox>(POKEMON_STORAGE_KEY);
+                    if (box is not null
+                        && _pokemonStorage is not null)
+                    {
+                        _pokemonStorage.Boxes.Add(box);
+                        // replace old storage format with new format
+                        await SetPokemonStorageAsync(_pokemonStorage);
+                        await UpdateVersionAsync();
+                    }
                 }
                 else
                 {
-                    _pokemonStorage = await _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY);
+                    _pokemonStorage = await _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY) is { } pokemonStorage ? pokemonStorage : new();
                     if (_pokemonStorage is null)
                     {
                         _pokemonStorage = new();
@@ -105,8 +109,7 @@ namespace PokeAutobuilder.Source.Services
                 }
 
                 // load team storage
-                _teamStorage = await _localStorageService.GetItemAsync<List<PokemonTeam>>(TEAM_STORAGE_KEY);
-                _teamStorage ??= new();
+                _teamStorage = await _localStorageService.GetItemAsync<List<PokemonTeam>>(TEAM_STORAGE_KEY) is { } teamStorage ? teamStorage : [];
             }
             catch (Exception ex)
             {                
@@ -141,7 +144,7 @@ namespace PokeAutobuilder.Source.Services
         {
             // if they've already specified their preferences explicitly, use them
             if (await _localStorageService.ContainKeyAsync("preferences"))
-                return await _localStorageService.GetItemAsync<Preferences>("preferences");
+                return (await _localStorageService.GetItemAsync<Preferences>("preferences"))!;
 
             // else default to OS settings...
             // TODO, get theme provider
@@ -180,11 +183,15 @@ namespace PokeAutobuilder.Source.Services
         }
         public async Task AddPokemonToStorageAsync(SmartPokemon pokemon)
         {
+            if (PokemonStorage == null) return;
+
             PokemonStorage.Boxes[0].Pokemon.Add(pokemon);
             await SetPokemonStorageAsync(PokemonStorage);
         }
         public async Task<bool> RemovePokemonFromStorageAsync(SmartPokemon pokemon)
         {
+            if (PokemonStorage == null) return false;
+
             bool removed = PokemonStorage.Boxes[0].Pokemon.Remove(pokemon);
             if (removed)
                 await SetPokemonStorageAsync(PokemonStorage);
@@ -193,6 +200,8 @@ namespace PokeAutobuilder.Source.Services
         }
         public async Task<bool> ReplacePokemonInStorageAsync(SmartPokemon oldPokemon, SmartPokemon newPokemon)
         {
+            if (PokemonStorage == null) return false;
+
             int pokemonIdx = PokemonStorage.Boxes[0].Pokemon.IndexOf(oldPokemon);
 
             if (pokemonIdx < 0)
@@ -212,11 +221,15 @@ namespace PokeAutobuilder.Source.Services
         }
         public async Task AddTeamToStorageAsync(PokemonTeam team)
         {
+            if (TeamStorage == null) return;
+
             TeamStorage.Add(new PokemonTeam(team));
             await SetTeamStorageAsync(TeamStorage);
         }
         public async Task<bool> RemoveTeamFromStorageAsync(PokemonTeam team)
         {
+            if (TeamStorage == null) return false;
+
             bool removed = TeamStorage.Remove(team);
             if (removed)
                 await SetTeamStorageAsync(TeamStorage);
