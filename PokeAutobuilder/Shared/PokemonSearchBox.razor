@@ -82,7 +82,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public Func<string, Task<IEnumerable<IPokemonSearchable>>>? SearchFunc { get; set; }
+    public Func<string, CancellationToken, Task<IEnumerable<IPokemonSearchable>>>? SearchFunc { get; set; }
 
     [Parameter]
     public RenderFragment? ExtraButtons { get; set; }
@@ -260,7 +260,8 @@
         var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is SmartPokemon)
+        if (result is not null
+            && !result.Canceled && result.Data is SmartPokemon)
         {
             // replace old pokemon with updated version
             SmartPokemon? pokemon = result.Data as SmartPokemon;

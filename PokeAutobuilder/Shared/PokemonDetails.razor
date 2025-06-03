@@ -173,7 +173,7 @@
         move4 = await Pokemon.GetSelectedMoveResource(3);
     }
 
-    private async Task<IEnumerable<PokemonMove>> SearchAvailableMoves(string value)
+    private async Task<IEnumerable<PokemonMove>> SearchAvailableMoves(string value, CancellationToken token)
     {
         // return an empty list if somehow this card's pokemon param is null
         if (Pokemon is null)

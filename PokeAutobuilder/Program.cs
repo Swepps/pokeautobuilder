@@ -7,7 +7,6 @@ using MudBlazor;
 using PokeAutobuilder.Source.Services;
 using PokeAutobuilder;
 using PokemonDataModel;
-using Toolbelt.Blazor.Extensions.DependencyInjection;
 using Blazor.Analytics;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -41,7 +40,6 @@ builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddHttpClient<PokeApiService>();
-builder.Services.AddPWAUpdater();
 builder.Services.AddGoogleAnalytics("G-SFB9MT9167");
 
 await builder.Build().RunAsync();

@@ -15,8 +15,8 @@
 
 <MudPaper Elevation="25" Square="true">
     <MudToolBar>
-        <MudIconButton Icon="@Icons.Material.Outlined.Add" OnClick="@(() => _storagePanel = StoragePanel.Add)" Title="Import Pokémon"/>
-        <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => _storagePanel = StoragePanel.Edit)" Title="Edit selected Pokémon" />
+        <MudIconButton Icon="@Icons.Material.Outlined.Add" OnClick="@(() => _storagePanel = StoragePanel.Add)" />
+        <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => _storagePanel = StoragePanel.Edit)"  />
     </MudToolBar>
 </MudPaper>
 <div class="d-flex flex-wrap">
@@ -53,7 +53,7 @@
                 <PokemonDetails Pokemon="SelectedPokemon" OnMoveChanged="OnPokemonMoveChanged">
                     <ActionsContent>
                         <div class="d-flex justify-center align-end mud-height-full">
-                            <MudButtonGroup VerticalAlign="true" 
+                            <MudButtonGroup Vertical="true" 
                             OverrideStyles="false"
                             Size="Size.Large"
                             Class="mud-width-full"
@@ -176,7 +176,8 @@
         , options: new() { MaxWidth = MaxWidth.Medium });
         var result = await dialog.Result;
 
-        if (!result.Canceled && result.Data is SmartPokemon)
+        if (result is not null
+            && !result.Canceled && result.Data is SmartPokemon)
         {
             // replace old pokemon with evolved version
             SmartPokemon? pokemon = result.Data as SmartPokemon;
@@ -207,7 +208,7 @@
         _ = Profile.UpdatePokemonStorageAsync();
     }
 
-    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString)
+    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString, CancellationToken token)
     {
         if (_searchLocation is not null)
         {

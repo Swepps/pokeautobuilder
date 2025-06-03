@@ -167,7 +167,7 @@
             StateHasChanged();
     }
 
-    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString)
+    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString, CancellationToken token)
     {
         if (_searchLocation is not null)
         {
