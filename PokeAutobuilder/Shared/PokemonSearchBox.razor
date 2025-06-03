@@ -41,7 +41,7 @@
         @if (_pokemonSearchValueVarieties.Count > 1
             && !_locked)
         {
-            <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.TopCenter"
+            <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
             @bind-Value="_PokemonFormName">
                 @foreach (var v in _pokemonSearchValueVarieties)
                 {

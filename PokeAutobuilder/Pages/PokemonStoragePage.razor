@@ -28,7 +28,7 @@
                     <MudText Typo="Typo.caption" Color="Color.Info">
                         Use the controls below to find Pokémon to add to storage
                     </MudText>
-                    <MudSelect T="ILazyPokemonList" Label="Search Location" AnchorOrigin="Origin.TopCenter" FullWidth="false"
+                    <MudSelect T="ILazyPokemonList" Label="Search Location" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" FullWidth="false"
                     @bind-Value="_searchLocation">
                         @foreach (ILazyPokemonList list in SearchLocations!)
                         {

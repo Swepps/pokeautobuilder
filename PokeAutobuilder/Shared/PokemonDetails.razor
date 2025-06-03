@@ -11,7 +11,7 @@
         <MudStack Spacing="0">
             @if (Pokemon is not null)
             {
-                <MudSelect Disabled="@(Pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
+                <MudSelect Disabled="@(Pokemon.Abilities.Count == 1)" Dense="true" T="string" Label="Ability" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" @bind-Value="PokemonAbilityName">
                     @foreach (PokemonAbility a in Pokemon.Abilities)
                     {
                         <MudSelectItem Value="@a.Ability.Name" />

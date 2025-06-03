@@ -19,7 +19,7 @@
 <MudStack Spacing="5" Class="mt-4 mb-4" AlignItems="AlignItems.Center">
     <MudGrid Justify="Justify.FlexEnd">
         <MudItem xs="12" sm="6" Class="d-flex align-end justify-start mud-width-full">
-            <MudSelect T="ILazyPokemonList" Label="Search Location" AnchorOrigin="Origin.TopCenter"
+            <MudSelect T="ILazyPokemonList" Label="Search Location" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
             @bind-Value="SearchLocation">
                 @foreach (ILazyPokemonList list in SearchLocations!)
                 {
