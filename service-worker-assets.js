@@ -1,5 +1,5 @@
 self.assetsManifest = {
-  "version": "NtNwGffG",
+  "version": "a6ry+6/k",
   "assets": [
     {
       "hash": "sha256-zb5SIU0uBnhO7Wi4hA6ri40aFMBFIkX+TKuMbyhUDc4=",
@@ -38,8 +38,8 @@ self.assetsManifest = {
       "url": "_framework/Accord.Math.Core.271df58t8l.wasm"
     },
     {
-      "hash": "sha256-aOOd2VmBzLLPScdMJWNmAHMlCWdLXNtm0hVGA/2Iqw8=",
-      "url": "_framework/AutoBuilder.gexeo9q878.wasm"
+      "hash": "sha256-4Ezi9ctRP0vhxsmfOxe84lpueGxtyUo8Dd5uJA3tuMU=",
+      "url": "_framework/AutoBuilder.8ms9i2aua2.wasm"
     },
     {
       "hash": "sha256-pyOJLRpWt2hZqw8j6aNcZP+AaVdFwVKxdHTpMMiQ3RI=",
@@ -182,12 +182,12 @@ self.assetsManifest = {
       "url": "_framework/PokeApiNet.cyz0yq1sho.wasm"
     },
     {
-      "hash": "sha256-4bFqzubM45aYJO2kbproP5O5oNvcEsGeUWJW10iQWVU=",
-      "url": "_framework/PokeAutobuilder.jfjncg8lfp.wasm"
+      "hash": "sha256-F0+QlgdZRMDZ0irB6VHjrcXm4RHZfgtqRKur7YxZ9BM=",
+      "url": "_framework/PokeAutobuilder.pwl02oa06w.wasm"
     },
     {
-      "hash": "sha256-tI7MuqRI9qvWYemQC5pwKK9C/bZyLmrqh5FN/Ml1QRA=",
-      "url": "_framework/PokemonDataModel.0vfko3qlr8.wasm"
+      "hash": "sha256-TiJJ8DgZZ3xMxXLvtQphFz1JocO8+uY0Bf0GTMtLwlE=",
+      "url": "_framework/PokemonDataModel.2bscgmy7we.wasm"
     },
     {
       "hash": "sha256-HJ1vJRRkmIoKX+CtO0teC3aIeDuqA3Eks+xP8ad7uv4=",
@@ -370,11 +370,11 @@ self.assetsManifest = {
       "url": "_framework/System.ezrw3d5kw2.wasm"
     },
     {
-      "hash": "sha256-cvtnrzpBuOU8u2+J1efZoGRiPqKzMTHTgSkAZ/xZxuY=",
-      "url": "_framework/Utility.iwq1hr81pt.wasm"
+      "hash": "sha256-aWst/7mn4Mp1UpyaY4oQ48gavpfIPT4k6v73UkPWQd0=",
+      "url": "_framework/Utility.l13k3bvxk0.wasm"
     },
     {
-      "hash": "sha256-JllJDVlswx5HsD7mo0Jib27SJ6g4j0t3jWHz8z/4Mlo=",
+      "hash": "sha256-A59xEK6MXAowCu/FCZuyCLIwb155llSKd9hC3SlPlJk=",
       "url": "_framework/blazor.boot.json"
     },
     {
@@ -386,8 +386,8 @@ self.assetsManifest = {
       "url": "_framework/dotnet.js"
     },
     {
-      "hash": "sha256-Ti4A4zU+TXmt/2HmaCEP44FIjTn8WRaYzVE1rwsKZEg=",
-      "url": "_framework/dotnet.native.ay2jcwf1un.wasm"
+      "hash": "sha256-ZysPw7Qo2AKYrU18bshB5gDktiON6K62fAGkPd+HgyM=",
+      "url": "_framework/dotnet.native.9kk2gcobvg.wasm"
     },
     {
       "hash": "sha256-xeet5u/RXenKiTfIKqqRhZqazZM2syffKqdGVhQL9i0=",
