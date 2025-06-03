@@ -89,21 +89,23 @@ namespace PokeAutobuilder.Source.Services
                 if (profileStorageVersion <= 1.3)
                 {
                     PokemonBox? box = await _localStorageService.GetItemAsync<PokemonBox>(POKEMON_STORAGE_KEY);
-                    if (box is not null
-                        && _pokemonStorage is not null)
+                    if (box is not null)
                     {
-                        _pokemonStorage.Boxes.Add(box);
-                        // replace old storage format with new format
-                        await SetPokemonStorageAsync(_pokemonStorage);
-                        await UpdateVersionAsync();
+                        _pokemonStorage.Boxes.Add(box);                                           
                     }
+                    else if (_pokemonStorage.Boxes.Count == 0)
+                    {
+                        _pokemonStorage.Boxes.Add(new PokemonBox("Pokémon Storage"));
+                    }
+
+                    await SetPokemonStorageAsync(_pokemonStorage);
+                    await UpdateVersionAsync();
                 }
                 else
                 {
                     _pokemonStorage = await _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY) is { } pokemonStorage ? pokemonStorage : new();
-                    if (_pokemonStorage is null)
+                    if (_pokemonStorage.Boxes.Count == 0)
                     {
-                        _pokemonStorage = new();
                         _pokemonStorage.Boxes.Add(new PokemonBox("Pokémon Storage"));
                     }
                 }
