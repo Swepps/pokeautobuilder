@@ -14,7 +14,7 @@
 
 <PageTitle>Pokémon Storage</PageTitle>
 
-<InputFile id="filePicker" @ref="_filePicker" OnChange="HandleFileSelected" style="display: none;"/>
+<InputFile id="filePicker" @ref="_filePicker" OnChange="HandleFileSelectedAsync" style="display: none;"/>
 
 <MudPaper Elevation="25" Square="true">
     <MudToolBar>
@@ -26,10 +26,27 @@
                 <MudIcon Icon="@Icons.Material.Outlined.Edit" Title="Edit the currently selected Pokémon"/>
             </MudToggleItem>
         </MudToggleGroup>
-        <MudButtonGroup Variant="Variant.Outlined">
-            <MudIconButton OnClick="@OnClickDownloadBox" Icon="@Icons.Material.Filled.Download" title="Download this Pokémon box" />
-            <MudIconButton OnClick="@OnClickUploadBox" Icon="@Icons.Material.Filled.Upload" title="Upload a Pokémon box" />
+
+        <MudButtonGroup Variant="Variant.Outlined" Class="px-2" Color="Color.Primary">
+            <MudIconButton OnClick="@OnClickDownloadBoxAsync" Icon="@Icons.Material.Filled.Download" title="Download this Pokémon box" />
+            <MudIconButton OnClick="@OnClickUploadBoxAsync" Icon="@Icons.Material.Filled.Upload" title="Upload a Pokémon box" />
         </MudButtonGroup>
+
+        <MudIconButton OnClick="@OnClickPreviousBox" 
+            Disabled="@(SelectedBox == Profile.PokemonStorage.Boxes.First())" 
+            Variant="Variant.Outlined" 
+            Icon="@Icons.Material.Filled.ArrowLeft" title="Previous Box" />
+
+        <MudTextField @bind-Value="SelectedBox.Name" 
+            Label="Box Name" 
+            Variant="Variant.Outlined" 
+            Class="px-1"
+            FullWidth="false"/>
+
+        <MudIconButton OnClick="@OnClickNextBox" 
+            Disabled="@(SelectedBox == Profile.PokemonStorage.Boxes.Last())" 
+            Variant="Variant.Outlined" 
+            Icon="@Icons.Material.Filled.ArrowRight" title="Next Box" />
     </MudToolBar>
 </MudPaper>
 <div class="d-flex flex-wrap">
@@ -99,7 +116,7 @@
     </MudPaper>
     <MudPaper Class="pa-1 d-flex flex-1" MinWidth="325px" Elevation="0" Square="true">
         <CascadingValue Value="@SelectedPokemon">
-            <PokemonStorageBox PokemonCollection="Profile.PokemonStorage.Boxes[0].Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
+            <PokemonStorageBox PokemonCollection="SelectedBox!.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
         </CascadingValue>
     </MudPaper>
 </div>
@@ -126,6 +143,16 @@
 
     private bool _selectedPokemonCanEvolve = false;
 
+    private PokemonBox _selectedBox = new();
+    public PokemonBox SelectedBox
+    {
+        get => _selectedBox;
+        set
+        {
+            _selectedBox = value;
+        }
+    }
+
     protected enum StoragePanel { Edit, Add }
     protected StoragePanel _storagePanel = StoragePanel.Add;
 
@@ -140,6 +167,16 @@
         if (SearchLocations is not null)
         {
             _searchLocation = SearchLocations.FirstOrDefault();
+        }
+
+        if (Profile.PokemonStorage.Boxes.Count > 0)
+        {
+            SelectedBox = Profile.PokemonStorage.Boxes[0];
+        }
+        else
+        {
+            Profile.PokemonStorage.Boxes.Add(SelectedBox);
+            _ = Profile.UpdatePokemonStorageAsync();
         }
     }
 
@@ -157,12 +194,12 @@
         StateHasChanged();
     }
 
-    protected async Task OnClickDownloadBox()
+    protected async Task OnClickDownloadBoxAsync()
     {
         await JS.InvokeVoidAsync("localStorageHelper.exportBoxToFile", "pokemon_storage", 0, $"pokeautobuilderbox-{Profile.PokemonStorage.Boxes[0].Name}.json");
     }
 
-    protected async Task OnClickUploadBox()
+    protected async Task OnClickUploadBoxAsync()
     {
         if (_filePicker is null) return;
 
@@ -170,7 +207,29 @@
             _filePicker.Element);
     }
 
-    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    protected Task OnClickNextBox()
+    {
+        int indexOfCurrent = Profile.PokemonStorage.Boxes.IndexOf(SelectedBox);
+        if (indexOfCurrent >= 0 && indexOfCurrent < Profile.PokemonStorage.Boxes.Count - 1)
+        {
+            SelectedBox = Profile.PokemonStorage.Boxes[indexOfCurrent + 1];            
+        }
+
+        return Task.CompletedTask;
+    }
+
+    protected Task OnClickPreviousBox()
+    {
+        int indexOfCurrent = Profile.PokemonStorage.Boxes.IndexOf(SelectedBox);
+        if (indexOfCurrent > 0 && indexOfCurrent < Profile.PokemonStorage.Boxes.Count)
+        {
+            SelectedBox = Profile.PokemonStorage.Boxes[indexOfCurrent - 1];
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleFileSelectedAsync(InputFileChangeEventArgs e)
     {
         await JS.InvokeVoidAsync("localStorageHelper.importBoxFromFile", "pokemon_storage", "filePicker", DotNetObjectReference.Create(this));
     }
