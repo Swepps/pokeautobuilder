@@ -15,8 +15,14 @@
 
 <MudPaper Elevation="25" Square="true">
     <MudToolBar>
-        <MudIconButton Icon="@Icons.Material.Outlined.Add" OnClick="@(() => _storagePanel = StoragePanel.Add)" />
-        <MudIconButton Icon="@Icons.Material.Outlined.Edit" OnClick="@(() => _storagePanel = StoragePanel.Edit)"  />
+        <MudToggleGroup T="StoragePanel" @bind-Value="_storagePanel">
+            <MudToggleItem Value="StoragePanel.Add">
+                <MudIcon Icon="@Icons.Material.Outlined.Add" />
+            </MudToggleItem>
+            <MudToggleItem Value="StoragePanel.Edit" Disabled="@(_selectedPokemon == null)">
+                <MudIcon Icon="@Icons.Material.Outlined.Edit" />
+            </MudToggleItem>
+        </MudToggleGroup>
     </MudToolBar>
 </MudPaper>
 <div class="d-flex flex-wrap">
