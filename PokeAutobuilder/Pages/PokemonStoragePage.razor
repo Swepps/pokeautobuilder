@@ -8,21 +8,28 @@
 @inject NavigationManager NavigationManager
 @inject ProfileService Profile
 @inject IDialogService DialogService
+@inject IJSRuntime JS
 
 @implements IDisposable
 
 <PageTitle>Pokémon Storage</PageTitle>
 
+<InputFile id="filePicker" @ref="_filePicker" OnChange="HandleFileSelected" style="display: none;"/>
+
 <MudPaper Elevation="25" Square="true">
     <MudToolBar>
         <MudToggleGroup T="StoragePanel" @bind-Value="_storagePanel">
             <MudToggleItem Value="StoragePanel.Add">
-                <MudIcon Icon="@Icons.Material.Outlined.Add" />
+                <MudIcon Icon="@Icons.Material.Outlined.Add" Title="Open the Pokémon browser"/>
             </MudToggleItem>
             <MudToggleItem Value="StoragePanel.Edit" Disabled="@(_selectedPokemon == null)">
-                <MudIcon Icon="@Icons.Material.Outlined.Edit" />
+                <MudIcon Icon="@Icons.Material.Outlined.Edit" Title="Edit the currently selected Pokémon"/>
             </MudToggleItem>
         </MudToggleGroup>
+        <MudButtonGroup Variant="Variant.Outlined">
+            <MudIconButton OnClick="@OnClickDownloadBox" Icon="@Icons.Material.Filled.Download" title="Download this Pokémon box" />
+            <MudIconButton OnClick="@OnClickUploadBox" Icon="@Icons.Material.Filled.Upload" title="Upload a Pokémon box" />
+        </MudButtonGroup>
     </MudToolBar>
 </MudPaper>
 <div class="d-flex flex-wrap">
@@ -122,6 +129,8 @@
     protected enum StoragePanel { Edit, Add }
     protected StoragePanel _storagePanel = StoragePanel.Add;
 
+    private InputFile? _filePicker;
+
     private string _messageBoxState = "Message box hasn't been opened yet";
 
     protected override void OnInitialized()
@@ -146,6 +155,24 @@
         SelectedPokemon = selectedPokemon;
         _storagePanel = StoragePanel.Edit;
         StateHasChanged();
+    }
+
+    protected async Task OnClickDownloadBox()
+    {
+        await JS.InvokeVoidAsync("localStorageHelper.exportBoxToFile", "pokemon_storage", 0, $"pokeautobuilderbox-{Profile.PokemonStorage.Boxes[0].Name}.json");
+    }
+
+    protected async Task OnClickUploadBox()
+    {
+        if (_filePicker is null) return;
+
+        await JS.InvokeVoidAsync("HTMLElement.prototype.click.call",
+            _filePicker.Element);
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        await JS.InvokeVoidAsync("localStorageHelper.importBoxFromFile", "pokemon_storage", "filePicker", DotNetObjectReference.Create(this));
     }
 
     protected async Task OnClickReleaseAsync()
