@@ -35,10 +35,10 @@
 
         <MudButtonGroup Variant="Variant.Outlined" Class="mx-2 my-4" Color="Color.Primary">
             <MudTooltip Text="Add a new Pokémon box">
-                <MudIconButton OnClick="@OnClickAddBoxAsync" Icon="@Icons.Material.Filled.Add" />
+                <MudIconButton OnClick="@OnClickAddBox" Icon="@Icons.Material.Filled.Add" />
             </MudTooltip>
             <MudTooltip Text="Delete this Pokémon box">
-                <MudIconButton OnClick="@OnClickDeleteBoxAsync" Icon="@Icons.Material.Filled.Delete" Disabled="@(Profile.PokemonStorage.Boxes.Count <= 1)" />
+                <MudIconButton OnClick="@OnClickDeleteBox" Icon="@Icons.Material.Filled.Delete" Disabled="@(Profile.PokemonStorage.Boxes.Count <= 1)" />
             </MudTooltip>
             <MudTooltip Text="Download this Pokémon box">
                 <MudIconButton OnClick="@OnClickDownloadBoxAsync" Icon="@Icons.Material.Filled.Download" />
@@ -234,7 +234,7 @@
         StateHasChanged();
     }
 
-    protected async Task OnClickAddBoxAsync()
+    protected Task OnClickAddBox()
     {
         Profile.PokemonStorage.Boxes.Add(new($"Box {Profile.PokemonStorage.Boxes.Count + 1}"));
         _ = Profile.UpdatePokemonStorageAsync();
@@ -243,7 +243,7 @@
         _storagePanel = StoragePanel.Add;
     }
 
-    protected async Task OnClickDeleteBoxAsync()
+    protected Task OnClickDeleteBox()
     {
         if (SelectedBoxNumber > 0 
             && SelectedBoxNumber <= Profile.PokemonStorage.Boxes.Count)
