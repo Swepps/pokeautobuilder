@@ -32,21 +32,13 @@
             <MudIconButton OnClick="@OnClickUploadBoxAsync" Icon="@Icons.Material.Filled.Upload" title="Upload a Pokémon box" />
         </MudButtonGroup>
 
-        <MudIconButton OnClick="@OnClickPreviousBox" 
-            Disabled="@(SelectedBox == Profile.PokemonStorage.Boxes.First())" 
-            Variant="Variant.Outlined" 
-            Icon="@Icons.Material.Filled.ArrowLeft" title="Previous Box" />
+        <MudPagination ShowPageButtons="false" Count="@Profile.PokemonStorage.Boxes.Count" @bind-Selected="SelectedBoxNumber" />
 
         <MudTextField @bind-Value="SelectedBox.Name" 
             Label="Box Name" 
             Variant="Variant.Outlined" 
             Class="px-1"
             FullWidth="false"/>
-
-        <MudIconButton OnClick="@OnClickNextBox" 
-            Disabled="@(SelectedBox == Profile.PokemonStorage.Boxes.Last())" 
-            Variant="Variant.Outlined" 
-            Icon="@Icons.Material.Filled.ArrowRight" title="Next Box" />
     </MudToolBar>
 </MudPaper>
 <div class="d-flex flex-wrap">
@@ -143,6 +135,17 @@
 
     private bool _selectedPokemonCanEvolve = false;
 
+    private int _selectedBoxNumber = 1;
+    public int SelectedBoxNumber
+    {
+        get => _selectedBoxNumber;
+        set
+        {
+            _selectedBoxNumber = value;
+            SelectedBox = Profile.PokemonStorage.Boxes[_selectedBoxNumber - 1];
+        }
+    }
+
     private PokemonBox _selectedBox = new();
     public PokemonBox SelectedBox
     {
@@ -205,28 +208,6 @@
 
         await JS.InvokeVoidAsync("HTMLElement.prototype.click.call",
             _filePicker.Element);
-    }
-
-    protected Task OnClickNextBox()
-    {
-        int indexOfCurrent = Profile.PokemonStorage.Boxes.IndexOf(SelectedBox);
-        if (indexOfCurrent >= 0 && indexOfCurrent < Profile.PokemonStorage.Boxes.Count - 1)
-        {
-            SelectedBox = Profile.PokemonStorage.Boxes[indexOfCurrent + 1];            
-        }
-
-        return Task.CompletedTask;
-    }
-
-    protected Task OnClickPreviousBox()
-    {
-        int indexOfCurrent = Profile.PokemonStorage.Boxes.IndexOf(SelectedBox);
-        if (indexOfCurrent > 0 && indexOfCurrent < Profile.PokemonStorage.Boxes.Count)
-        {
-            SelectedBox = Profile.PokemonStorage.Boxes[indexOfCurrent - 1];
-        }
-
-        return Task.CompletedTask;
     }
 
     private async Task HandleFileSelectedAsync(InputFileChangeEventArgs e)
