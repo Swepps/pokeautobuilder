@@ -14,5 +14,6 @@ namespace PokemonDataModel
             set;
         }
         Task<IEnumerable<IPokemonSearchable>> GetListAsync();
+        bool IsEmpty();
     }
 }

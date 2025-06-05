@@ -206,7 +206,7 @@
         Profile.OnStorageChange += StateHasChanged;
         if (SearchLocations is not null)
         {
-            _searchLocation = SearchLocations.FirstOrDefault();
+            _searchLocation = SearchLocations.FirstOrDefault((ILazyPokemonList list) => !Profile.PokemonStorage.Boxes.Contains(list));
         }
 
         if (Profile.PokemonStorage.Boxes.Count > 0)
@@ -234,20 +234,28 @@
         StateHasChanged();
     }
 
-    protected Task OnClickAddBox()
+    protected void OnClickAddBox()
     {
         Profile.PokemonStorage.Boxes.Add(new($"Box {Profile.PokemonStorage.Boxes.Count + 1}"));
         _ = Profile.UpdatePokemonStorageAsync();
+        if (SearchLocations is not null)
+        {
+            SearchLocations.Insert(Profile.PokemonStorage.Boxes.Count - 1, Profile.PokemonStorage.Boxes.Last());
+        }
         SelectedBoxNumber = Profile.PokemonStorage.Boxes.Count;
         SelectedPokemon = null;
         _storagePanel = StoragePanel.Add;
     }
 
-    protected Task OnClickDeleteBox()
+    protected void OnClickDeleteBox()
     {
         if (SelectedBoxNumber > 0 
             && SelectedBoxNumber <= Profile.PokemonStorage.Boxes.Count)
         {
+            if (SearchLocations is not null)
+            {
+                SearchLocations.Remove(Profile.PokemonStorage.Boxes.ElementAt(SelectedBoxNumber - 1));
+            }
             Profile.PokemonStorage.Boxes.RemoveAt(SelectedBoxNumber - 1);
             _ = Profile.UpdatePokemonStorageAsync();
             SelectedBoxNumber = Math.Clamp(SelectedBoxNumber, 1, Profile.PokemonStorage.Boxes.Count);
@@ -258,7 +266,7 @@
 
     protected async Task OnClickDownloadBoxAsync()
     {
-        await JS.InvokeVoidAsync("localStorageHelper.exportBoxToFile", "pokemon_storage", 0, $"pokeautobuilderbox-{Profile.PokemonStorage.Boxes[0].Name}.json");
+        await JS.InvokeVoidAsync("localStorageHelper.exportBoxToFile", "pokemon_storage", SelectedBoxNumber - 1, $"pokeautobuilderbox-{SelectedBox.Name}.json");
     }
 
     protected async Task OnClickUploadBoxAsync()
@@ -275,6 +283,8 @@
         await Profile.LoadPokemonStorageAsync();
         // select the last box in the list as it will be the one that was just imported
         SelectedBoxNumber = Profile.PokemonStorage.Boxes.Count;
+        SelectedPokemon = null;
+        _storagePanel = StoragePanel.Add;
         StateHasChanged();
     }
 

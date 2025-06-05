@@ -166,5 +166,11 @@ namespace PokemonDataModel
 
             return this;
         }
+
+        // assume a pokedex is never empty
+        public bool IsEmpty()
+        {
+            return false;
+        }
     }
 }

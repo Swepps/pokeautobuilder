@@ -97,6 +97,11 @@ namespace PokemonDataModel
         {
             return Task.Run(() => Pokemon.AsEnumerable<IPokemonSearchable>());
         }
+
+        public bool IsEmpty()
+        {
+            return Pokemon.Count == 0;
+        }
     }
 
     public class PokemonStorage

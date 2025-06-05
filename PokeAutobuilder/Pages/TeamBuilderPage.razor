@@ -23,9 +23,13 @@
             @bind-Value="SearchLocation">
                 @foreach (ILazyPokemonList list in SearchLocations!)
                 {
-                    <MudSelectItem T="ILazyPokemonList" Value="list">
+                    <MudSelectItem T="ILazyPokemonList" Value="list" Disabled="@list.IsEmpty()">
                         @list.Name
                     </MudSelectItem>
+                    @if (Profile.PokemonStorage.Boxes.LastOrDefault() == list)
+                    {
+                        <MudDivider DividerType="DividerType.Middle" />
+                    }
                 }
             </MudSelect>
         </MudItem>
@@ -87,9 +91,16 @@
             if (value is not null)
             {
                 _ = Session.SetSearchLocationAsync(value.Name);
+
+                if (value is PokemonBox)
+                {
+                    _selectedBox = value as PokemonBox;
+                }
             }
         }
     }
+
+    private PokemonBox? _selectedBox = null;
 
     private string _teamName { get; set; } = "";
 
@@ -109,8 +120,11 @@
 
     public string GetAutoBuilderTooltipMessage()
     {
-        if (Profile.PokemonStorage.Boxes[0].Pokemon.Count < cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1)
-            return "Please add more Pokémon to storage in order to use the Auto Builder";
+        if (_selectedBox is null)
+            return "Please select one of your storage boxes by choosing one in the 'Search Location' dropdown menu";
+
+        if (_selectedBox.Pokemon.Count < cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1)
+            return "Please add more Pokémon to the selected box in order to use the Auto Builder";
 
         if (cards.Count(c => !c.Locked) < 2)
             return "Please unlock some more Pokémon before using the Auto Builder";
@@ -134,7 +148,7 @@
             }
         }
         parameters.Add("InputTeam", inputTeam);
-
+        parameters.Add("InputBox", _selectedBox);
 
         var dialog = await DialogService.ShowAsync<AutoBuilderDialog>("Automatic Team Builder", parameters);
         var result = await dialog.Result;
@@ -196,7 +210,8 @@
 
     protected bool CanRunAutoBuilder()
     {
-        return Profile.PokemonStorage.Boxes[0].Pokemon.Count >= cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1
+        return _selectedBox is not null
+        && _selectedBox.Pokemon.Count >= cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1
         && cards.Count(c => !c.Locked) >= 2;
     }
 
