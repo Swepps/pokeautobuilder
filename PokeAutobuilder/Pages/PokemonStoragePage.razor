@@ -19,17 +19,25 @@
 <MudPaper Elevation="25" Square="true">
     <MudToolBar>
         <MudToggleGroup T="StoragePanel" @bind-Value="_storagePanel">
-            <MudToggleItem Value="StoragePanel.Add">
-                <MudIcon Icon="@Icons.Material.Outlined.Add" Title="Open the Pokémon browser"/>
-            </MudToggleItem>
-            <MudToggleItem Value="StoragePanel.Edit" Disabled="@(_selectedPokemon == null)">
-                <MudIcon Icon="@Icons.Material.Outlined.Edit" Title="Edit the currently selected Pokémon"/>
-            </MudToggleItem>
+            <MudTooltip Text="Open the Pokémon browser">
+                <MudToggleItem Value="StoragePanel.Add">
+                    <MudIcon Icon="@Icons.Material.Outlined.Add" />
+                </MudToggleItem>
+            </MudTooltip>
+            <MudTooltip Text="Edit the currently selected Pokémon">
+                <MudToggleItem Value="StoragePanel.Edit" Disabled="@(_selectedPokemon == null)">
+                    <MudIcon Icon="@Icons.Material.Outlined.Edit" />
+                </MudToggleItem>
+            </MudTooltip>
         </MudToggleGroup>
 
         <MudButtonGroup Variant="Variant.Outlined" Class="px-2" Color="Color.Primary">
-            <MudIconButton OnClick="@OnClickDownloadBoxAsync" Icon="@Icons.Material.Filled.Download" title="Download this Pokémon box" />
-            <MudIconButton OnClick="@OnClickUploadBoxAsync" Icon="@Icons.Material.Filled.Upload" title="Upload a Pokémon box" />
+            <MudTooltip Text="Download this Pokémon box">
+                <MudIconButton OnClick="@OnClickDownloadBoxAsync" Icon="@Icons.Material.Filled.Download" />
+            </MudTooltip>
+            <MudTooltip Text="Upload a Pokémon box">
+                <MudIconButton OnClick="@OnClickUploadBoxAsync" Icon="@Icons.Material.Filled.Upload" />
+            </MudTooltip>
         </MudButtonGroup>
 
         <MudPagination ShowPageButtons="false" Count="@Profile.PokemonStorage.Boxes.Count" @bind-Selected="SelectedBoxNumber" />
@@ -47,26 +55,29 @@
         {
             case StoragePanel.Add: 
                 <MudStack Class="pa-2" Style="max-width: 250px;">
-                    <MudText Typo="Typo.caption" Color="Color.Info">
-                        Use the controls below to find Pokémon to add to storage
-                    </MudText>
                     <MudSelect T="ILazyPokemonList" Label="Search Location" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" FullWidth="false"
                     @bind-Value="_searchLocation">
                         @foreach (ILazyPokemonList list in SearchLocations!)
                         {
-                            <MudSelectItem T="ILazyPokemonList" Value="list">
-                                @list.Name
-                            </MudSelectItem>
+                            @if (!Profile.PokemonStorage.Boxes.Contains(list))
+                            {
+                                <MudSelectItem T="ILazyPokemonList" Value="list">
+                                    @list.Name
+                                </MudSelectItem>
+                            }
                         }
                     </MudSelect>
                     <div style="max-width: 250px;">
                         <PokemonSearchBox @ref="_pokemonSearchBox" SearchFunc="SearchAsync">
                             <ExtraButtons>
 
-                                <MudTooltip Text="Add To Storage">
-                                    <MudIconButton Disabled="@(SelectedBox.Pokemon.Contains(_pokemonSearchBox!.Pokemon!))"
-                                                   Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorageAsync"></MudIconButton>
-                                </MudTooltip>
+                                @if (_pokemonSearchBox!.Pokemon is not null)
+                                {
+                                    <MudTooltip Text="Add To Storage">
+                                        <MudIconButton Disabled="@(SelectedBox.Pokemon.Contains(_pokemonSearchBox!.Pokemon!))"
+                                        Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorageAsync"></MudIconButton>
+                                    </MudTooltip>
+                                }
 
                                 <MudTooltip Text="Randomize">
                                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomizeAsync"></MudIconButton>
