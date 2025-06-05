@@ -2,6 +2,7 @@
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using Microsoft.VisualBasic;
+using PokeApiNet;
 using PokemonDataModel;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
@@ -95,7 +96,7 @@ namespace PokeAutobuilder.Source.Services
                     }
                     else if (_pokemonStorage.Boxes.Count == 0)
                     {
-                        _pokemonStorage.Boxes.Add(new PokemonBox("Pokémon Storage"));
+                        _pokemonStorage.Boxes.Add(new PokemonBox("Box 1"));
                     }
 
                     await SetPokemonStorageAsync(_pokemonStorage);
@@ -103,11 +104,7 @@ namespace PokeAutobuilder.Source.Services
                 }
                 else
                 {
-                    _pokemonStorage = await _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY) is { } pokemonStorage ? pokemonStorage : new();
-                    if (_pokemonStorage.Boxes.Count == 0)
-                    {
-                        _pokemonStorage.Boxes.Add(new PokemonBox("Pokémon Storage"));
-                    }
+                    await LoadPokemonStorageAsync();
                 }
 
                 // load team storage
@@ -174,6 +171,14 @@ namespace PokeAutobuilder.Source.Services
             await _localStorageService.SetItemAsync(POKEMON_TYPES_KEY, allTypes);
         }
 
+        public async Task LoadPokemonStorageAsync()
+        {
+            _pokemonStorage = await _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY) is { } pokemonStorage ? pokemonStorage : new();
+            if (_pokemonStorage.Boxes.Count == 0)
+            {
+                _pokemonStorage.Boxes.Add(new PokemonBox("Box 1"));
+            }
+        }
         public async Task SetPokemonStorageAsync(PokemonStorage storage)
         {
             OnStorageChange?.Invoke();
@@ -183,36 +188,46 @@ namespace PokeAutobuilder.Source.Services
         {
             await SetPokemonStorageAsync(PokemonStorage);
         }
-        public async Task AddPokemonToStorageAsync(SmartPokemon pokemon)
+        public async Task AddPokemonToStorageAsync(SmartPokemon pokemon, int boxIdx)
         {
-            if (PokemonStorage == null) return;
+            if (boxIdx < 0 || boxIdx >= PokemonStorage.Boxes.Count)
+            {
+                throw new IndexOutOfRangeException($"Box with index {boxIdx} does not exist in storage.");
+            }
 
-            PokemonStorage.Boxes[0].Pokemon.Add(pokemon);
-            await SetPokemonStorageAsync(PokemonStorage);
+            PokemonStorage.Boxes[boxIdx].Pokemon.Add(pokemon);
+            await UpdatePokemonStorageAsync();
         }
+        public PokemonBox? FindPokemonBoxForPokemon(SmartPokemon pokemon)
+        {
+            return PokemonStorage.Boxes.Where(box => box.Pokemon.Contains(pokemon)).FirstOrDefault();
+        }
+
         public async Task<bool> RemovePokemonFromStorageAsync(SmartPokemon pokemon)
         {
-            if (PokemonStorage == null) return false;
+            PokemonBox? owningBox = FindPokemonBoxForPokemon(pokemon);
+            if (owningBox is null) return false;
 
-            bool removed = PokemonStorage.Boxes[0].Pokemon.Remove(pokemon);
+            bool removed = owningBox.Pokemon.Remove(pokemon);
             if (removed)
-                await SetPokemonStorageAsync(PokemonStorage);
+                await UpdatePokemonStorageAsync();
 
             return removed;
         }
         public async Task<bool> ReplacePokemonInStorageAsync(SmartPokemon oldPokemon, SmartPokemon newPokemon)
         {
-            if (PokemonStorage == null) return false;
+            PokemonBox? owningBox = FindPokemonBoxForPokemon(oldPokemon);
+            if (owningBox is null) return false;
 
-            int pokemonIdx = PokemonStorage.Boxes[0].Pokemon.IndexOf(oldPokemon);
+            int pokemonIdx = owningBox.Pokemon.IndexOf(oldPokemon);
 
             if (pokemonIdx < 0)
                 return false;
 
-            PokemonStorage.Boxes[0].Pokemon.RemoveAt(pokemonIdx);
-            PokemonStorage.Boxes[0].Pokemon.Insert(pokemonIdx, newPokemon);
+            owningBox.Pokemon.RemoveAt(pokemonIdx);
+            owningBox.Pokemon.Insert(pokemonIdx, newPokemon);
 
-            await SetPokemonStorageAsync(PokemonStorage);
+            await UpdatePokemonStorageAsync();
             return true;
         }
 

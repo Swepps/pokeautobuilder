@@ -78,9 +78,9 @@
 
                 localStorage.setItem(storageKey, JSON.stringify(pokemonStorage));
 
-                // dotNetHelper.invokeMethodAsync("OnImportSuccess");
+                dotNetHelper.invokeMethodAsync("OnUploadBoxSuccessAsync");
             } catch {
-                // dotNetHelper.invokeMethodAsync("OnImportFailure");
+                dotNetHelper.invokeMethodAsync("OnUploadBoxFailure");
             }
         };
 

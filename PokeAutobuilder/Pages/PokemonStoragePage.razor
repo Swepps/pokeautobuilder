@@ -34,7 +34,7 @@
 
         <MudPagination ShowPageButtons="false" Count="@Profile.PokemonStorage.Boxes.Count" @bind-Selected="SelectedBoxNumber" />
 
-        <MudTextField @bind-Value="SelectedBox.Name" 
+        <MudTextField @bind-Value="_boxName" 
             Label="Box Name" 
             Variant="Variant.Outlined" 
             Class="px-1"
@@ -62,9 +62,16 @@
                     <div style="max-width: 250px;">
                         <PokemonSearchBox @ref="_pokemonSearchBox" SearchFunc="SearchAsync">
                             <ExtraButtons>
+
+                                <MudTooltip Text="Add To Storage">
+                                    <MudIconButton Disabled="@(SelectedBox.Pokemon.Contains(_pokemonSearchBox!.Pokemon!))"
+                                                   Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorageAsync"></MudIconButton>
+                                </MudTooltip>
+
                                 <MudTooltip Text="Randomize">
                                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomizeAsync"></MudIconButton>
                                 </MudTooltip>
+
                             </ExtraButtons>
                         </PokemonSearchBox>
                     </div>
@@ -156,6 +163,16 @@
         }
     }
 
+    private string _boxName
+    {
+        get => SelectedBox.Name;
+        set
+        {
+            SelectedBox.Name = value;
+            _ = Profile.UpdatePokemonStorageAsync();
+        }
+    }
+
     protected enum StoragePanel { Edit, Add }
     protected StoragePanel _storagePanel = StoragePanel.Add;
 
@@ -208,6 +225,22 @@
 
         await JS.InvokeVoidAsync("HTMLElement.prototype.click.call",
             _filePicker.Element);
+    }
+
+    [JSInvokable]
+    public async Task OnUploadBoxSuccessAsync()
+    {
+        await Profile.LoadPokemonStorageAsync();
+        // select the last box in the list as it will be the one that was just imported
+        SelectedBoxNumber = Profile.PokemonStorage.Boxes.Count;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public Task OnUploadBoxFailure()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
     }
 
     private async Task HandleFileSelectedAsync(InputFileChangeEventArgs e)
@@ -263,16 +296,18 @@
         }
     }
 
+    protected async Task OnClickAddToStorageAsync()
+    {
+        await Profile.AddPokemonToStorageAsync(_pokemonSearchBox!.Pokemon!, SelectedBoxNumber - 1);
+    }
+
     protected async Task OnClickRandomizeAsync()
     {
-        if (_pokemonSearchBox is not null && _searchLocation is not null)
-        {
-            _pokemonSearchBox.PokemonSearchValue = null;
-            IEnumerable<IPokemonSearchable> list = await _searchLocation.GetListAsync();
-            Random rand = new Random();
-            int index = rand.Next(0, list.Count());
-            _pokemonSearchBox.PokemonSearchValue = list.ElementAt(index);
-        }
+        _pokemonSearchBox!.PokemonSearchValue = null;
+        IEnumerable<IPokemonSearchable> list = await _searchLocation!.GetListAsync();
+        Random rand = new Random();
+        int index = rand.Next(0, list.Count());
+        _pokemonSearchBox.PokemonSearchValue = list.ElementAt(index);
     }
 
     protected void OnPokemonMoveChanged((SmartPokemon, int, PokemonMove?) args)

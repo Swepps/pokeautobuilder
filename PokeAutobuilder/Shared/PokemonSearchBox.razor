@@ -57,10 +57,6 @@
             <MudTooltip Text="Details">
                 <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
             </MudTooltip>
-            <MudTooltip Text="Add To Storage">
-                <MudIconButton Disabled="@(Profile.PokemonStorage.Boxes[0].Pokemon.Contains(Pokemon))"
-                Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
-            </MudTooltip>
             @ExtraButtons
         </MudButtonGroup>
     }
@@ -242,16 +238,6 @@
             _pokemon.SelectAbility(value);
     }
 
-    public async Task OnClickAddToStorage()
-    {
-        if (Pokemon is null)
-            return;
-
-        await Profile.AddPokemonToStorageAsync(Pokemon);
-
-        Snackbar.Add("Added " + Pokemon.ToString() + " to Pokémon Storage", Severity.Success);
-    }
-
     public async Task OnClickDetails()
     {
         var parameters = new DialogParameters();
@@ -263,16 +249,12 @@
         if (result is not null
             && !result.Canceled && result.Data is SmartPokemon)
         {
-            // replace old pokemon with updated version
+            // update the Profile storage if this pokemon exists in there
             SmartPokemon? pokemon = result.Data as SmartPokemon;
-            if (pokemon is not null)
+            if (pokemon is not null
+                && Profile.FindPokemonBoxForPokemon(pokemon) is not null)
             {
-                // add and remove pokemon from storage to "update" it
-                // we can directly remove it here because it's about to be updated
-                // properly by AddPokemonToStorageAsync anyway
-                if (Profile.PokemonStorage.Boxes[0].Pokemon.Remove(pokemon))
-                    await Profile.AddPokemonToStorageAsync(pokemon);
-                Pokemon = pokemon;
+                await Profile.UpdatePokemonStorageAsync();
             }
             StateHasChanged();
         }
