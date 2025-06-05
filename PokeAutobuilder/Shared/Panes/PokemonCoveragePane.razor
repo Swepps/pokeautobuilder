@@ -13,7 +13,9 @@
 					{
 						@if (Pokemon.IsTypeCoveredBySTAB(t))
 						{
-							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" Class="ma-1" />
+							<MudTooltip Text="@StringUtils.PrettifyString(t)">
+							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" Height="20" Class="ma-1" />
+							</MudTooltip>
 						}
 					}
 				</MudGrid>
@@ -26,7 +28,9 @@
 					{
 						@if (Pokemon.IsTypeCoveredByMove(t))
 						{
-							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" Class="ma-1" />
+							<MudTooltip Text="@StringUtils.PrettifyString(t)">
+							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" Height="20" Class="ma-1" />
+							</MudTooltip>
 						}
 					}
 				</MudGrid>

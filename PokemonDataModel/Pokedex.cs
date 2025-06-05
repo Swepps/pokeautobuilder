@@ -40,7 +40,7 @@ namespace PokemonDataModel
 
         public override string ToString()
         {
-            return StringUtils.FirstCharToUpper(SpeciesResource.Name);
+            return StringUtils.PrettifyString(SpeciesResource.Name);
         }
 
         IEnumerable<NamedApiResource<Pokemon>> IPokemonSearchable.GetAllVarieties()

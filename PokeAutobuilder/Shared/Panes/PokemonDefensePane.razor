@@ -14,7 +14,9 @@
 						@if (Pokemon.GetResistance(t) < 1.0)
 						{
 							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
-								<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" />
+								<MudTooltip Text="@StringUtils.PrettifyString(t)">
+									<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" Height="20" Class="ma-1" />
+								</MudTooltip>
 								@if (Pokemon.GetResistance(t) == 0.5)
 								{
 									<MudText Typo="Typo.caption">½x</MudText>
@@ -41,7 +43,9 @@
 						@if (Pokemon.GetResistance(t) > 1.0)
 						{
 							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
-								<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" />
+								<MudTooltip Text="@StringUtils.PrettifyString(t)">
+									<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" Height="20" Class="ma-1" />
+								</MudTooltip>
 								@if (Pokemon.GetResistance(t) <= 2.0)
 								{
 									<MudText Typo="Typo.caption">@(Pokemon.GetResistance(t))x</MudText>

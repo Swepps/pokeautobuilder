@@ -643,7 +643,7 @@ namespace PokemonDataModel
 
         public override string ToString()
         {
-            return StringUtils.FirstCharToUpper(Name);
+            return StringUtils.PrettifyString(Name);
         }
 
         public IEnumerable<NamedApiResource<Pokemon>> GetAllVarieties()

@@ -42,7 +42,7 @@
 				// need to add an empty value to get the chart to draw correctly >:(
 				List<double> stats = new List<double>(p.GetBaseStatsArray());
 				stats.Add(0);
-				TeamStats.Add(new ChartSeries() { Name = StringUtils.FirstCharToUpper(p.Name), Data = stats.ToArray() });
+				TeamStats.Add(new ChartSeries() { Name = StringUtils.PrettifyString(p.Name), Data = stats.ToArray() });
 
 				// for finding average total base stats
 				TotalBaseStats += p.GetBaseStatsTotal();

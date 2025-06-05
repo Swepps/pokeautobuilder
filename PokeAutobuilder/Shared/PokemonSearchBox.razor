@@ -30,12 +30,12 @@
 
     @if (Pokemon is not null)
     {
-        <div style="height: 50px">
+        <div style="height: 50px; margin-top: 5px;">
             @if (_pokemonSearchValueVarieties.Count > 1
                     && !_locked)
             {
                 <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-                           @bind-Value="_PokemonFormName">
+                           @bind-Value="_PokemonFormName" ToStringFunc="@((string formName) => StringUtils.PrettifyString(formName))" >
                     @foreach (var v in _pokemonSearchValueVarieties)
                     {
                         <MudSelectItem Value="@v.Name" />
@@ -257,7 +257,7 @@
         var parameters = new DialogParameters();
         parameters.Add("Pokemon", Pokemon);
 
-        var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
+        var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.PrettifyString(Pokemon!.Name), parameters);
         var result = await dialog.Result;
 
         if (result is not null

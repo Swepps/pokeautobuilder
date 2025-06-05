@@ -56,7 +56,7 @@
 		var parameters = new DialogParameters();
 		parameters.Add("Team", Team);
 
-		DialogService.ShowAsync<PokemonTeamDetailsDialog>(StringUtils.FirstCharToUpper(Team!.Name), parameters);
+		DialogService.ShowAsync<PokemonTeamDetailsDialog>(StringUtils.PrettifyString(Team!.Name), parameters);
 	}
 
 	public async void OnClickLoadInEditor()

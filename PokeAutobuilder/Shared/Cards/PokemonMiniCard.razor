@@ -5,7 +5,7 @@
 @using PokemonDataModel
 @using Utility
 
-<MudTooltip Text="@Pokemon!.Name">
+<MudTooltip Text="@Pokemon!.ToString()">
 	<MudButton Class="ma-2" Color="Color.Surface" OnClick="OnClickCard" Variant="@Variant">
 		<MudImage
 			Src="@(String.IsNullOrEmpty(Pokemon!.Sprites.FrontDefault) ? Pokemon!.Sprites.Other.OfficialArtwork.FrontDefault : Pokemon!.Sprites.FrontDefault)"
