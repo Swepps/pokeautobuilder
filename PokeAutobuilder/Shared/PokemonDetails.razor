@@ -80,7 +80,12 @@
     <MudItem xs="12" sm="6">        
         @if (Pokemon is not null)
         {
-            <PokemonStatsChartPane Pokemon="@Pokemon" />
+            <MudPaper Height="100%" Style="background-color: var(--mud-palette-background)"
+                Outlined="true" Square="true">  
+
+                <PokemonStatsChartPane Pokemon="@Pokemon" />
+
+            </MudPaper>
         }
         else
         {

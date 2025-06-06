@@ -36,6 +36,13 @@ builder.Services.AddMudServices(
         config.SnackbarConfiguration.ShowTransitionDuration = 500;
         config.SnackbarConfiguration.SnackbarVariant = Variant.Filled;
     });
+builder.Services.AddApexCharts(e =>
+{
+    e.GlobalOptions = new ApexChartBaseOptions
+    {
+        Theme = new Theme { Palette = PaletteType.Palette7 }
+    };
+});
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredSessionStorage();
 builder.Services.AddScoped<ProfileService>();

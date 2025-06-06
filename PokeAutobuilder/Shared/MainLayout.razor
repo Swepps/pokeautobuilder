@@ -9,6 +9,7 @@
 @inject PokeApiService PokeApiService
 @inject IAnalytics GlobalTracking
 @inject IJSRuntime JS
+@inject ApexCharts.IApexChartService ApexChartService;
 
 
 <MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@_isDarkMode" Theme="AutoBuilderTheme" />
@@ -35,7 +36,7 @@
     <MudDrawer @bind-Open="@_open" Elevation="1" ClipMode="DrawerClipMode.Always">
         <NavMenu />
         <MudDivider />
-        <MudSwitch @bind-Value="@_IsDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Dark Mode" />
+        <MudSwitch @bind-Value="@IsDarkMode" Color="Color.Primary" Class="ma-4 object-bottom" T="bool" Label="Dark Mode" />
     </MudDrawer>
     <MudMainContent Class="pt-16 mud-height-full">
         <MudContainer Class="mt-6" MaxWidth="MaxWidth.ExtraLarge">
@@ -70,12 +71,16 @@
 
     // theme stuff
     private bool _isDarkMode;
-    private bool _IsDarkMode
+    private bool IsDarkMode
     {
         get { return _isDarkMode; }
         set
         {
             _isDarkMode = value;
+            ApexChartService.SetGlobalOptionsAsync(new ApexCharts.ApexChartBaseOptions()
+            {
+                Theme = new ApexCharts.Theme { Palette = ApexCharts.PaletteType.Palette7, Mode = value ? ApexCharts.Mode.Dark : ApexCharts.Mode.Light }
+            }, true);
             OnChangeDarkMode();
         }
     }
@@ -138,7 +143,7 @@
             // initialising global variables used across the app
             // load preferences first before the slow ones
             Preferences prefs = await Profile.GetPreferencesAsync();
-            _isDarkMode = prefs.DarkMode;
+            IsDarkMode = prefs.DarkMode;
 
             StateHasChanged();
 
@@ -191,7 +196,7 @@
 
     void OnChangeDarkMode()
     {
-        Profile?.SetDarkModeAsync(_IsDarkMode);
+        Profile?.SetDarkModeAsync(IsDarkMode);
     }
 
     // nav menu

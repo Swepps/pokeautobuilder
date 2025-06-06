@@ -3,40 +3,25 @@
 
 @if (Pokemon is not null)
 {
-	<div class="d-flex flex-column align-center justify-center mud-width-full">
-		<MudText Typo="Typo.subtitle1">Base Stats</MudText>
-		<MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="auto" Height="100%"
-		InputData="@Data" InputLabels="@Labels" @bind-SelectedIndex="SelectedIndex" @onmouseout="OnMouseLeaveChart">
-			<CustomGraphics>
-				<text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="var(--mud-palette-text-primary)" font-family="Helvetica" font-size="2">Total</text>
-				<text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="var(--mud-palette-text-primary)" font-family="Helvetica" font-size="5">@Pokemon.GetBaseStatsTotal()</text>
-				<MudPopover Open="@IsTooltipOpen" Class="pa-1" AnchorOrigin="Origin.CenterCenter" TransformOrigin="Origin.TopCenter">
-					<MudText>@GetChartTooltip()</MudText>
-				</MudPopover>
-			</CustomGraphics>
-		</MudChart>
-
-		<ApexCharts.ApexChart TItem="StatItem" Title="Base Stats">
+	<div class="d-flex flex-column align-center justify-center mud-width-full mud-height-full">
+		<ApexCharts.ApexChart @ref="_chart" TItem="StatItem" Title="Base Stats" Options="_options">
 			<ApexCharts.ApexPointSeries TItem="StatItem"
                     Items="_stats"
-                    Name="Gross Value"
+                    Name="Base Stat"
                     XValue="@(e => e.Name)"
-					SeriesType="ApexCharts.SeriesType.Bar"
+					YValue="@(e => (int)Math.Round(e.Value))"
+					SeriesType="ApexCharts.SeriesType.Bar"					
                     Color="#005ba3"
                     PointColor="e=> GetStatColour(e)" />
 		</ApexCharts.ApexChart>
 	</div>
 }
 
-<style>
-	.mud-chart .mud-chart-legend {
-		min-width: 80px;
-	}
-</style>
-
 @code {
 	[Parameter]
 	public SmartPokemon? Pokemon { get; set; }
+
+	private SmartPokemon? _prevPokemon;
 
 	private class StatItem
 	{
@@ -46,54 +31,91 @@
 
 	private List<StatItem> _stats = [];
 
-	public double[] Data = new double[6];
-	private int selectedIndex;
-	public int SelectedIndex
+	private ApexCharts.ApexChart<StatItem>? _chart;
+
+	private ApexCharts.ApexChartOptions<StatItem> _options = new()
 	{
-		get
+		Title = new ApexCharts.Title()
 		{
-			return selectedIndex;
-		}
-		set
+			Style = new ApexCharts.TitleStyle()
+			{
+				FontFamily = "var(--mud-typography-subtitle1-family)",
+				FontWeight = "normal",
+				FontSize = "1rem",
+			},
+
+			Align = ApexCharts.Align.Center,
+			OffsetY = 20,
+		},
+
+		Chart = new ApexCharts.Chart()
 		{
-			selectedIndex = value;
-			IsTooltipOpen = true;
+			Background = "transparent",
+			FontFamily = "var(--mud-typography-subtitle1-family);",
+		},
+
+		PlotOptions = new ApexCharts.PlotOptions()
+		{
+			Bar = new ApexCharts.PlotOptionsBar
+			{
+				Horizontal = true,
+				Colors = new ApexCharts.PlotOptionsBarColors()
+				{
+					BackgroundBarOpacity = 0
+				}
+			}
 		}
-	}
+	};
+
 	public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed" };
 
-	public bool IsTooltipOpen = false;
-
-	// when component is initialised
-	protected override void OnParametersSet()
+	protected override async Task OnParametersSetAsync()
 	{
-		if (Pokemon is not null)
+		if (Pokemon is not null
+			&& _prevPokemon != Pokemon)
 		{
+			_stats.Clear();
 			double[] statsArray = Pokemon.GetBaseStatsArray();
 			for (var i = 0; i < statsArray.Length; i++)
 			{
 				_stats.Add(new() { Name = Labels[i], Value = statsArray[i] });
 			}
-		}
-	}
 
-	public string GetChartTooltip()
-	{
-		if (SelectedIndex >= 0 && SelectedIndex < Data.Length)
-		{
-			return Labels[SelectedIndex] + ": " + Data[SelectedIndex];
-		}
+			if (_prevPokemon is not null)
+			{
+				await _chart!.RenderAsync();
+			}
 
-		return "";
+			_prevPokemon = Pokemon;
+		}
 	}
 
 	private string GetStatColour(StatItem stat)
 	{
-		return "#00ff00";
-	}
+		double value = stat.Value;
 
-	public void OnMouseLeaveChart()
-	{
-		IsTooltipOpen = false;
+		// Clamp between 0 and 255
+		value = Math.Max(0, Math.Min(255, value));
+
+		int r, g, b;
+
+		if (value <= 127.5)
+		{
+			// Red to Green
+			double t = value / 127.5;
+			r = (int)(255 * (1 - t));   // Red fades out
+			g = (int)(255 * t);         // Green fades in
+			b = 0;
+		}
+		else
+		{
+			// Green to Blue
+			double t = (value - 127.5) / 127.5;
+			r = 0;
+			g = (int)(255 * (1 - t));   // Green fades out
+			b = (int)(255 * t);         // Blue fades in
+		}
+
+		return $"#{r:X2}{g:X2}{b:X2}";
 	}
 }
