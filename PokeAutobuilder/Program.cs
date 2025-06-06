@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using MudBlazor;
+using ApexCharts;
 using PokeAutobuilder.Source.Services;
 using PokeAutobuilder;
 using PokemonDataModel;

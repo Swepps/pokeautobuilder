@@ -15,6 +15,16 @@
 				</MudPopover>
 			</CustomGraphics>
 		</MudChart>
+
+		<ApexCharts.ApexChart TItem="StatItem" Title="Base Stats">
+			<ApexCharts.ApexPointSeries TItem="StatItem"
+                    Items="_stats"
+                    Name="Gross Value"
+                    XValue="@(e => e.Name)"
+					SeriesType="ApexCharts.SeriesType.Bar"
+                    Color="#005ba3"
+                    PointColor="e=> GetStatColour(e)" />
+		</ApexCharts.ApexChart>
 	</div>
 }
 
@@ -27,6 +37,14 @@
 @code {
 	[Parameter]
 	public SmartPokemon? Pokemon { get; set; }
+
+	private class StatItem
+	{
+		public string Name = string.Empty;
+		public double Value;
+	}
+
+	private List<StatItem> _stats = [];
 
 	public double[] Data = new double[6];
 	private int selectedIndex;
@@ -51,7 +69,11 @@
 	{
 		if (Pokemon is not null)
 		{
-			Data = Pokemon.GetBaseStatsArray();
+			double[] statsArray = Pokemon.GetBaseStatsArray();
+			for (var i = 0; i < statsArray.Length; i++)
+			{
+				_stats.Add(new() { Name = Labels[i], Value = statsArray[i] });
+			}
 		}
 	}
 
@@ -63,6 +85,11 @@
 		}
 
 		return "";
+	}
+
+	private string GetStatColour(StatItem stat)
+	{
+		return "#00ff00";
 	}
 
 	public void OnMouseLeaveChart()
