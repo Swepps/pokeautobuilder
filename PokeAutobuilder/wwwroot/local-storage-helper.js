@@ -64,23 +64,25 @@
                     throw new Error("Failed to import box. Pokemon storage has not been created yet.");
                 }
 
-                const box = JSON.parse(reader.result);
+                const boxJson = reader.result;
+                dotNetHelper.invokeMethodAsync("ValidateBoxJson", boxJson)
+                    .then(isValid => {
+                        if (!isValid) {
+                            console.error("Box JSON is invalid.");
+                            dotNetHelper.invokeMethodAsync("OnUploadBoxFailure", "Box JSON is invalid.");
+                            return;
+                        }
 
-                if (!("pokemon" in box)
-                    || !("name" in box)) {
-                    console.error("Failed to import box. The input data cannot be parsed.");
-                    throw new Error("Failed to import box. The input data cannot be parsed.");
-                }
-
-                // Todo: call function to validate the box before adding it to storage
-
-                pokemonStorage.boxes.push(box);
-
-                localStorage.setItem(storageKey, JSON.stringify(pokemonStorage));
-
-                dotNetHelper.invokeMethodAsync("OnUploadBoxSuccessAsync");
-            } catch {
-                dotNetHelper.invokeMethodAsync("OnUploadBoxFailure");
+                        const box = JSON.parse(boxJson);
+                        pokemonStorage.boxes.push(box);
+                        localStorage.setItem(storageKey, JSON.stringify(pokemonStorage));
+                        dotNetHelper.invokeMethodAsync("OnUploadBoxSuccessAsync");
+                    })
+                    .catch((e) => {
+                        dotNetHelper.invokeMethodAsync("OnUploadBoxFailure", e);
+                    });
+            } catch (e) {
+                dotNetHelper.invokeMethodAsync("OnUploadBoxFailure", e);
             }
         };
 

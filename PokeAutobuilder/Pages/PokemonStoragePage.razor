@@ -9,12 +9,13 @@
 @inject ProfileService Profile
 @inject IDialogService DialogService
 @inject IJSRuntime JS
+@inject ISnackbar Snackbar
 
 @implements IDisposable
 
 <PageTitle>Pokémon Storage</PageTitle>
 
-<InputFile id="filePicker" @ref="_filePicker" OnChange="HandleFileSelectedAsync" style="display: none;"/>
+<InputFile id="filePicker" @ref="_filePicker" accept=".json" OnChange="HandleFileSelectedAsync" style="display: none;"/>
 
 <MudPaper Elevation="25" Square="true">
     <MudToolBar WrapContent="true">
@@ -288,9 +289,9 @@
     }
 
     [JSInvokable]
-    public static bool ValidateBoxJson(string json)
+    public Task<bool> ValidateBoxJson(string json)
     {
-        return JsonValidator.TryValidatePokemonBoxJson(json, out _);
+        return Task.FromResult(JsonValidator.TryValidatePokemonBoxJson(json, out _));
     }
 
     [JSInvokable]
@@ -305,8 +306,9 @@
     }
 
     [JSInvokable]
-    public Task OnUploadBoxFailure()
+    public Task OnUploadBoxFailure(string errorString)
     {
+        Snackbar.Add($"Failed to upload box. Error: \n{errorString}", Severity.Error);
         StateHasChanged();
         return Task.CompletedTask;
     }
