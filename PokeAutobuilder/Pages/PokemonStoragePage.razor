@@ -38,7 +38,7 @@
                 <MudIconButton OnClick="@OnClickAddBox" Icon="@Icons.Material.Filled.Add" />
             </MudTooltip>
             <MudTooltip Text="Delete this Pokémon box">
-                <MudIconButton OnClick="@OnClickDeleteBox" Icon="@Icons.Material.Filled.Delete" Disabled="@(Profile.PokemonStorage.Boxes.Count <= 1)" />
+                <MudIconButton OnClick="@OnClickDeleteBoxAsync" Icon="@Icons.Material.Filled.Delete" Disabled="@(Profile.PokemonStorage.Boxes.Count <= 1)" />
             </MudTooltip>
             <MudTooltip Text="Download this Pokémon box">
                 <MudIconButton OnClick="@OnClickDownloadBoxAsync" Icon="@Icons.Material.Filled.Download" />
@@ -247,20 +247,30 @@
         _storagePanel = StoragePanel.Add;
     }
 
-    protected void OnClickDeleteBox()
+    protected async Task OnClickDeleteBoxAsync()
     {
         if (SelectedBoxNumber > 0 
             && SelectedBoxNumber <= Profile.PokemonStorage.Boxes.Count)
         {
-            if (SearchLocations is not null)
+            bool? result = await DialogService.ShowMessageBox(
+                "Warning"
+                , $"Are you sure you want to delete box: {SelectedBox.Name}?"
+                , yesText: "Delete!"
+                , cancelText: "Cancel"
+                , options: new() { MaxWidth = MaxWidth.ExtraSmall }
+            );
+            if (result is not null)
             {
-                SearchLocations.Remove(Profile.PokemonStorage.Boxes.ElementAt(SelectedBoxNumber - 1));
+                if (SearchLocations is not null)
+                {
+                    SearchLocations.Remove(Profile.PokemonStorage.Boxes.ElementAt(SelectedBoxNumber - 1));
+                }
+                Profile.PokemonStorage.Boxes.RemoveAt(SelectedBoxNumber - 1);
+                _ = Profile.UpdatePokemonStorageAsync();
+                SelectedBoxNumber = Math.Clamp(SelectedBoxNumber, 1, Profile.PokemonStorage.Boxes.Count);
+                SelectedPokemon = null;
+                _storagePanel = StoragePanel.Add;
             }
-            Profile.PokemonStorage.Boxes.RemoveAt(SelectedBoxNumber - 1);
-            _ = Profile.UpdatePokemonStorageAsync();
-            SelectedBoxNumber = Math.Clamp(SelectedBoxNumber, 1, Profile.PokemonStorage.Boxes.Count);
-            SelectedPokemon = null;
-            _storagePanel = StoragePanel.Add;
         }
     }
 
@@ -275,6 +285,12 @@
 
         await JS.InvokeVoidAsync("HTMLElement.prototype.click.call",
             _filePicker.Element);
+    }
+
+    [JSInvokable]
+    public static bool ValidateBoxJson(string json)
+    {
+        return JsonValidator.TryValidatePokemonBoxJson(json, out _);
     }
 
     [JSInvokable]
