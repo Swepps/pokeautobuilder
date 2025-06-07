@@ -11,18 +11,8 @@
 @inject SessionService Session
 @inject PokeApiService PokeApiService
 @inject IDialogService DialogService
-@inject ISnackbar Snackbar
 
-<MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
-
-    <div style="width: 100%;">
-    @if (Lockable)
-    {
-        <MudToggleIconButton @bind-Toggled="@Locked"
-            Icon="@Icons.Material.Filled.LockOpen" Color="@Color.Dark"
-            ToggledIcon="@Icons.Material.Filled.Lock" ToggledColor="@Color.Primary" Style="padding: 0;"/>
-    }
-    </div>
+<MudPaper Elevation="4" Class="d-flex flex-column align-center justify-center mud-width-full pa-2" Outlined="true" >
 
     <MudAutocomplete T="IPokemonSearchable" Label="Pokémon" @bind-Value="PokemonSearchValue" SearchFunc="@(SearchFunc!)"
     ResetValueOnEmptyText="true" Disabled="@_locked" MaxItems="50"
@@ -37,30 +27,35 @@
         </MoreItemsTemplate>
     </MudAutocomplete>
 
-    <div style="height: 50px">
-        @if (_pokemonSearchValueVarieties.Count > 1
-            && !_locked)
-        {
-            <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-            @bind-Value="_PokemonFormName">
-                @foreach (var v in _pokemonSearchValueVarieties)
-                {
-                    <MudSelectItem Value="@v.Name" />
-                }
-            </MudSelect>
-        }
-    </div>
     @if (Pokemon is not null)
     {
+        <div style="height: 50px; margin-top: 5px;">
+            @if (_pokemonSearchValueVarieties.Count > 1
+                    && !_locked)
+            {
+                <MudSelect Dense="true" T="string" Label="Form" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                           @bind-Value="_PokemonFormName" ToStringFunc="@((string formName) => StringUtils.PrettifyString(formName))" >
+                    @foreach (var v in _pokemonSearchValueVarieties)
+                    {
+                        <MudSelectItem Value="@v.Name" />
+                    }
+                </MudSelect>
+            }
+        </div>
+
         <PokemonCard Pokemon="Pokemon" IsNameDisplayed="false" />
-        <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined">
+        <MudButtonGroup Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" Class="mt-2">
             <MudTooltip Text="Details">
                 <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
             </MudTooltip>
-            <MudTooltip Text="Add To Storage">
-                <MudIconButton Disabled="@(Profile.PokemonStorage.Boxes[0].Pokemon.Contains(Pokemon))"
-                Size="Size.Small" Icon="@Icons.Material.Filled.Save" OnClick="OnClickAddToStorage"></MudIconButton>
-            </MudTooltip>
+            @if (Lockable)
+            {
+                <MudTooltip Text="Lock slot for Auto Builder">
+                    <MudToggleIconButton @bind-Toggled="@Locked" Color="Color.Dark" ToggledColor="Color.Primary"
+                                         Icon="@Icons.Material.Filled.LockOpen"
+                                         ToggledIcon="@Icons.Material.Filled.Lock" />
+                </MudTooltip>
+            }
             @ExtraButtons
         </MudButtonGroup>
     }
@@ -77,6 +72,20 @@
         {
             <MudProgressCircular Color="Color.Default" Indeterminate="true" Class="mt-8 mb-8" />
         }        
+    }
+    else
+    {
+        <MudButtonGroup Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" Class="mt-2">
+            @if (Lockable)
+            {
+                <MudTooltip Text="Lock slot for Auto Builder">
+                    <MudToggleIconButton @bind-Toggled="@Locked" Color="Color.Dark" ToggledColor="Color.Primary"
+                                         Icon="@Icons.Material.Filled.LockOpen"
+                                         ToggledIcon="@Icons.Material.Filled.Lock" />
+                </MudTooltip>
+            }
+            @ExtraButtons
+        </MudButtonGroup>
     }
 </MudPaper>
 
@@ -242,37 +251,23 @@
             _pokemon.SelectAbility(value);
     }
 
-    public async Task OnClickAddToStorage()
-    {
-        if (Pokemon is null)
-            return;
-
-        await Profile.AddPokemonToStorageAsync(Pokemon);
-
-        Snackbar.Add("Added " + Pokemon.ToString() + " to Pokémon Storage", Severity.Success);
-    }
-
     public async Task OnClickDetails()
     {
         var parameters = new DialogParameters();
         parameters.Add("Pokemon", Pokemon);
 
-        var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.FirstCharToUpper(Pokemon!.Name), parameters);
+        var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.PrettifyString(Pokemon!.Name), parameters);
         var result = await dialog.Result;
 
         if (result is not null
             && !result.Canceled && result.Data is SmartPokemon)
         {
-            // replace old pokemon with updated version
+            // update the Profile storage if this pokemon exists in there
             SmartPokemon? pokemon = result.Data as SmartPokemon;
-            if (pokemon is not null)
+            if (pokemon is not null
+                && Profile.FindPokemonBoxForPokemon(pokemon) is not null)
             {
-                // add and remove pokemon from storage to "update" it
-                // we can directly remove it here because it's about to be updated
-                // properly by AddPokemonToStorageAsync anyway
-                if (Profile.PokemonStorage.Boxes[0].Pokemon.Remove(pokemon))
-                    await Profile.AddPokemonToStorageAsync(pokemon);
-                Pokemon = pokemon;
+                await Profile.UpdatePokemonStorageAsync();
             }
             StateHasChanged();
         }

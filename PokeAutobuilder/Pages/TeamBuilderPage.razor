@@ -23,9 +23,22 @@
             @bind-Value="SearchLocation">
                 @foreach (ILazyPokemonList list in SearchLocations!)
                 {
-                    <MudSelectItem T="ILazyPokemonList" Value="list">
-                        @list.Name
+                    <MudSelectItem T="ILazyPokemonList" Value="list" Disabled="@list.IsEmpty()">
+                        @if (Profile.PokemonStorage.Boxes.Contains(list))
+                        {
+                            <MudText Color="Color.Dark" Typo="Typo.caption">Box - </MudText>
+                            @list.Name
+                        }
+                        else
+                        {
+                            <MudText Color="Color.Dark" Typo="Typo.caption">Pokédex - </MudText>
+                            @list.Name
+                        }                        
                     </MudSelectItem>
+                    @if (Profile.PokemonStorage.Boxes.LastOrDefault() == list)
+                    {
+                        <MudDivider DividerType="DividerType.Middle" />
+                    }
                 }
             </MudSelect>
         </MudItem>
@@ -58,6 +71,12 @@
     {
         <MudButton OnClick="OnClickAutoBuilder" Color="Color.Primary" StartIcon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Variant="Variant.Filled" Style="max-width: 500px;">Auto Builder</MudButton>
     }
+    <MudStack Row="true" AlignItems="AlignItems.End">
+        <MudText Typo="Typo.caption">Selected Box:</MudText>
+        <MudPaper Class="px-1">
+            <MudText Typo="Typo.subtitle2">@(_selectedBox is null ? "none" : _selectedBox.Name)</MudText>
+        </MudPaper>
+    </MudStack>
     <MudDivider DividerType="DividerType.FullWidth" />
     <MudText Typo="Typo.h6">Pokémon Team Stats</MudText>
     <div style="width: 100%; text-align: center;">
@@ -87,9 +106,16 @@
             if (value is not null)
             {
                 _ = Session.SetSearchLocationAsync(value.Name);
+
+                if (value is PokemonBox)
+                {
+                    _selectedBox = value as PokemonBox;
+                }
             }
         }
     }
+
+    private PokemonBox? _selectedBox = null;
 
     private string _teamName { get; set; } = "";
 
@@ -109,8 +135,11 @@
 
     public string GetAutoBuilderTooltipMessage()
     {
-        if (Profile.PokemonStorage.Boxes[0].Pokemon.Count < cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1)
-            return "Please add more Pokémon to storage in order to use the Auto Builder";
+        if (_selectedBox is null)
+            return "Please select one of your storage boxes by choosing one in the 'Search Location' dropdown menu";
+
+        if (_selectedBox.Pokemon.Count < cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1)
+            return "Please add more Pokémon to the selected box in order to use the Auto Builder";
 
         if (cards.Count(c => !c.Locked) < 2)
             return "Please unlock some more Pokémon before using the Auto Builder";
@@ -134,7 +163,7 @@
             }
         }
         parameters.Add("InputTeam", inputTeam);
-
+        parameters.Add("InputBox", _selectedBox);
 
         var dialog = await DialogService.ShowAsync<AutoBuilderDialog>("Automatic Team Builder", parameters);
         var result = await dialog.Result;
@@ -196,7 +225,8 @@
 
     protected bool CanRunAutoBuilder()
     {
-        return Profile.PokemonStorage.Boxes[0].Pokemon.Count >= cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1
+        return _selectedBox is not null
+        && _selectedBox.Pokemon.Count >= cards.Count(c => !c.Locked || (c.Locked && c.Pokemon is not null)) + 1
         && cards.Count(c => !c.Locked) >= 2;
     }
 
@@ -207,6 +237,7 @@
 
         _teamName = Session.Team.Name;
         _searchLocation = SearchLocations!.Where((s) => s.Name.Equals(Session.SearchLocation)).FirstOrDefault();
+        _selectedBox = Profile.PokemonStorage.Boxes.FirstOrDefault(b => b == _searchLocation);
     }
 
     protected override void OnAfterRender(bool firstRender)

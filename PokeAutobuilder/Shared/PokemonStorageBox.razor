@@ -2,7 +2,7 @@
 @using PokeAutobuilder.Source.Services;
 @using PokemonDataModel
 
-<MudPaper Class="d-flex mud-width-full mud-height-full pa-2" Style="background: var(--mud-palette-background)" Outlined="true" Square="true">
+<MudPaper Class="d-flex mud-width-full mud-height-full pa-2" Style="background: var(--mud-palette-background); min-height: 300px;" Outlined="true" Square="true">
 	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
 		@foreach (SmartPokemon? p in PokemonCollection!)
 		{

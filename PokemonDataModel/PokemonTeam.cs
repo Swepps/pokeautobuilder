@@ -24,7 +24,7 @@ namespace PokemonDataModel
                     {
                         if (p is not null)
                         {
-                            defaultName += StringUtils.FirstCharToUpper(p.Name) + ", ";
+                            defaultName += StringUtils.PrettifyString(p.Name) + ", ";
                         }
                     }
 

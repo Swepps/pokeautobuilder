@@ -6,30 +6,34 @@
 	<div class="d-flex flex-column align-center justify-center">
 		<MudStack Spacing="5" AlignItems="AlignItems.Center" Style="width: 100%;" Class="pa-2">
 			<MudText Typo="Typo.subtitle1" Class="mb-2">Coverage</MudText>
-			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
-				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 80px">STAB</MudText>
-				<MudGrid>
-					@foreach (string t in Globals.AllTypes)
+			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center" Spacing="0">
+				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 50px;">STAB</MudText>
+				<div class="d-flex flex-wrap justify-start align-content-start">
+				@foreach (string t in Globals.AllTypes)
+				{
+					@if (Pokemon.IsTypeCoveredBySTAB(t))
 					{
-						@if (Pokemon.IsTypeCoveredBySTAB(t))
-						{
-							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" Class="ma-1" />
-						}
+						<MudTooltip Text="@StringUtils.PrettifyString(t)">
+							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" Height="20" Class="ma-1" />
+						</MudTooltip>
 					}
-				</MudGrid>
+				}
+				</div>
 			</MudStack>
 			<MudDivider />
-			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center">
-				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 80px">Moves</MudText>
-				<MudGrid>
+			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center" Spacing="0">
+				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 60px">Moves</MudText>
+				<div class="d-flex flex-wrap justify-start align-content-start">
 					@foreach (string t in Globals.AllTypes)
 					{
 						@if (Pokemon.IsTypeCoveredByMove(t))
 						{
-							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="20" Class="ma-1" />
+							<MudTooltip Text="@StringUtils.PrettifyString(t)">
+							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" Height="20" Class="ma-1" />
+							</MudTooltip>
 						}
 					}
-				</MudGrid>
+				</div>
 			</MudStack>
 		</MudStack>
 	</div>

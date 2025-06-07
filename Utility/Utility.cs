@@ -2,7 +2,18 @@
 {
     public class StringUtils
     {
-        public static string FirstCharToUpper(string input)
+        public static string PrettifyString(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+                return input;
+
+            return string.Join(" ", input
+                .Split('-')
+                .Where(word => !string.IsNullOrWhiteSpace(word))
+                .Select(word => char.ToUpper(word[0]) + word.Substring(1)));
+        }
+
+        public static string FirstCharToUpper2(string input)
         {
             if (string.IsNullOrEmpty(input))
                 throw new ArgumentException("ARGH!");

@@ -300,8 +300,11 @@
     [CascadingParameter]
     IMudDialogInstance? MudDialog { get; set; }
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public List<Tuple<SmartPokemon?, int>>? InputTeam { get; set; }
+
+    [Parameter, EditorRequired]
+    public PokemonBox? InputBox { get; set; }
 
     private PokemonTeamGeneticAlgorithm GeneticAlgorithm = new PokemonTeamGeneticAlgorithm();
     private PokemonTeam BestTeam = new PokemonTeam();
@@ -395,7 +398,7 @@
 
         GeneticAlgorithm.Initialize(
             PopulationSize
-            , Profile.PokemonStorage.Boxes[0]
+            , InputBox!
             , lockedMembers
             , weightingsCopy);
         GeneticAlgorithm.RunInBackground();

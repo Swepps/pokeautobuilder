@@ -10,11 +10,15 @@
 @if (Pokemon is not null && _generation is not null)
 {
     <MudStack AlignItems="AlignItems.Center" Spacing="1">
-        <MudImage Fluid="true" Src="@Pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@Pokemon.Name" title="@Pokemon.Name" Style="-webkit-filter: drop-shadow(5px 5px 5px #222); filter: drop-shadow(5px 5px 5px #222);" />
+        <MudTooltip Text="@Pokemon.Name">
+            <MudImage Fluid="true" Src="@Pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@Pokemon.Name" Style="-webkit-filter: drop-shadow(5px 5px 5px #222); filter: drop-shadow(5px 5px 5px #222);" />
+        </MudTooltip>
         <MudStack Row="true" Class="pa-2">
             @foreach (PokemonType t in Pokemon.Types)
             {
-                <MudImage Src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" title="@t.Type.Name" Width="50"/>
+                <MudTooltip Text="@StringUtils.PrettifyString(t.Type.Name)">
+                    <MudImage Src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" Width="50" />
+                </MudTooltip>                
             }
         </MudStack>
         @if (IsNameDisplayed)
