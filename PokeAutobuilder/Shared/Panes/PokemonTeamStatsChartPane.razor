@@ -7,7 +7,7 @@
 		<ApexCharts.ApexChart @ref="_chart" 
 							  TItem="StatItem"
 							  Title="@($"Base Stats\tAverage Total: {(int)_stats.Sum(statList => statList.Item2.Sum(stat => stat.Value) / _stats.Count)}")"
-							  Options="_options">
+							  Options="_options" OnRendered="@(_ => _chartRendered = true)">
 
 			@foreach (var (pokemonName, statList) in _stats)
 			{
@@ -28,7 +28,7 @@
 	[Parameter]
 	public PokemonTeam? Team { get; set; }
 
-	private PokemonTeam? _prevTeam;
+	private bool _chartRendered = false;
 
 	private class StatItem
 	{
@@ -82,9 +82,9 @@
 	public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed" };
 	public string[] Colours = { "#F44336", "#009688", "#3F51B5", "#4CAF50", "#2196F3", "#FF5722" };
 
-	protected override void OnParametersSet()
+	protected override async Task OnParametersSetAsync()
 	{
-		if (Team is null || _prevTeam == Team)
+		if (Team is null)
 			return;
 
 		_stats.Clear();
@@ -102,12 +102,11 @@
 			}
 		}
 
-		if (_prevTeam is not null)
+		StateHasChanged();
+		if (_chart is not null && _chartRendered)
 		{
-			_ = _chart!.RenderAsync();
+			await _chart.RenderAsync();
 		}
-
-		_prevTeam = Team;
 	}
 
 	private string GetStatColour(List<StatItem> statList)
