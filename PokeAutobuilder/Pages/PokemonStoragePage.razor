@@ -17,50 +17,8 @@
 
 <InputFile id="filePicker" @ref="_filePicker" accept=".json" OnChange="HandleFileSelectedAsync" style="display: none;"/>
 
-<MudPaper Elevation="25" Square="true">
-    <MudToolBar WrapContent="true">
-        <MudToggleGroup T="StoragePanel" @bind-Value="_storagePanel" Class="my-4">
-            <MudTooltip Text="Open the Pokémon browser">
-                <MudToggleItem Value="StoragePanel.Add">
-                    <MudIcon Icon="@Icons.Material.Outlined.Search" />
-                </MudToggleItem>
-            </MudTooltip>
-            <MudTooltip Text="Edit the currently selected Pokémon">
-                <MudToggleItem Value="StoragePanel.Edit" Disabled="@(_selectedPokemon == null)">
-                    <MudIcon Icon="@Icons.Material.Outlined.Edit" />
-                </MudToggleItem>
-            </MudTooltip>
-        </MudToggleGroup>
-
-        <MudDivider Vertical="true" DividerType="DividerType.FullWidth"/>
-
-        <MudButtonGroup Variant="Variant.Outlined" Class="mx-2 my-4" Color="Color.Primary">
-            <MudTooltip Text="Add a new Pokémon box">
-                <MudIconButton OnClick="@OnClickAddBox" Icon="@Icons.Material.Filled.Add" />
-            </MudTooltip>
-            <MudTooltip Text="Delete this Pokémon box">
-                <MudIconButton OnClick="@OnClickDeleteBoxAsync" Icon="@Icons.Material.Filled.Delete" Disabled="@(Profile.PokemonStorage.Boxes.Count <= 1)" />
-            </MudTooltip>
-            <MudTooltip Text="Download this Pokémon box">
-                <MudIconButton OnClick="@OnClickDownloadBoxAsync" Icon="@Icons.Material.Filled.Download" />
-            </MudTooltip>
-            <MudTooltip Text="Upload a Pokémon box">
-                <MudIconButton OnClick="@OnClickUploadBoxAsync" Icon="@Icons.Material.Filled.Upload" />
-            </MudTooltip>
-        </MudButtonGroup>        
-
-        <MudStack Row="true" class="flex-grow-1">
-            <MudTextField @bind-Value="_boxName" 
-                Label="Box Name" 
-                Variant="Variant.Outlined" 
-                FullWidth="false"/>
-
-            <MudPagination Count="@Profile.PokemonStorage.Boxes.Count" @bind-Selected="SelectedBoxNumber" BoundaryCount="2"/>
-        </MudStack>
-    </MudToolBar>
-</MudPaper>
 <div class="d-flex flex-wrap">
-    <MudPaper MaxWidth="650px" Height="fit-content" Square="true">
+    <MudPaper MaxWidth="650px" Height="fit-content">
         @switch (_storagePanel)
         {
             case StoragePanel.Add: 
@@ -134,11 +92,58 @@
                 break;
         }
     </MudPaper>
-    <MudPaper Class="pa-1 d-flex flex-1" MinWidth="325px" Elevation="0" Square="true">
-        <CascadingValue Value="@SelectedPokemon">
-            <PokemonStorageBox PokemonCollection="SelectedBox!.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
-        </CascadingValue>
-    </MudPaper>
+
+    <div class="ma-1 d-flex flex-1" style="min-width: 500px;">
+        <MudStack Spacing="0" AlignItems="AlignItems.Center">
+            <MudPaper Outlined="true" Width="fit-content">
+                <MudToolBar WrapContent="true">
+                    <MudToggleGroup T="StoragePanel" @bind-Value="_storagePanel" Class="my-4">
+                        <MudTooltip Text="Open the Pokémon browser">
+                            <MudToggleItem Value="StoragePanel.Add">
+                                <MudIcon Icon="@Icons.Material.Outlined.Search" />
+                            </MudToggleItem>
+                        </MudTooltip>
+                        <MudTooltip Text="Edit the currently selected Pokémon">
+                            <MudToggleItem Value="StoragePanel.Edit" Disabled="@(_selectedPokemon == null)">
+                                <MudIcon Icon="@Icons.Material.Outlined.Edit" />
+                            </MudToggleItem>
+                        </MudTooltip>
+                    </MudToggleGroup>
+
+                    <MudDivider Vertical="true" DividerType="DividerType.FullWidth" />
+
+                    <MudButtonGroup Variant="Variant.Outlined" Class="ml-2 my-4 mr-4" Color="Color.Primary">
+                        <MudTooltip Text="Add a new Pokémon box">
+                            <MudIconButton OnClick="@OnClickAddBox" Icon="@Icons.Material.Filled.Add" />
+                        </MudTooltip>
+                        <MudTooltip Text="Delete this Pokémon box">
+                            <MudIconButton OnClick="@OnClickDeleteBoxAsync" Icon="@Icons.Material.Filled.Delete" Disabled="@(Profile.PokemonStorage.Boxes.Count <= 1)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Download this Pokémon box">
+                            <MudIconButton OnClick="@OnClickDownloadBoxAsync" Icon="@Icons.Material.Filled.Download" />
+                        </MudTooltip>
+                        <MudTooltip Text="Upload a Pokémon box">
+                            <MudIconButton OnClick="@OnClickUploadBoxAsync" Icon="@Icons.Material.Filled.Upload" />
+                        </MudTooltip>
+                    </MudButtonGroup>
+
+                    <MudStack Row="true" class="flex-grow-1 my-1">
+                        <MudTextField @bind-Value="_boxName"
+                                      Label="Box Name"
+                                      Variant="Variant.Outlined"
+                                      FullWidth="false" 
+                                      Margin="Margin.Dense"/>
+
+                        <MudPagination Count="@Profile.PokemonStorage.Boxes.Count" @bind-Selected="SelectedBoxNumber" BoundaryCount="2" />
+                    </MudStack>
+                </MudToolBar>
+            </MudPaper>
+            <CascadingValue Value="@SelectedPokemon">
+                <PokemonStorageBox PokemonCollection="SelectedBox!.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
+            </CascadingValue>
+        </MudStack>
+    </div>
+
 </div>
 
 <PageFooter />
