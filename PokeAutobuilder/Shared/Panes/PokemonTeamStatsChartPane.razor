@@ -1,54 +1,117 @@
 ﻿@using PokemonDataModel
 @using Utility
 
-<MudPaper Class="d-flex flex-column align-center justify-center mud-width-full pa-2">
-	<MudText Typo="Typo.h6">Team Base Stats</MudText>
-	<MudText Typo="Typo.body1">Total Base Stat Average: @AverageTotalBaseStats</MudText>
-	<MudChart ChartType="ChartType.Bar" ChartSeries="@TeamStats" @bind-SelectedIndex="Index" XAxisLabels="@Labels" Width="100%" Style="width: 95%;"></MudChart>
-</MudPaper>
+@if (Team is not null)
+{
+	<div class="mud-width-full mud-height-full" style="min-height: 250px;">
+		<ApexCharts.ApexChart @ref="_chart" 
+							  TItem="StatItem"
+							  Title="@($"Base Stats\tAverage Total: {(int)_stats.Sum(statList => statList.Item2.Sum(stat => stat.Value) / _stats.Count)}")"
+							  Options="_options">
+
+			@foreach (var (pokemonName, statList) in _stats)
+			{
+				<ApexCharts.ApexPointSeries TItem="StatItem"
+											Items="statList"
+											Name="@pokemonName"
+											XValue="@(e => e.Name)"
+											YValue="@(e => (int)Math.Round(e.Value))"
+											SeriesType="ApexCharts.SeriesType.Bar"
+											Color="@GetStatColour(statList)" />
+			}
+
+		</ApexCharts.ApexChart>
+	</div>
+}
 
 @code {
 	[Parameter]
 	public PokemonTeam? Team { get; set; }
 
-	// team base stats stuff
-	private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
-	public List<ChartSeries> TeamStats = new List<ChartSeries>();
-	public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed" };
+	private PokemonTeam? _prevTeam;
 
-	private double TotalBaseStats = 0;
-	private int AverageTotalBaseStats = 0;
-
-	// when component is initialised
-	protected override void OnInitialized()
+	private class StatItem
 	{
-		OnParametersSet();
+		public string Name = string.Empty;
+		public double Value;
 	}
 
+	private ApexCharts.ApexChart<StatItem>? _chart;
+
+	private ApexCharts.ApexChartOptions<StatItem> _options = new()
+	{
+		Title = new ApexCharts.Title()
+		{
+			Style = new ApexCharts.TitleStyle()
+			{
+				FontFamily = "var(--mud-typography-subtitle1-family)",
+				FontWeight = "normal",
+				FontSize = "1rem",
+			},
+
+			Align = ApexCharts.Align.Center,
+			OffsetY = 25,
+		},
+
+		Chart = new ApexCharts.Chart()
+		{
+			Stacked = true,
+			Toolbar = new ApexCharts.Toolbar
+			{
+				Show = false
+			},
+			Background = "transparent",
+			FontFamily = "var(--mud-typography-subtitle1-family);",
+			Width = "100%",
+			Height = "100%",
+		},
+
+		PlotOptions = new ApexCharts.PlotOptions()
+		{
+			Bar = new ApexCharts.PlotOptionsBar
+			{
+				Horizontal = true,
+				ColumnWidth = "20%",
+			},
+		}
+	};
+
+
+	private List<Tuple<string, List<StatItem>>> _stats = [];
+
+	public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed" };
+	public string[] Colours = { "#F44336", "#009688", "#3F51B5", "#4CAF50", "#2196F3", "#FF5722" };
 
 	protected override void OnParametersSet()
 	{
-		if (Team is null)
+		if (Team is null || _prevTeam == Team)
 			return;
 
-		TeamStats = new List<ChartSeries>();
-		TotalBaseStats = 0;
-		AverageTotalBaseStats = 0;
-
+		_stats.Clear();
 		foreach (SmartPokemon? p in Team.Pokemon)
 		{
 			if (p is not null)
 			{
-				// need to add an empty value to get the chart to draw correctly >:(
-				List<double> stats = new List<double>(p.GetBaseStatsArray());
-				stats.Add(0);
-				TeamStats.Add(new ChartSeries() { Name = StringUtils.PrettifyString(p.Name), Data = stats.ToArray() });
-
-				// for finding average total base stats
-				TotalBaseStats += p.GetBaseStatsTotal();
+				double[] statsArray = p.GetBaseStatsArray();
+				List<StatItem> pokemonStatList = [];
+				for (var i = 0; i < statsArray.Length; i++)
+				{
+					pokemonStatList.Add(new() { Name = Labels[i], Value = statsArray[i] });
+				}
+				_stats.Add(new(p.ToString(), pokemonStatList));
 			}
 		}
 
-		AverageTotalBaseStats = (int)(TotalBaseStats / Team.CountPokemon());
+		if (_prevTeam is not null)
+		{
+			_ = _chart!.RenderAsync();
+		}
+
+		_prevTeam = Team;
+	}
+
+	private string GetStatColour(List<StatItem> statList)
+	{
+		return Colours[_stats.FindIndex(e => e.Item2 == statList)];
 	}
 }

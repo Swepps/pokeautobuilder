@@ -3,8 +3,8 @@
 
 @if (Pokemon is not null)
 {
-	<div class="d-flex flex-column align-center justify-center mud-width-full mud-height-full">
-		<ApexCharts.ApexChart @ref="_chart" TItem="StatItem" Title="Base Stats" Options="_options">
+	<div class="mud-width-full mud-height-full" style="min-height: 200px;">
+		<ApexCharts.ApexChart @ref="_chart" TItem="StatItem" Title="@($"Base Stats\tTotal: {(int)_stats.Sum(stat => stat.Value)}")" Options="_options">
 			<ApexCharts.ApexPointSeries TItem="StatItem"
                     Items="_stats"
                     Name="Base Stat"
@@ -56,6 +56,8 @@
 			},
 			Background = "transparent",
 			FontFamily = "var(--mud-typography-subtitle1-family);",
+			Width = "100%",
+			Height = "100%",
 		},
 
 		PlotOptions = new ApexCharts.PlotOptions()
