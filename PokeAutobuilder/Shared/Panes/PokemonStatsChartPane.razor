@@ -45,11 +45,15 @@
 			},
 
 			Align = ApexCharts.Align.Center,
-			OffsetY = 20,
+			OffsetY = 25,
 		},
 
 		Chart = new ApexCharts.Chart()
 		{
+			Toolbar = new ApexCharts.Toolbar
+			{
+				Show = false
+			},
 			Background = "transparent",
 			FontFamily = "var(--mud-typography-subtitle1-family);",
 		},
@@ -59,10 +63,6 @@
 			Bar = new ApexCharts.PlotOptionsBar
 			{
 				Horizontal = true,
-				Colors = new ApexCharts.PlotOptionsBarColors()
-				{
-					BackgroundBarOpacity = 0
-				}
 			}
 		}
 	};

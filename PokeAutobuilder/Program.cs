@@ -40,7 +40,7 @@ builder.Services.AddApexCharts(e =>
 {
     e.GlobalOptions = new ApexChartBaseOptions
     {
-        Theme = new Theme { Palette = PaletteType.Palette7 }
+        Theme = new Theme { Palette = PaletteType.Palette7 },
     };
 });
 builder.Services.AddBlazoredLocalStorage();
