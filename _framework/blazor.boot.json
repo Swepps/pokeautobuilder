@@ -1,13 +1,13 @@
 {
   "mainAssemblyName": "PokeAutobuilder",
   "resources": {
-    "hash": "sha256-WE+ynTaS00bpUWdKqhB/NIb9pofEuLlNkHTVlV1znnU=",
+    "hash": "sha256-z8g8+GLcx5qTdjTiQfIZSZLjMBvWZejJQLhfvuxgE8Q=",
     "fingerprinting": {
       "Accord.Genetic.u6l1oevaaf.wasm": "Accord.Genetic.wasm",
       "Accord.Math.Core.271df58t8l.wasm": "Accord.Math.Core.wasm",
       "Accord.Math.4bmbtejoxn.wasm": "Accord.Math.wasm",
       "Accord.28odiky6jl.wasm": "Accord.wasm",
-      "AutoBuilder.rj0824silb.wasm": "AutoBuilder.wasm",
+      "AutoBuilder.y3ce21amvh.wasm": "AutoBuilder.wasm",
       "Blazor-Analytics.ztbbr29lhh.wasm": "Blazor-Analytics.wasm",
       "Blazor-ApexCharts.3437qavpa6.wasm": "Blazor-ApexCharts.wasm",
       "Blazored.LocalStorage.aspas9o5sr.wasm": "Blazored.LocalStorage.wasm",
@@ -45,8 +45,8 @@
       "MudBlazor.hl682h886q.wasm": "MudBlazor.wasm",
       "netstandard.vx4p4201rt.wasm": "netstandard.wasm",
       "PokeApiNet.cyz0yq1sho.wasm": "PokeApiNet.wasm",
-      "PokeAutobuilder.zntamb8a28.wasm": "PokeAutobuilder.wasm",
-      "PokemonDataModel.v224t6ms0e.wasm": "PokemonDataModel.wasm",
+      "PokeAutobuilder.qwfwh50sqc.wasm": "PokeAutobuilder.wasm",
+      "PokemonDataModel.7xed1i3txi.wasm": "PokemonDataModel.wasm",
       "System.Collections.Concurrent.07qed1deqe.wasm": "System.Collections.Concurrent.wasm",
       "System.Collections.Immutable.80wmay0zke.wasm": "System.Collections.Immutable.wasm",
       "System.Collections.NonGeneric.1blmfpfut8.wasm": "System.Collections.NonGeneric.wasm",
@@ -95,9 +95,9 @@
       "System.Threading.ThreadPool.hmlf5g70qi.wasm": "System.Threading.ThreadPool.wasm",
       "System.Threading.rs7q79yf9l.wasm": "System.Threading.wasm",
       "System.ezrw3d5kw2.wasm": "System.wasm",
-      "Utility.3a1ol7joug.wasm": "Utility.wasm",
+      "Utility.vma8rxnvah.wasm": "Utility.wasm",
       "dotnet.native.cg6ts38mtv.js": "dotnet.native.js",
-      "dotnet.native.iltxyvswbn.wasm": "dotnet.native.wasm",
+      "dotnet.native.48k5569c2e.wasm": "dotnet.native.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.runtime.5nhp1wfg9b.js": "dotnet.runtime.js",
       "icudt_CJK.tjcz0u77k5.dat": "icudt_CJK.dat",
@@ -111,7 +111,7 @@
       "dotnet.runtime.5nhp1wfg9b.js": "sha256-kTZbe5ESp04VMT22TnjRmFj88VbtEcohZfCm4og/IDw="
     },
     "wasmNative": {
-      "dotnet.native.iltxyvswbn.wasm": "sha256-FhK+P15ALCRUuy/RKr6VyZpTtYApPjfLjy75rf96Q18="
+      "dotnet.native.48k5569c2e.wasm": "sha256-pILAPoI+nXk/fO5FQQy80rIHHFCeRzUntYjLjbC+xx4="
     },
     "icu": {
       "icudt_CJK.tjcz0u77k5.dat": "sha256-SZLtQnRc0JkwqHab0VUVP7T3uBPSeYzxzDnpxPpUnHk=",
@@ -123,7 +123,7 @@
       "Accord.Math.Core.271df58t8l.wasm": "sha256-Tqqw+V/Lf2c9r+B8lhxyde1BhwYww1OMv4HzWLm6/N4=",
       "Accord.Math.4bmbtejoxn.wasm": "sha256-sKrV9I2jd99JIruhzI+zZ6JrTSiCxNG8V27Hl8mrE7E=",
       "Accord.28odiky6jl.wasm": "sha256-HoJHqW/oZRLZZuIZ2WhAYpZ5JEt2c1ncd4PNZqWymzA=",
-      "AutoBuilder.rj0824silb.wasm": "sha256-OTmlaH00+4msJv3rq/Xr66EApWEXJmGPIXxrfIsy2GQ=",
+      "AutoBuilder.y3ce21amvh.wasm": "sha256-MsXEW0++a3rwlEXyg72QkBKJ67ffu5knxVE4/Y9UAi8=",
       "Blazor-Analytics.ztbbr29lhh.wasm": "sha256-pyOJLRpWt2hZqw8j6aNcZP+AaVdFwVKxdHTpMMiQ3RI=",
       "Blazor-ApexCharts.3437qavpa6.wasm": "sha256-fQKNNc1+eBrNjaAMHjeEHrVRcGWvm+ic1gJBZz5rOlM=",
       "Blazored.LocalStorage.aspas9o5sr.wasm": "sha256-9j4iJEwca5bjLN0jWGV0/0hXXIig9zItgbG2WbVWRE0=",
@@ -161,8 +161,8 @@
       "MudBlazor.hl682h886q.wasm": "sha256-m4ZZmMYvWWnFrqCTcXnNdPEYo/qxTJ07uZ/KtTS26JY=",
       "netstandard.vx4p4201rt.wasm": "sha256-vQ6VP/UH+lrxkNTLsIZ5iMXdqo2WJbAu5w6LjCpSNV0=",
       "PokeApiNet.cyz0yq1sho.wasm": "sha256-/C/UfFoO19C0CuFNFhb1hMMSgXTeEBDCPofDuBBebqo=",
-      "PokeAutobuilder.zntamb8a28.wasm": "sha256-UWmmN66uBCqts9oGVhMgJWPQ3Mr0nuDRVSUZ+PdCfJM=",
-      "PokemonDataModel.v224t6ms0e.wasm": "sha256-eaezQkCviBDehIx9KSU2EiJNN4yjxYZI+yYiQMFleas=",
+      "PokeAutobuilder.qwfwh50sqc.wasm": "sha256-dgInv0ichmG3k99iordRp1OETViRWB4vJHp5u6wD4NI=",
+      "PokemonDataModel.7xed1i3txi.wasm": "sha256-NdpJs/EuLYqx1fk4XcRnaxphFon7OwmhFRgrUHUqAfw=",
       "System.Collections.Concurrent.07qed1deqe.wasm": "sha256-HJ1vJRRkmIoKX+CtO0teC3aIeDuqA3Eks+xP8ad7uv4=",
       "System.Collections.Immutable.80wmay0zke.wasm": "sha256-iB3J90AQVb1AMMivs4A/OgvyDEARDxFOszI08d73b9w=",
       "System.Collections.NonGeneric.1blmfpfut8.wasm": "sha256-Xfgk1JWY7TRDwDHUbLOnxWkEx0cdORai/Xxr++W8uwY=",
@@ -211,7 +211,7 @@
       "System.Threading.ThreadPool.hmlf5g70qi.wasm": "sha256-xw9vgOtxbuTq3IpK25oB0cbcyjm9KbXwEHUFmQG9axU=",
       "System.Threading.rs7q79yf9l.wasm": "sha256-BUsnQ03ceHmiAzj+buh9nsIi2GweyJKhayt13eKYDDo=",
       "System.ezrw3d5kw2.wasm": "sha256-ViNRvhyxlTugIlqJHamw/HwbXlg/YWcrANmxuTM0tfg=",
-      "Utility.3a1ol7joug.wasm": "sha256-hQKY2GfKuRupCTTFDeuyYRQ1tpP+uBEmRU/rQBYUQS8="
+      "Utility.vma8rxnvah.wasm": "sha256-KcnkP5QhXomfHtlZGxlzwTAqaxaqLd0ivWwhRiGqxWY="
     },
     "assembly": {}
   },
