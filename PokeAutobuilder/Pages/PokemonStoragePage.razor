@@ -138,7 +138,7 @@
                     </MudStack>
                 </MudToolBar>
             </MudPaper>
-            <CascadingValue Value="@SelectedPokemon">
+            <CascadingValue Value="@(_selectedPokemonList)">
                 <PokemonStorageBox PokemonCollection="SelectedBox!.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
             </CascadingValue>
         </MudStack>
@@ -156,6 +156,7 @@
 
     private PokemonSearchBox? _pokemonSearchBox;
 
+    private List<SmartPokemon> _selectedPokemonList = [];
     private SmartPokemon? _selectedPokemon;
     public SmartPokemon? SelectedPokemon 
     {
@@ -163,6 +164,8 @@
         set
         {
             _selectedPokemon = value;
+            _selectedPokemonList.Clear();
+            if (value is not null) _selectedPokemonList.Add(value);
         }
     }
 
