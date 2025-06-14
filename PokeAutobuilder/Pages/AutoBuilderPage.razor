@@ -16,26 +16,253 @@
 
 <MudStack AlignItems="AlignItems.Start">
 
-    <MudSelect T="PokemonBox" Label="Selected Box" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
-               @bind-Value="SelectedBox" Disabled="Generating" FullWidth="true">
-        @foreach (PokemonBox box in Profile.PokemonStorage.Boxes)
-        {
-            <MudSelectItem T="PokemonBox" Value="box">
-                @box.Name
-            </MudSelectItem>
-        }
-    </MudSelect>
+    <MudGrid>
+        <MudItem xs="12" md="6">
 
-    @if (SelectedBox is not null)
-    {
-        <CascadingValue Value="@_lockedPokemon">
-            <PokemonStorageBox PokemonCollection="SelectedBox.Pokemon" OnClickPokemon="OnClickPokemon" />
-        </CascadingValue>
-    }
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="Box Settings" Expanded="true">
 
-    <MudDivider DividerType="DividerType.FullWidth" />
+                    <MudSelect T="PokemonBox" Label="Select a box to generate a team from" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                               @bind-Value="SelectedBox" Disabled="Generating" FullWidth="true">
+                        @foreach (PokemonBox box in Profile.PokemonStorage.Boxes)
+                        {
+                            <MudSelectItem T="PokemonBox" Value="box">
+                                @box.Name
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
 
-    <MudSlider Min="1" Max="6" Step="1" @bind-Value="@TeamSize" TickMarks="true" Disabled="Generating">Team Size</MudSlider>
+                    <CascadingValue Value="@_lockedPokemon">
+                        <PokemonStorageBox PokemonCollection="@(SelectedBox is not null ? SelectedBox.Pokemon : new())" OnClickPokemon="OnClickPokemon" />
+                    </CascadingValue>
+
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="Generation Settings" Expanded="true">
+
+                    <MudStack>
+                        <MudSlider Disabled="Generating" Min="1" Max="6" Step="1" @bind-Value="@TeamSize" Variant="Variant.Filled" TickMarks="true">Team Size</MudSlider>
+                        <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10" />
+                        <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
+                    </MudStack>
+
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="Generation Parameters" Expanded="false">
+
+                    <MudText Typo="Typo.subtitle1">Types</MudText>
+                    <MudText Typo="Typo.caption">Click a type to toggle it. Disabled types won't be considered during team generation</MudText>
+
+                    <div class="mt-1 mb-1">
+                        @foreach (string t in Globals.AllTypes)
+                        {
+                            <MudButton OnClick="() => OnClickType(t)" Style="height: 40px; min-width: 40px" Class="pa-0" Disabled="Generating">
+                                <MudTooltip Text="@StringUtils.PrettifyString(t)" RootClass="d-flex">
+                                    @if (Generating)
+                                    {
+                                        <MudImage Src="@StringUtils.DisabledTypeImgFromName(t)" alt="@t" Height="30" Class="ma-1" />
+                                    }
+                                    else if (GenerationParameters.Types.ContainsKey(t) && GenerationParameters.Types[t])
+                                    {
+                                        <MudImage Src="@StringUtils.TypeImgFromName(t)" alt="@t" Height="30" Class="ma-1"/>
+                                    }
+                                    else
+                                    {
+                                        <MudImage Src="@StringUtils.DisabledTypeImgFromName(t)" alt="@t" Height="30" Class="ma-1" />
+                                    }
+                                </MudTooltip>
+                            </MudButton>
+                        }
+                    </div>
+
+                    <MudDivider Class="mb-2" />
+
+                    <MudText Typo="Typo.subtitle1">Attack</MudText>
+
+                    <div class="px-4 mt-1">
+                        <MudText Typo="Typo.subtitle2">STAB Coverage</MudText>
+                        <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of STAB coverage</MudText>
+                        <WeightingSlider Name="All Types"
+                                         InlineLabel="true"
+                                            Tooltip="Importance of a team with at least one Pokémon with STAB coverage against each type"
+                                            @bind-Value="GenerationParameters.StabAll"
+                                            Score="BestTeamScore?.StabAll"
+                                            Disabled="Generating" />
+
+                        <WeightingSlider Name="Balance"
+                                         InlineLabel="true"
+                                            Tooltip="Importance of a balanced amount of STAB coverage."
+                                            @bind-Value="GenerationParameters.StabBalance"
+                                            Score="BestTeamScore?.StabBalance"
+                                            Disabled="Generating" />
+
+                        <WeightingSlider Name="Amount"
+                                         InlineLabel="true"
+                                            Tooltip="Importance of a higher amount of STAB coverage."
+                                            @bind-Value="GenerationParameters.StabAmount"
+                                            Score="BestTeamScore?.StabAmount"
+                                            Disabled="Generating" />
+
+                        <MudDivider Class="mb-2" DividerType="DividerType.Inset" />
+
+                        <MudText Typo="Typo.subtitle2">Move Coverage</MudText>
+                        <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of move coverage</MudText>
+                        <WeightingSlider Name="All Types"
+                                         InlineLabel="true"
+                                            Tooltip="Importance of a team with at least one Pokémon with move coverage against each type"
+                                            @bind-Value="GenerationParameters.MoveSetAll"
+                                            Score="BestTeamScore?.MoveSetAll"
+                                            Disabled="Generating" />
+
+                        <WeightingSlider Name="Balance"
+                                         InlineLabel="true"
+                                            Tooltip="Importance of a balanced amount of move coverage"
+                                            @bind-Value="GenerationParameters.MoveSetBalance"
+                                            Score="BestTeamScore?.MoveSetBalance"
+                                            Disabled="Generating" />
+
+                        <WeightingSlider Name="Amount"
+                                         InlineLabel="true"
+                                            Tooltip="Importance of a higher amount of move coverage"
+                                            @bind-Value="GenerationParameters.MoveSetAmount"
+                                            Score="BestTeamScore?.MoveSetAmount"
+                                            Disabled="Generating" />
+
+                    </div>
+
+                    <MudDivider Class="mb-2" />
+
+                    <MudText Typo="Typo.subtitle1">Defense</MudText>
+
+                    <div class="px-4">
+                        <MudText Typo="Typo.subtitle2">Resistances</MudText>
+                        <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of type resistances</MudText>
+
+                        <WeightingSlider Name="All Types"
+                                         InlineLabel="true"
+                                         Tooltip="Importance of a team with at least one Pokémon resistant to each type"
+                                         @bind-Value="GenerationParameters.ResistanceAll"
+                                         Disabled="Generating" />
+
+                        <WeightingSlider Name="Balance"
+                                         InlineLabel="true"
+                                         Tooltip="Importance of a balanced number of type resistances"
+                                         @bind-Value="GenerationParameters.ResistanceBalance"
+                                         Disabled="Generating" />
+
+                        <WeightingSlider Name="Amount"
+                                         InlineLabel="true"
+                                         Tooltip="Importance of a higher amount of type resistances"
+                                         @bind-Value="GenerationParameters.ResistanceAmount"
+                                         Disabled="Generating" />
+
+                        <MudDivider Class="mb-2" DividerType="DividerType.Inset" />
+
+                        <MudText Typo="Typo.subtitle2">Weaknesses</MudText>
+                        <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of type weaknesses</MudText>
+
+                        <WeightingSlider Name="Balance"
+                                         InlineLabel="true"
+                                            Tooltip="Importance of a balanced number of type weaknesses"
+                                            @bind-Value="GenerationParameters.WeaknessBalance"
+                                            Score="BestTeamScore?.WeaknessBalance"
+                                            Disabled="Generating" />
+
+                        <WeightingSlider Name="Amount"
+                                         InlineLabel="true"
+                                            Tooltip="Importance of a lower amount of type weaknesses"
+                                            @bind-Value="GenerationParameters.WeaknessAmount"
+                                            Score="BestTeamScore?.WeaknessAmount"
+                                            Disabled="Generating" />
+
+                    </div>
+
+                    <MudDivider Class="mb-2" />
+
+                    <MudText Typo="Typo.subtitle1">Miscellaneous</MudText>
+                    <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of other misc. attributes</MudText>
+
+                    <div class="px-4">
+                        <WeightingSlider Name="Good Coverage On Offensive Pokémon"
+                                            Tooltip="Importance of good coverage on offensive Pokémon - e.g. a Pokémon with good offensive stats should have STAB coverage against more types"
+                                            @bind-Value="GenerationParameters.CoverageOnOffensive"
+                                            Score="BestTeamScore?.CoverageOnOffensive"
+                                            Disabled="Generating" />
+
+                        <WeightingSlider Name="Good Resistances On Defensive Pokémon"
+                                            Tooltip="Importance of good resistances on defensive Pokémon - e.g. a Pokémon with good defensive stats should also be resistant to more types"
+                                            @bind-Value="GenerationParameters.ResistancesOnDefensive"
+                                            Score="BestTeamScore?.ResistancesOnDefensive"
+                                            Disabled="Generating" />
+                    </div>
+
+                    <MudDivider Class="mb-2" />
+
+                    <MudText Typo="Typo.subtitle1">Stat Weightings</MudText>
+                    <MudText Typo="Typo.caption">Use the sliders to adjust the importance of base statistics</MudText>
+
+                    <div class="px-4">
+                        <WeightingSlider Name="Base Stats"
+                                         Size="Size.Medium"
+                                         Tooltip="The overall importance of base stats"
+                                         @bind-Value="GenerationParameters.BaseStatTotal"
+                                         Score="BestTeamScore?.BaseStatTotal"
+                                         Disabled="Generating" />
+
+                        <WeightingSlider Name="HP"
+                                         InlineLabel="true"
+                                         Tooltip="Importance of a the HP base stat"
+                                         @bind-Value="GenerationParameters.BaseStatHp"
+                                         Score="BestTeamScore?.BaseStatHp"
+                                         Disabled="Generating" />
+                        <WeightingSlider Name="Attack"
+                                         InlineLabel="true"
+                                         Tooltip="Importance of a the Attack base stat"
+                                         @bind-Value="GenerationParameters.BaseStatAtt"
+                                         Score="BestTeamScore?.BaseStatAtt"
+                                         Disabled="Generating" />
+                        <WeightingSlider Name="Defense"
+                                         InlineLabel="true"
+                                         Tooltip="Importance of a the Defense base stat"
+                                         @bind-Value="GenerationParameters.BaseStatDef"
+                                         Score="BestTeamScore?.BaseStatDef"
+                                         Disabled="Generating" />
+                        <WeightingSlider Name="Sp. Attack"
+                                         InlineLabel="true"
+                                         Tooltip="Importance of a the Special Attack base stat"
+                                         @bind-Value="GenerationParameters.BaseStatSpAtt"
+                                         Score="BestTeamScore?.BaseStatSpAtt"
+                                         Disabled="Generating" />
+                        <WeightingSlider Name="Sp. Defense"
+                                         InlineLabel="true"
+                                         Tooltip="Importance of a the Special Defense base stat"
+                                         @bind-Value="GenerationParameters.BaseStatSpDef"
+                                         Score="BestTeamScore?.BaseStatSpDef"
+                                         Disabled="Generating" />
+                        <WeightingSlider Name="Speed"
+                                         InlineLabel="true"
+                                         Tooltip="Importance of a the Speed base stat"
+                                         @bind-Value="GenerationParameters.BaseStatSpe"
+                                         Score="BestTeamScore?.BaseStatSpe"
+                                         Disabled="Generating" />
+
+                    </div>
+
+                </MudExpansionPanel>
+
+            </MudExpansionPanels>
+
+        </MudItem>
+
+    </MudGrid>
+
+    <MudDivider DividerType="DividerType.FullWidth" />    
 
     <MudGrid Class="mb-2">
         <MudItem xs="12">
@@ -97,12 +324,6 @@
                 <MudButton Disabled="Generating" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickReset">Reset</MudButton>
             </MudStack>
         </MudItem>
-        <MudItem xs="6" md="3">
-            <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10" />
-        </MudItem>
-        <MudItem xs="6" md="3">
-            <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
-        </MudItem>
         <MudItem xs="12" md="6">
             <MudButton Disabled="@(Generating || BestTeam.IsEmpty)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Primary" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
         </MudItem>
@@ -112,206 +333,6 @@
     {
         <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
     }
-
-    <MudDivider DividerType="DividerType.FullWidth" />
-
-    <MudText Typo="Typo.h5">Generation Parameters</MudText>
-
-    <MudText Typo="Typo.h6">Types</MudText>
-    <MudText Typo="Typo.subtitle1">Click a type to toggle it. Disabled types won't be considered during team generation.</MudText>
-    <div>
-        @foreach (string t in Globals.AllTypes)
-        {
-            <MudButton OnClick="() => OnClickType(t)" Style="height: 50px;" Disabled="Generating">
-                @if (Generating)
-                {
-                    <MudImage Src="@StringUtils.DisabledTypeImgFromName(t)" Alt="@t" title="@t" Height="40" Class="ma-1" />
-                }
-                else if (GenerationParameters.Types.ContainsKey(t) && GenerationParameters.Types[t])
-                {
-                    <MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" title="@t" Height="40" Class="ma-1" />
-                }
-                else
-                {
-                    <MudImage Src="@StringUtils.DisabledTypeImgFromName(t)" Alt="@t" title="@t" Height="30" Class="ma-1" />
-                }
-            </MudButton>
-        }
-    </div>
-
-    <MudGrid Spacing="2">
-        <MudItem xs="12" md="6" lg="4">
-            <MudText Typo="Typo.h6">Resistances</MudText>
-            <MudText Typo="Typo.subtitle1">Use the sliders to fine-tune the importance of type resistances.</MudText>
-            <MudStack Class="px-2">
-                <WeightingSlider Name="All Types"
-                                    Tooltip="Importance of a team with at least one Pokémon resistant to each type."
-                                    @bind-Value="GenerationParameters.ResistanceAll"
-                                    Score="BestTeamScore?.ResistanceAll"
-                                    Disabled="Generating"/>
-
-                <WeightingSlider Name="Balance"
-                                    Tooltip="Importance of a balanced number of type resistances."
-                                    @bind-Value="GenerationParameters.ResistanceBalance"
-                                    Score="BestTeamScore?.ResistanceBalance"
-                                    Disabled="Generating"/>
-
-                <WeightingSlider Name="Amount"
-                                    Tooltip="Importance of a higher amount of type resistances."
-                                    @bind-Value="GenerationParameters.ResistanceAmount"
-                                    Score="BestTeamScore?.ResistanceAmount"
-                                    Disabled="Generating" />
-            </MudStack>
-        </MudItem>
-
-        <MudItem xs="12" md="6" lg="4">
-            <MudText Typo="Typo.h6">Weaknesses</MudText>
-            <MudText Typo="Typo.subtitle1">Use the sliders to fine-tune the importance of type weaknesses.</MudText>
-            <MudStack Class="px-2">
-                <WeightingSlider Name="Balance"
-                                    Tooltip="Importance of a balanced number of type weaknesses."
-                                    @bind-Value="GenerationParameters.WeaknessBalance"
-                                    Score="BestTeamScore?.WeaknessBalance"
-                                    Disabled="Generating" />
-
-                <WeightingSlider Name="Amount"
-                                    Tooltip="Importance of a lower amount of type weaknesses."
-                                    @bind-Value="GenerationParameters.WeaknessAmount"
-                                    Score="BestTeamScore?.WeaknessAmount"
-                                    Disabled="Generating" />
-            </MudStack>
-        </MudItem>
-
-        <MudItem xs="12" md="6" lg="4">
-            <MudText Typo="Typo.h6">STAB Coverage</MudText>
-            <MudText Typo="Typo.subtitle1">Use the sliders to fine-tune the importance of STAB coverage.</MudText>
-            <MudStack Class="px-2">
-                <WeightingSlider Name="All Types"
-                                    Tooltip="Importance of a team with at least one Pokémon with STAB coverage against each type."
-                                    @bind-Value="GenerationParameters.StabAll"
-                                    Score="BestTeamScore?.StabAll"
-                                    Disabled="Generating" />
-
-                <WeightingSlider Name="Balance"
-                                    Tooltip="Importance of a balanced amount of STAB coverage."
-                                    @bind-Value="GenerationParameters.StabBalance"
-                                    Score="BestTeamScore?.StabBalance"
-                                    Disabled="Generating" />
-
-                <WeightingSlider Name="Amount"
-                                    Tooltip="Importance of a higher amount of STAB coverage."
-                                    @bind-Value="GenerationParameters.StabAmount"
-                                    Score="BestTeamScore?.StabAmount"
-                                    Disabled="Generating" />
-            </MudStack>
-        </MudItem>
-
-        <MudItem xs="12" md="6" lg="4">
-            <MudText Typo="Typo.h6">Move Coverage</MudText>
-            <MudText Typo="Typo.subtitle1">Use the sliders to fine-tune the importance of move coverage.</MudText>
-            <MudStack Class="px-2">
-                <WeightingSlider Name="All Types"
-                                    Tooltip="Importance of a team with at least one Pokémon with move coverage against each type."
-                                    @bind-Value="GenerationParameters.MoveSetAll"
-                                    Score="BestTeamScore?.MoveSetAll"
-                                    Disabled="Generating" />
-
-                <WeightingSlider Name="Balance"
-                                    Tooltip="Importance of a balanced amount of move coverage."
-                                    @bind-Value="GenerationParameters.MoveSetBalance"
-                                    Score="BestTeamScore?.MoveSetBalance"
-                                    Disabled="Generating" />
-
-                <WeightingSlider Name="Amount"
-                                    Tooltip="Importance of a higher amount of move coverage."
-                                    @bind-Value="GenerationParameters.MoveSetAmount"
-                                    Score="BestTeamScore?.MoveSetAmount"
-                                    Disabled="Generating" />
-            </MudStack>
-        </MudItem>
-
-        <MudItem xs="12" md="6" lg="4">
-            <MudText Typo="Typo.h6">Miscellaneous</MudText>
-            <MudText Typo="Typo.subtitle1">Use the sliders to fine-tune the importance of other misc. attributes.</MudText>
-            <MudStack Class="px-2">
-                <WeightingSlider Name="Good Coverage On Offensive Pokémon"
-                                    Tooltip="Importance of good coverage on offensive Pokémon. E.g. a Pokémon with good offensive stats should have STAB coverage against more types."
-                                    @bind-Value="GenerationParameters.CoverageOnOffensive"
-                                    Score="BestTeamScore?.CoverageOnOffensive"
-                                    Disabled="Generating" />
-
-                <WeightingSlider Name="Good Resistances On Defensive Pokémon"
-                                    Tooltip="Importance of good resistances on defensive Pokémon. E.g. a Pokémon with good defensive stats should also be resistant to more types."
-                                    @bind-Value="GenerationParameters.ResistancesOnDefensive"
-                                    Score="BestTeamScore?.ResistancesOnDefensive"
-                                    Disabled="Generating" />
-            </MudStack>
-        </MudItem>
-
-        <MudItem xs="12">
-            <MudDivider DividerType="DividerType.FullWidth" Class="my-2"/>
-            <MudText Typo="Typo.h6">Stat Weightings</MudText>
-            <MudText Typo="Typo.subtitle1">Use the sliders to adjust the importance of different base statistics. The big slider determines the importance of base statistics compared to the other weighting options.</MudText>
-            <MudSlider @bind-Value="GenerationParameters.BaseStatTotal" Size="Size.Large" Min="0" Max="1" Step="0.05" Disabled="Generating"></MudSlider>
-            <MudGrid>
-                <MudItem xs="6" sm="4" md="2">
-                    <MudSlider @bind-Value="GenerationParameters.BaseStatHp" Size="Size.Small" Min="0" Max="1" Step="0.05" Disabled="Generating">HP</MudSlider>
-                    @if (BestTeamScore is not null)
-                    {
-                        <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.BaseStatHp" Max="1.0">
-                            <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.BaseStatHp * 100))%</MudText>
-                        </MudProgressLinear>
-                    }
-                </MudItem>
-                <MudItem xs="6" sm="4" md="2">
-                    <MudSlider @bind-Value="GenerationParameters.BaseStatAtt"   Size="Size.Small" Min="0" Max="1" Step="0.05" Disabled="Generating">Attack</MudSlider>
-                    @if (BestTeamScore is not null)
-                    {
-                        <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.BaseStatAtt" Max="1.0">
-                            <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.BaseStatAtt * 100))%</MudText>
-                        </MudProgressLinear>
-                    }
-                </MudItem>
-                <MudItem xs="6" sm="4" md="2">
-                    <MudSlider @bind-Value="GenerationParameters.BaseStatDef"   Size="Size.Small" Min="0" Max="1" Step="0.05" Disabled="Generating">Defense</MudSlider>
-                    @if (BestTeamScore is not null)
-                    {
-                        <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.BaseStatDef" Max="1.0">
-                            <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.BaseStatDef * 100))%</MudText>
-                        </MudProgressLinear>
-                    }
-                </MudItem>
-                <MudItem xs="6" sm="4" md="2">
-                    <MudSlider @bind-Value="GenerationParameters.BaseStatSpAtt" Size="Size.Small" Min="0" Max="1" Step="0.05" Disabled="Generating">Sp. Attack</MudSlider>
-                    @if (BestTeamScore is not null)
-                    {
-                        <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.BaseStatSpAtt" Max="1.0">
-                            <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.BaseStatSpAtt * 100))%</MudText>
-                        </MudProgressLinear>
-                    }
-                </MudItem>
-                <MudItem xs="6" sm="4" md="2">
-                    <MudSlider @bind-Value="GenerationParameters.BaseStatSpDef" Size="Size.Small" Min="0" Max="1" Step="0.05" Disabled="Generating">Sp. Defense</MudSlider>
-                    @if (BestTeamScore is not null)
-                    {
-                        <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.BaseStatSpDef" Max="1.0">
-                            <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.BaseStatSpDef * 100))%</MudText>
-                        </MudProgressLinear>
-                    }
-                </MudItem>
-                <MudItem xs="6" sm="4" md="2">
-                    <MudSlider @bind-Value="GenerationParameters.BaseStatSpe"   Size="Size.Small" Min="0" Max="1" Step="0.05" Disabled="Generating">Speed</MudSlider>
-                    @if (BestTeamScore is not null)
-                    {
-                        <MudProgressLinear Color="Color.Tertiary" Size="Size.Medium" Value="@BestTeamScore.BaseStatSpe" Max="1.0">
-                            <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", BestTeamScore.BaseStatSpe * 100))%</MudText>
-                        </MudProgressLinear>
-                    }
-                </MudItem>
-            </MudGrid>
-        </MudItem>
-    </MudGrid>
-
 </MudStack>
 
 @code {
