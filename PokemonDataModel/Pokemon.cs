@@ -46,6 +46,16 @@ namespace PokemonDataModel
         [JsonIgnore]
         public new List<PokemonMove> Moves;
 
+        [JsonIgnore]
+        public bool IsMegaEvolved
+        {
+            get
+            {
+                return Name.Split('-').Contains("mega");
+            }
+        }
+
+
         public static async Task<SmartPokemon> BuildSmartPokemonAsync(Pokemon basePokemon)
         {
             PokemonSpecies? species = await PokeApiService.Instance!.GetPokemonSpeciesAsync(basePokemon.Species.Name) ?? throw new Exception("Could not load species information from " + basePokemon.Name);

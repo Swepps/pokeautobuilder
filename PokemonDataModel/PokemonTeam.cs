@@ -79,6 +79,11 @@ namespace PokemonDataModel
                 .Count() != Pokemon.Count(p => p != null);
         }
 
+        public int CountMegaEvolvedPokemon()
+        {
+            return Pokemon.Count(p => p != null && p.IsMegaEvolved);
+        }
+
         public int CountPokemon()
         {
             int count = 0;
