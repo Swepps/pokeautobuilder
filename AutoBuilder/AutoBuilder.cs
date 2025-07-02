@@ -28,12 +28,12 @@ namespace AutoBuilder
             , double resistancesOnDefensive = 1.0
 
             , double baseStatTotal = 1.0
-            , double baseStatHp = 0.5
-            , double baseStatAtt = 0.5
-            , double baseStatDef = 0.5
-            , double baseStatSpAtt = 0.5
-            , double baseStatSpDef = 0.5
-            , double baseStatSpe = 0.5)
+            , double baseStatHp = 1.0
+            , double baseStatAtt = 1.0
+            , double baseStatDef = 1.0
+            , double baseStatSpAtt = 1.0
+            , double baseStatSpDef = 1.0
+            , double baseStatSpe = 1.0)
     {
         // resistances
         public double ResistanceAll = resistanceAll;
@@ -148,7 +148,7 @@ namespace AutoBuilder
         }
     }
 
-    internal class AutoBuilder
+    public class AutoBuilder
     {
         // The main juice of the team building. this is what decides how good a team is
         public static AutoBuilderWeightings CalculateScore(PokemonTeam team, AutoBuilderWeightings weightings)
