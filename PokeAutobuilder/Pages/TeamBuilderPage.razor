@@ -61,6 +61,14 @@
             </MudItem>
         }
     </MudGrid>
+    @if (MultipleMegasSelected)
+    {
+        <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: Multiple Mega-Evolved Pokémon have been added to the team</MudText>
+    }
+    @if (MultipleGmaxSelected)
+    {
+        <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: Multiple Gigantamaxed Pokémon have been added to the team</MudText>
+    }
     @if (!CanRunAutoBuilder())
     {
         <MudTooltip Text="@GetAutoBuilderTooltipMessage()">
@@ -123,7 +131,37 @@
     PokemonSearchBox tempCard
     {
         set { cards.Add(value); StateHasChanged(); }
-    }  
+    }
+
+    public bool MultipleMegasSelected
+    {
+        get
+        {
+            int megaCount = 0;
+            foreach (var card in cards)
+            {
+                if (card.Pokemon is not null
+                && card.Pokemon.IsMega) megaCount++;
+            }
+
+            return megaCount > 1;
+        }
+    }
+
+    public bool MultipleGmaxSelected
+    {
+        get
+        {
+            int gmaxCount = 0;
+            foreach (var card in cards)
+            {
+                if (card.Pokemon is not null
+                && card.Pokemon.IsGmax) gmaxCount++;
+            }
+
+            return gmaxCount > 1;
+        }
+    }
 
     public async void OnClickAddTeamToStorage()
     {

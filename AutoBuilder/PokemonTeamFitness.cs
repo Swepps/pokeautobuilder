@@ -22,8 +22,13 @@ namespace AutoBuilder
             pokemonTeamChromosome.WeightingScores = AutoBuilder.CalculateScore(team, _weightings);
 
             double fitness = pokemonTeamChromosome.WeightingScores.SumWeightings();
+
             // duplicates in a team don't qualify as a valid team
-            if (fitness < 0 || team.ContainsDuplicates())
+            // can't have more than one mega-evolved pokemon in a team
+            if (fitness < 0 
+                || team.ContainsDuplicates()
+                || team.CountMegaPokemon() > 1
+                || team.CountGmaxPokemon() > 1)
                 fitness = 0;
 
             return fitness;

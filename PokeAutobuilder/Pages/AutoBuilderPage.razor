@@ -319,7 +319,7 @@
                 }
                 else
                 {
-                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="OnClickGenerate" Disabled="@(TeamSize >= SelectedBox?.Pokemon.Count)">Generate</MudButton>
+                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="OnClickGenerate" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
                 }
                 <MudButton Disabled="Generating" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickReset">Reset</MudButton>
             </MudStack>
@@ -372,6 +372,18 @@
                 BestTeam.Pokemon.RemoveRange(value, BestTeam.Pokemon.Count - (value));
             }
             StateHasChanged();
+        }
+    }
+
+    public bool CanStartAutoBuilding
+    {
+        get
+        {
+            return TeamSize < (
+            ((SelectedBox?.Pokemon.Any(p => p.IsMega)).GetValueOrDefault() ? 1 : 0)
+            + ((SelectedBox?.Pokemon.Any(p => p.IsGmax)).GetValueOrDefault() ? 1 : 0)
+            + (SelectedBox?.Pokemon.Count(p => !p.IsMega && !p.IsGmax))
+            );
         }
     }
 

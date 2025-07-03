@@ -47,11 +47,20 @@ namespace PokemonDataModel
         public new List<PokemonMove> Moves;
 
         [JsonIgnore]
-        public bool IsMegaEvolved
+        public bool IsMega
         {
             get
             {
                 return Name.Split('-').Contains("mega");
+            }
+        }
+
+        [JsonIgnore]
+        public bool IsGmax
+        {
+            get
+            {
+                return Name.Split('-').Contains("gmax");
             }
         }
 
