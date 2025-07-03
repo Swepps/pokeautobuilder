@@ -27,7 +27,7 @@
 	protected override void OnParametersSet()
 	{
 		_shouldRender = Team != _prevTeam;
-		_prevTeam = Team;
+		_prevTeam = Team is null ? null : new PokemonTeam(Team);
 	}
 
 	protected override bool ShouldRender() => _shouldRender;

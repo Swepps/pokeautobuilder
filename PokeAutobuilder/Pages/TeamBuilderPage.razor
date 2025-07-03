@@ -130,7 +130,18 @@
     List<PokemonSearchBox> cards = [];
     PokemonSearchBox tempCard
     {
-        set { cards.Add(value); StateHasChanged(); }
+        set 
+        { 
+            cards.Add(value);
+            int teamIndex = cards.IndexOf(value);
+            if (teamIndex >= 0 && teamIndex < PokemonTeam.MaxTeamSize)
+            {
+                if (Session.Team.Pokemon.Count > teamIndex)
+                {
+                    value.Pokemon = Session.Team.Pokemon[teamIndex];
+                }
+            }
+        }
     }
 
     public bool MultipleMegasSelected
