@@ -310,30 +310,28 @@
         }
     </MudGrid>
 
-    <MudGrid>
-        <MudItem xs="12" md="6">
-            <MudStack Row="true">
-                @if (Generating)
-                {
-                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" OnClick="OnClickStop">Stop</MudButton>
-                }
-                else
-                {
-                    <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" OnClick="OnClickGenerate" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
-                }
-                <MudButton Disabled="Generating" Variant="Variant.Filled" Color="Color.Primary" OnClick="OnClickReset">Reset</MudButton>
-            </MudStack>
-        </MudItem>
-        <MudItem xs="12" md="6">
-            <MudButton Disabled="@(Generating || BestTeam.IsEmpty)" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Primary" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
-        </MudItem>
-    </MudGrid>
+    <div class="mud-width-full d-flex justify-center">
+        <MudButtonGroup OverrideStyles="false">
+            @if (Generating)
+            {
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" Class="px-2" OnClick="OnClickStop">Stop</MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Class="px-2" OnClick="OnClickGenerate" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
+            }
+            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Class="px-2" OnClick="OnClickReset">Reset</MudButton>
+            <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Class="px-2" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
+        </MudButtonGroup>
+    </div>
 
     @if (Generating)
     {
         <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
     }
 </MudStack>
+
+<PageFooter />
 
 @code {
     private PokemonBox? _selectedBox;
