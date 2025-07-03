@@ -1,41 +1,43 @@
-﻿<MudTooltip Text="@Tooltip" Placement="Placement.Bottom" RootClass="mud-width-full">
-    <MudGrid>
+﻿<MudGrid>
 
-        @if (InlineLabel)
-        {
-            <MudItem xs="3">
-                <div class="d-flex justify-end">
-                    <MudText Typo="Typo.caption">
-                        @($"{Name}:")
-                    </MudText>
-                </div>
-            </MudItem>
+    @if (InlineLabel)
+    {
+        <MudItem xs="3">
+            <div class="d-flex justify-end" style="text-align: end;">
+                <MudText Typo="Typo.caption">
+                    @($"{Name}:")
+                </MudText>
+            </div>
+        </MudItem>
 
-            <MudItem xs="9">
+        <MudItem xs="9">
+            <MudTooltip Text="@Tooltip" Placement="Placement.Bottom" RootClass="mud-width-full">
                 <MudSlider @bind-Value="Value" Size="@Size" Min="0" Max="1" Step="0.05" Variant="Variant.Filled" Disabled="Disabled" />
-            </MudItem>
-        }
-        else
-        {
-            <MudItem xs="12">
+            </MudTooltip>
+        </MudItem>
+    }
+    else
+    {
+        <MudItem xs="12">
+            <MudTooltip Text="@Tooltip" Placement="Placement.Bottom" RootClass="mud-width-full">
                 <MudSlider @bind-Value="Value" Size="@Size" Min="0" Max="1" Step="0.05" Variant="Variant.Filled" Disabled="Disabled" >
                     <MudText Typo="Typo.caption">
                         @Name
                     </MudText>
                 </MudSlider>
-            </MudItem>
-        }
+            </MudTooltip>
+        </MudItem>
+    }
 
-        @if (Score is not null)
-        {
-            <MudItem xs="12">
-                <MudProgressLinear Color="Color.Tertiary" Size="@Size" Value="@((double)Score)" Max="1.0">
-                    <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", Score * 100))%</MudText>
-                </MudProgressLinear>
-            </MudItem>
-        }
-    </MudGrid>
-</MudTooltip>
+    @if (Score is not null)
+    {
+        <MudItem xs="12">
+            <MudProgressLinear Color="Color.Tertiary" Size="@Size" Value="@((double)Score)" Max="1.0">
+                <MudText Typo="Typo.caption">@(String.Format("{0:0.00}", Score * 100))%</MudText>
+            </MudProgressLinear>
+        </MudItem>
+    }
+</MudGrid>
 
 @code {
     protected double _value;
