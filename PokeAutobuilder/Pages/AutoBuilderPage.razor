@@ -311,18 +311,18 @@
     </MudGrid>
 
     <div class="mud-width-full d-flex justify-center">
-        <MudButtonGroup OverrideStyles="false">
+        <MudStack Row="true">
             @if (Generating)
             {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" Class="px-2" OnClick="OnClickStop">Stop</MudButton>
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" Size="Size.Large" OnClick="OnClickStop">Stop</MudButton>
             }
             else
             {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Class="px-2" OnClick="OnClickGenerate" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerate" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
             }
-            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Class="px-2" OnClick="OnClickReset">Reset</MudButton>
-            <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Class="px-2" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
-        </MudButtonGroup>
+            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickReset">Reset</MudButton>
+            <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Size="Size.Large" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
+        </MudStack>
     </div>
 
     @if (Generating)
