@@ -1,4 +1,5 @@
 ﻿using Accord.IO;
+using AutoBuilder;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using Microsoft.VisualBasic;
@@ -28,6 +29,7 @@ namespace PokeAutobuilder.Source.Services
         private static readonly string POKEMON_TYPES_KEY = "pokemon_types";
         private static readonly string POKEMON_STORAGE_KEY = "pokemon_storage";
         private static readonly string TEAM_STORAGE_KEY = "pokemon_team_storage";
+        private static readonly string AUTOBUILDER_PARAMS = "autobuilder_params";
 
         private List<PokeApiNet.Type> _allTypes = [];
         public List<PokeApiNet.Type> AllTypes
@@ -58,6 +60,17 @@ namespace PokeAutobuilder.Source.Services
             {
                 _teamStorage = value;
                 _ = SetTeamStorageAsync(value);
+            }
+        }
+
+        private AutoBuilderWeightings _autoBuilderParams = new();
+        public AutoBuilderWeightings AutoBuilderParams
+        {
+            get => _autoBuilderParams;
+            set
+            {
+                _autoBuilderParams = value;
+                _ = SetAutoBuilderParamsAsync(value);
             }
         }
 
@@ -109,6 +122,36 @@ namespace PokeAutobuilder.Source.Services
 
                 // load team storage
                 _teamStorage = await _localStorageService.GetItemAsync<List<PokemonTeam>>(TEAM_STORAGE_KEY) is { } teamStorage ? teamStorage : [];
+
+                // load autobuilder params
+                _autoBuilderParams = await _localStorageService.GetItemAsync<AutoBuilderWeightings>(AUTOBUILDER_PARAMS) is { } weightings ? weightings : new(
+                    AutoBuilderWeightings.MakeDefaultTypeWeightings()
+                    , resistanceAll: 0.5
+                    , resistanceBalance: 0.5
+                    , resistanceAmount: 0.5
+
+                    , weaknessBalance: 0.5
+                    , weaknessAmount: 0.5
+
+                    , stabAll: 0.5
+                    , stabBalance: 0.5
+                    , stabAmount: 0.5
+
+                    , moveSetAll: 0.5
+                    , moveSetBalance: 0.5
+                    , moveSetAmount: 0.5
+
+                    , coverageOnOffensive: 0.0
+                    , resistancesOnDefensive: 0.0
+
+                    , baseStatTotal: 0.5
+                    , baseStatHp: 0.5
+                    , baseStatAtt: 0.5
+                    , baseStatDef: 0.5
+                    , baseStatSpAtt: 0.5
+                    , baseStatSpDef: 0.5
+                    , baseStatSpe: 0.5
+                );
             }
             catch (Exception ex)
             {                
@@ -252,6 +295,12 @@ namespace PokeAutobuilder.Source.Services
                 await SetTeamStorageAsync(TeamStorage);
 
             return removed;
+        }
+
+        public async Task SetAutoBuilderParamsAsync(AutoBuilderWeightings weightings)
+        {
+            _autoBuilderParams = weightings;
+            await _localStorageService.SetItemAsync(AUTOBUILDER_PARAMS, weightings);
         }
     }
 }

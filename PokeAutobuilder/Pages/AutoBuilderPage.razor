@@ -395,34 +395,7 @@
     private double? GABestChromFitness = 0;
     private double BestOverallFitness = 0;
 
-    public AutoBuilderWeightings GenerationParameters = new(
-            AutoBuilderWeightings.MakeDefaultTypeWeightings()
-            , resistanceAll: 0.5
-            , resistanceBalance: 0.5
-            , resistanceAmount: 0.5
-
-            , weaknessBalance: 0.5
-            , weaknessAmount: 0.5
-
-            , stabAll: 0.5
-            , stabBalance: 0.5
-            , stabAmount: 0.5
-
-            , moveSetAll: 0.5
-            , moveSetBalance: 0.5
-            , moveSetAmount: 0.5
-
-            , coverageOnOffensive: 0.0
-            , resistancesOnDefensive: 0.0
-
-            , baseStatTotal: 0.5
-            , baseStatHp: 0.5
-            , baseStatAtt: 0.5
-            , baseStatDef: 0.5
-            , baseStatSpAtt: 0.5
-            , baseStatSpDef: 0.5
-            , baseStatSpe: 0.5
-    );
+    public AutoBuilderWeightings GenerationParameters = new();
 
     protected override bool ShouldRender()
     {
@@ -437,11 +410,8 @@
             registration =
                 NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
 
-            // load the parameters from the current session
-            if (Session.AutobuilderParams is not null)
-            {
-                GenerationParameters = Session.AutobuilderParams;
-            }
+            // load the parameters from the profile
+            GenerationParameters = Profile.AutoBuilderParams;
 
             // set generation ran callback event
             GeneticAlgorithm.GenerationRan += HandleGenerationRan;
@@ -453,7 +423,7 @@
     private ValueTask OnLocationChanging(LocationChangingContext context)
     {
         GeneticAlgorithm.Stop();
-        _ = Session.SetAutobuilderParamsAsync(GenerationParameters);
+        _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
         return ValueTask.CompletedTask;
     }
 
@@ -463,6 +433,8 @@
         {
             SelectedBox = Profile.PokemonStorage.Boxes.FirstOrDefault();
         }
+
+        GenerationParameters = Profile.AutoBuilderParams;
 
         return base.OnParametersSetAsync();
     }
@@ -481,6 +453,9 @@
         GenerationsRan = 0;
         ProgressValue = 0;
         BestOverallFitness = 0;
+
+        // save the params into local storage
+        _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
 
         AutoBuilderWeightings weightingsCopy = new(GenerationParameters);
 
@@ -518,7 +493,7 @@
     public async Task OnClickLoadIntoEditorAsync()
     {
         await Session.SetTeamAsync(BestTeam);
-        await Session.SetAutobuilderParamsAsync(GenerationParameters);
+        await Profile.SetAutoBuilderParamsAsync(GenerationParameters);
 
         NavigationManager.NavigateTo("/");
     }

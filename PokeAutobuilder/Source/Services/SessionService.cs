@@ -32,17 +32,6 @@ namespace PokeAutobuilder.Source.Services
             }
         }
 
-        private AutoBuilderWeightings? _autobuilderParams = new();
-        public AutoBuilderWeightings? AutobuilderParams
-        {
-            get => _autobuilderParams;
-            set
-            {
-                if (value is not null)
-                    _ = SetAutobuilderParamsAsync(value);
-            }
-        }
-
         private string _searchLocation = "National Pokédex";
         public string SearchLocation
         {
@@ -79,7 +68,6 @@ namespace PokeAutobuilder.Source.Services
                     _pokemonTeam.Pokemon.Add(null);
                 }
             }
-            _autobuilderParams = taskAutobuilderParams.Result ?? null;
             _searchLocation = taskSearchLocation.Result ?? "National Pokédex";
         }
 
@@ -109,12 +97,6 @@ namespace PokeAutobuilder.Source.Services
 
             Team.Pokemon[index] = pokemon;
             await SetTeamAsync(Team);
-        }
-
-        public async Task SetAutobuilderParamsAsync(AutoBuilderWeightings autobuilderParams)
-        {
-            _autobuilderParams = autobuilderParams;
-            await _sessionStorageService.SetItemAsync(AUTOBUILDER_PARAMS, autobuilderParams);
         }
 
         public async Task SetSearchLocationAsync(string searchLocation)

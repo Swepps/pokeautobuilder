@@ -36,36 +36,36 @@ namespace AutoBuilder
             , double baseStatSpe = 1.0)
     {
         // resistances
-        public double ResistanceAll = resistanceAll;
-		public double ResistanceBalance = resistanceBalance;
-        public double ResistanceAmount = resistanceAmount;
+        public double ResistanceAll         { get; set; } = resistanceAll;
+		public double ResistanceBalance     { get; set; } = resistanceBalance;
+        public double ResistanceAmount      { get; set; } = resistanceAmount;
 
         // weaknesses
-        public double WeaknessAmount = weaknessAmount;
-		public double WeaknessBalance = weaknessBalance;
+        public double WeaknessAmount    { get; set; } = weaknessAmount;
+		public double WeaknessBalance   { get; set; } = weaknessBalance;
 
         // STAB
-        public double StabAll = stabAll;
-        public double StabBalance = stabBalance;
-        public double StabAmount = stabAmount;
+        public double StabAll           { get; set; } = stabAll;
+        public double StabBalance       { get; set; } = stabBalance;
+        public double StabAmount        { get; set; } = stabAmount;
 
         // Moves
-        public double MoveSetAll = moveSetAll;
-		public double MoveSetBalance = moveSetBalance;
-        public double MoveSetAmount = moveSetAmount;
+        public double MoveSetAll        { get; set; } = moveSetAll;
+		public double MoveSetBalance    { get; set; } = moveSetBalance;
+        public double MoveSetAmount     { get; set; } = moveSetAmount;
 
         // misc weightings
-		public double CoverageOnOffensive = coverageOnOffensive;
-		public double ResistancesOnDefensive = resistancesOnDefensive;
+		public double CoverageOnOffensive       { get; set; } = coverageOnOffensive;
+		public double ResistancesOnDefensive    { get; set; } = resistancesOnDefensive;
 
         // base stats
-		public double BaseStatTotal = baseStatTotal; // scales other stat weightings
-		public double BaseStatHp = baseStatHp;
-		public double BaseStatAtt = baseStatAtt;
-		public double BaseStatDef = baseStatDef;
-		public double BaseStatSpAtt = baseStatSpAtt;
-		public double BaseStatSpDef = baseStatSpDef;
-		public double BaseStatSpe = baseStatSpe;
+		public double BaseStatTotal     { get; set; } = baseStatTotal; // scales other stat weightings
+		public double BaseStatHp        { get; set; } = baseStatHp;
+		public double BaseStatAtt       { get; set; } = baseStatAtt;
+		public double BaseStatDef       { get; set; } = baseStatDef;
+		public double BaseStatSpAtt     { get; set; } = baseStatSpAtt;
+		public double BaseStatSpDef     { get; set; } = baseStatSpDef;
+		public double BaseStatSpe       { get; set; } = baseStatSpe;
 
         public Dictionary<string, bool> Types = typeWeightings;
 
