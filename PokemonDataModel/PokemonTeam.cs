@@ -79,6 +79,19 @@ namespace PokemonDataModel
                 .Count() != Pokemon.Count(p => p != null);
         }
 
+        // does this pokemon team share identical pokemon to the other team
+        public bool IsSameTeam(PokemonTeam other)
+        {
+            if (CountPokemon() != other.CountPokemon()) return false;
+
+            foreach (SmartPokemon? p in Pokemon)
+            {
+                if (!other.Pokemon.Contains(p)) return false;
+            }
+
+            return true;
+        }
+
         public int CountMegaPokemon()
         {
             return Pokemon.Count(p => p != null && p.IsMega);
@@ -174,18 +187,15 @@ namespace PokemonDataModel
 
 		public void SortById()
         {
-            // order any non null members into a new list
-            List<SmartPokemon?> team = Pokemon.Where(p => p is not null).OrderBy(p => p!.Id).ToList();
-
             // now empty this team and refill with sorted list
-            Pokemon.Clear();
-            for (int i = 0; i < Pokemon.Count; ++i)
+            Pokemon.Sort((a, b) =>
             {
-                if (i < team.Count)
-                    Pokemon.Add(team[i]);
-                else
-                    Pokemon.Add(null);
-            }
+                if (a == null && b == null) return 0;
+                if (a == null) return 1;
+                if (b == null) return -1;
+
+                return a.Id.CompareTo(b.Id);
+            });
         }
 
         public override string ToString()

@@ -289,7 +289,7 @@
                                 {
                                     <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
                                 }
-                                <PokemonCard Pokemon="p" />
+                                <PokemonMiniCard Pokemon="p" />
                             </MudPaper>
                         </MudItem>
                     }
@@ -302,12 +302,13 @@
                 }
             </MudGrid>
         </MudItem>
-        @if (!BestTeam.IsEmpty)
+        @* Commented out the stats for now cos they're laggy *@
+@*         @if (!BestTeam.IsEmpty)
         {
             <MudItem xs="12">
                 <StatsTeamPanel Team="BestTeam" />
             </MudItem>
-        }
+        } *@
     </MudGrid>
 
     <div class="mud-width-full d-flex justify-center">
@@ -329,6 +330,22 @@
     {
         <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
     }
+
+    @if (UniqueTeamsSorted.Count > 0)
+    {
+        <MudStack>
+
+        @foreach ((double fitness, PokemonTeam team) in UniqueTeamsSorted)
+        {
+            <MudPaper Outlined="true" Class="ma-1" Style="background: var(--mud-palette-background); width: fit-content;">
+                <MudText Typo="Typo.caption">Fitness = @(fitness)</MudText>
+                <PokemonTeamCard Team="team" />
+            </MudPaper>
+        }
+
+        </MudStack>
+    }
+
 </MudStack>
 
 <PageFooter />
@@ -351,6 +368,7 @@
 
     private PokemonTeamGeneticAlgorithm GeneticAlgorithm = new PokemonTeamGeneticAlgorithm();
     private PokemonTeam BestTeam = new PokemonTeam();
+    private List<Tuple<double, PokemonTeam>> UniqueTeamsSorted = new();
     private AutoBuilderWeightings? BestTeamScore;
     private bool _renderDuringGenerating = true;
 
@@ -392,7 +410,7 @@
     private int NumGenerations = 50;
     private int PopulationSize = 250;
 
-    private double? GABestChromFitness = 0;
+    private double GABestChromFitness = 0;
     private double BestOverallFitness = 0;
 
     public AutoBuilderWeightings GenerationParameters = new();
@@ -453,6 +471,7 @@
         GenerationsRan = 0;
         ProgressValue = 0;
         BestOverallFitness = 0;
+        UniqueTeamsSorted.Clear();
 
         // save the params into local storage
         _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
@@ -486,7 +505,12 @@
 
     public void OnClickReset()
     {
+        BestTeam.Pokemon.Clear();
         BestTeamScore = null;
+        UniqueTeamsSorted.Clear();
+        GenerationsRan = 0;
+        ProgressValue = 0;
+        BestOverallFitness = 0;
         StateHasChanged();
     }
 
@@ -536,7 +560,23 @@
             return;
 
         PokemonTeam GeneratedTeam = geneticAlgorithm.BestChromosome.GetTeam();
-        GABestChromFitness = geneticAlgorithm.BestChromosome.Fitness;
+        SortGeneratedTeam(ref GeneratedTeam);
+
+        GABestChromFitness = geneticAlgorithm.BestChromosome.Fitness.GetValueOrDefault();
+
+        if (!UniqueTeamsSorted.Any((tuple) => { return tuple.Item2.IsSameTeam(GeneratedTeam); }))
+        {
+            int insertIndex = UniqueTeamsSorted.FindIndex(tuple => tuple.Item1 <= GABestChromFitness);
+
+            if (insertIndex == -1)
+            {
+                UniqueTeamsSorted.Add(new Tuple<double, PokemonTeam>(GABestChromFitness, GeneratedTeam));
+            }
+            else
+            {
+                UniqueTeamsSorted.Insert(insertIndex, new Tuple<double, PokemonTeam>(GABestChromFitness, GeneratedTeam));
+            }
+        }
 
         _renderDuringGenerating = false;
 
@@ -553,16 +593,38 @@
 
         GenerationsRan++;
 
-        if (GenerationsRan % 5 == 0)
+        if ((GenerationsRan % (NumGenerations/50)) == 0)
         {
             ProgressValue = GenerationsRan;
             _renderDuringGenerating = true;
-            if (ProgressValue >= NumGenerations)
-            {
-                OnClickStop();
-            }
+        }
+
+        if (ProgressValue >= NumGenerations)
+        {
+            ProgressValue = GenerationsRan;
+            _renderDuringGenerating = true;
+            OnClickStop();
         }
 
         StateHasChanged();
+    }
+
+    private void SortGeneratedTeam(ref PokemonTeam generatedTeam)
+    {
+        var locked = generatedTeam.Pokemon.Where(p => p != null && _lockedPokemon.Contains(p)).ToList();
+
+        var unlocked = generatedTeam.Pokemon
+            .Where(p => p == null || !_lockedPokemon.Contains(p))
+            .ToList();
+
+        unlocked.Sort((a, b) =>
+        {
+            if (a == null && b == null) return 0;
+            if (a == null) return 1;
+            if (b == null) return -1;
+            return a.Id.CompareTo(b.Id);
+        });
+
+        generatedTeam.Pokemon = locked.Concat(unlocked).ToList();
     }
 }
