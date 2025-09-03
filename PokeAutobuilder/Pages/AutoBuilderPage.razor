@@ -333,17 +333,39 @@
 
     @if (UniqueTeamsSorted.Count > 0)
     {
-        <MudStack>
+        <MudExpansionPanels MultiExpansion="true">
+            <MudExpansionPanel Text="Generation Graph" Expanded="true">
+                <ApexCharts.ApexChart @ref="_chart" TItem="GenerationDataPoint" Title="" Options="_options">
+                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                Name="Highest Fitness"
+                                                XValue="@(e => e.GenerationNumber)"
+                                                YValue="@(e => (int)Math.Round(BestOverallFitness * 1000))"
+                                                SeriesType="ApexCharts.SeriesType.Line"
+                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
 
-        @foreach ((double fitness, PokemonTeam team) in UniqueTeamsSorted)
-        {
-            <MudPaper Outlined="true" Class="ma-1" Style="background: var(--mud-palette-background); width: fit-content;">
-                <MudText Typo="Typo.caption">Fitness = @(fitness)</MudText>
-                <PokemonTeamCard Team="team" />
-            </MudPaper>
-        }
+                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                Name="Fitness"
+                                                XValue="@(e => e.GenerationNumber)"
+                                                YValue="@(e => (int)Math.Round(e.Fitness))"
+                                                SeriesType="ApexCharts.SeriesType.Line"
+                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#b8b8b8", DashSpace = 4, Width = 2 })" />
 
-        </MudStack>
+                    
+                </ApexCharts.ApexChart>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Alternate Teams" Expanded="false">
+
+            @foreach ((double fitness, PokemonTeam team) in UniqueTeamsSorted)
+            {
+                <MudPaper Outlined="true" Class="ma-1" Style="background: var(--mud-palette-background); width: fit-content;">
+                    <MudText Typo="Typo.caption">Fitness = @(fitness)</MudText>
+                    <PokemonTeamCard Team="team" />
+                </MudPaper>
+            }
+
+            </MudExpansionPanel>
+        </MudExpansionPanels>
     }
 
 </MudStack>
@@ -415,6 +437,52 @@
 
     public AutoBuilderWeightings GenerationParameters = new();
 
+    private class GenerationDataPoint
+    {
+        public int GenerationNumber;
+        public double Fitness;
+    }
+
+    private List<GenerationDataPoint> _generationData = [];
+
+    private ApexCharts.ApexChart<GenerationDataPoint>? _chart;
+
+    private ApexCharts.ApexChartOptions<GenerationDataPoint> _options = new()
+    {
+        Title = new ApexCharts.Title()
+        {
+            Style = new ApexCharts.TitleStyle()
+            {
+                FontFamily = "var(--mud-typography-subtitle1-family)",
+                FontWeight = "normal",
+                FontSize = "1rem",
+            },
+
+            Align = ApexCharts.Align.Center,
+            OffsetY = 25,
+        },
+
+        Chart = new ApexCharts.Chart()
+        {
+            Toolbar = new ApexCharts.Toolbar
+            {
+                Show = false
+            },
+            Background = "transparent",
+            FontFamily = "var(--mud-typography-subtitle1-family);",
+            Width = "100%",
+            Height = "100%",
+        },
+
+        PlotOptions = new ApexCharts.PlotOptions()
+        {
+            Bar = new ApexCharts.PlotOptionsBar
+            {
+                Horizontal = true,
+            }
+        }
+    };
+
     protected override bool ShouldRender()
     {
         return !Generating
@@ -472,6 +540,7 @@
         ProgressValue = 0;
         BestOverallFitness = 0;
         UniqueTeamsSorted.Clear();
+        _generationData.Clear();
 
         // save the params into local storage
         _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
@@ -508,6 +577,7 @@
         BestTeam.Pokemon.Clear();
         BestTeamScore = null;
         UniqueTeamsSorted.Clear();
+        _generationData.Clear();
         GenerationsRan = 0;
         ProgressValue = 0;
         BestOverallFitness = 0;
@@ -590,6 +660,12 @@
             BestOverallFitness = (double)GABestChromFitness;
             _renderDuringGenerating = true;
         }
+
+        _chart?.AppendDataAsync([new()
+        {
+            GenerationNumber = GenerationsRan
+            , Fitness = GABestChromFitness * 1000
+        }]);
 
         GenerationsRan++;
 
