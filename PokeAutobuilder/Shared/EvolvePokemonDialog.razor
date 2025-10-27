@@ -78,8 +78,11 @@
 
     protected void Submit() 
     {
-        SelectedPokemon!.SelectAbility(Pokemon!.SelectedAbility.Ability.Name);
-        SelectedPokemon.SelectedMoves = Pokemon.SelectedMoves;
+        if (Pokemon!.SelectedAbility is not null)
+        {
+            SelectedPokemon!.SelectAbility(Pokemon!.SelectedAbility.Ability.Name);
+        }
+        SelectedPokemon!.SelectedMoves = Pokemon.SelectedMoves;
         MudDialog!.Close(DialogResult.Ok(SelectedPokemon));
     }
 
