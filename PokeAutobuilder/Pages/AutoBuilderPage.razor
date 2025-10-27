@@ -319,9 +319,9 @@
             }
             else
             {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerate" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerateAsync" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
             }
-            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickReset">Reset</MudButton>
+            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickResetAsync">Reset</MudButton>
             <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Size="Size.Large" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
         </MudStack>
     </div>
@@ -537,13 +537,18 @@
         StateHasChanged();
     }
 
-    public void OnClickGenerate()
+    public async Task OnClickGenerateAsync()
     {
         Generating = true;
         GenerationsRan = 0;
         ProgressValue = 0;
         BestOverallFitness = 0;
         UniqueTeamsSorted.Clear();
+
+        if (_chart is not null)
+        {
+            await _chart.UpdateSeriesAsync(true);
+        }
 
         // save the params into local storage
         _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
@@ -575,11 +580,15 @@
         StateHasChanged();
     }
 
-    public void OnClickReset()
+    public async Task OnClickResetAsync()
     {
         BestTeam.Pokemon.Clear();
         BestTeamScore = null;
         UniqueTeamsSorted.Clear();
+        if (_chart is not null)
+        {
+            await _chart.UpdateSeriesAsync(true);
+        }
         GenerationsRan = 0;
         ProgressValue = 0;
         BestOverallFitness = 0;
