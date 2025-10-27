@@ -331,42 +331,43 @@
         <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
     }
 
-    @if (UniqueTeamsSorted.Count > 0)
-    {
-        <MudExpansionPanels MultiExpansion="true">
-            <MudExpansionPanel Text="Generation Graph" Expanded="true">
-                <ApexCharts.ApexChart @ref="_chart" TItem="GenerationDataPoint" Title="" Options="_options">
-                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                                Name="Highest Fitness"
-                                                XValue="@(e => e.GenerationNumber)"
-                                                YValue="@(e => (int)Math.Round(BestOverallFitness * 1000))"
-                                                SeriesType="ApexCharts.SeriesType.Line"
-                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
+    <MudExpansionPanels MultiExpansion="true" hidden="@(UniqueTeamsSorted.Count <= 0)">
+        <MudExpansionPanel Text="Generation Graph" Expanded="true">
+            <ApexCharts.ApexChart @ref="_chart"
+                                  TItem="GenerationDataPoint"
+                                  Title=""
+                                  Options="_options"
+                                  XAxisType="ApexCharts.XAxisType.Numeric">
+                <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                            Name="Highest Fitness"
+                                            XValue="@(e => e.GenerationNumber)"
+                                            YValue="@(e => (int)Math.Round(BestOverallFitness * 1000))"
+                                            SeriesType="ApexCharts.SeriesType.Line"
+                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
 
-                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                                Name="Fitness"
-                                                XValue="@(e => e.GenerationNumber)"
-                                                YValue="@(e => (int)Math.Round(e.Fitness))"
-                                                SeriesType="ApexCharts.SeriesType.Line"
-                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#b8b8b8", DashSpace = 4, Width = 2 })" />
+                <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                            Name="Fitness"
+                                            XValue="@(e => e.GenerationNumber)"
+                                            YValue="@(e => (int)Math.Round(e.Fitness))"
+                                            SeriesType="ApexCharts.SeriesType.Line"
+                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#b8b8b8", DashSpace = 4, Width = 2 })" />
 
-                    
-                </ApexCharts.ApexChart>
-            </MudExpansionPanel>
 
-            <MudExpansionPanel Text="Alternate Teams" Expanded="false">
+            </ApexCharts.ApexChart>
+        </MudExpansionPanel>
+
+        <MudExpansionPanel Text="Alternate Teams" Expanded="false">
 
             @foreach ((double fitness, PokemonTeam team) in UniqueTeamsSorted)
             {
                 <MudPaper Outlined="true" Class="ma-1" Style="background: var(--mud-palette-background); width: fit-content;">
-                    <MudText Typo="Typo.caption">Fitness = @(fitness)</MudText>
+                    <MudText Typo="Typo.caption">Fitness = @((int)(fitness * 1000))</MudText>
                     <PokemonTeamCard Team="team" />
                 </MudPaper>
             }
 
-            </MudExpansionPanel>
-        </MudExpansionPanels>
-    }
+        </MudExpansionPanel>
+    </MudExpansionPanels>
 
 </MudStack>
 
@@ -443,8 +444,6 @@
         public double Fitness;
     }
 
-    private List<GenerationDataPoint> _generationData = [];
-
     private ApexCharts.ApexChart<GenerationDataPoint>? _chart;
 
     private ApexCharts.ApexChartOptions<GenerationDataPoint> _options = new()
@@ -480,6 +479,11 @@
             {
                 Horizontal = true,
             }
+        },
+
+        Xaxis = new ApexCharts.XAxis()
+        {
+            DecimalsInFloat = 0,
         }
     };
 
@@ -540,7 +544,6 @@
         ProgressValue = 0;
         BestOverallFitness = 0;
         UniqueTeamsSorted.Clear();
-        _generationData.Clear();
 
         // save the params into local storage
         _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
@@ -577,7 +580,6 @@
         BestTeam.Pokemon.Clear();
         BestTeamScore = null;
         UniqueTeamsSorted.Clear();
-        _generationData.Clear();
         GenerationsRan = 0;
         ProgressValue = 0;
         BestOverallFitness = 0;
@@ -661,15 +663,18 @@
             _renderDuringGenerating = true;
         }
 
-        _chart?.AppendDataAsync([new()
-        {
-            GenerationNumber = GenerationsRan
-            , Fitness = GABestChromFitness * 1000
-        }]);
-
         GenerationsRan++;
 
-        if ((GenerationsRan % (NumGenerations/50)) == 0)
+        if (_chart is not null)
+        {
+            _chart.AppendDataAsync([new()
+            {
+                GenerationNumber = GenerationsRan
+                , Fitness = GABestChromFitness * 1000
+            }]);
+        }
+
+        if ((GenerationsRan % (NumGenerations/Math.Min(50, NumGenerations))) == 0)
         {
             ProgressValue = GenerationsRan;
             _renderDuringGenerating = true;
