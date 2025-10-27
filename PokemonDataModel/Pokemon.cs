@@ -94,7 +94,7 @@ namespace PokemonDataModel
             GameIndicies = pokemon.GameIndicies;
             HeldItems = pokemon.HeldItems;
             LocationAreaEncounters = pokemon.LocationAreaEncounters;
-            Moves = pokemon.Moves; // load this later because it's huge
+            Moves = []; // load this later because it's huge
             PastTypes = pokemon.PastTypes;
             Sprites = pokemon.Sprites;
             Species = pokemon.Species;

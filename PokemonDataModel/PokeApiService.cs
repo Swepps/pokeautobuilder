@@ -24,7 +24,8 @@ namespace PokemonDataModel
         {
             List<Type> pokemonTypes = new List<Type>();
 
-            NamedApiResourceList<Type> allTypesPage = await ApiClient.GetNamedResourcePageAsync<Type>();
+            NamedApiResourceList<Type> allTypesPage =
+                await ApiClient.GetNamedResourcePageAsync<Type>();
             foreach (NamedApiResource<Type> res in allTypesPage.Results)
             {
                 Type type = await ApiClient.GetResourceAsync(res);
@@ -44,7 +45,9 @@ namespace PokemonDataModel
             return await ApiClient.GetNamedResourcePageAsync<VersionGroup>(100, 0);
         }
 
-        public async Task<VersionGroup> GetVersionGroupAsync(NamedApiResource<VersionGroup> apiResource)
+        public async Task<VersionGroup> GetVersionGroupAsync(
+            NamedApiResource<VersionGroup> apiResource
+        )
         {
             return await ApiClient.GetResourceAsync(apiResource);
         }
@@ -62,6 +65,7 @@ namespace PokemonDataModel
 
             return null;
         }
+
         public async Task<Pokedex?> GetPokedexAsync(int i)
         {
             try
@@ -103,6 +107,7 @@ namespace PokemonDataModel
                 return null;
             }
         }
+
         public async Task<PokemonSpecies?> GetPokemonSpeciesAsync(SmartPokemon pokemon)
         {
             try
@@ -116,11 +121,14 @@ namespace PokemonDataModel
                 return null;
             }
         }
+
         public async Task<PokemonSpecies?> GetPokemonSpeciesAsync(string speciesName)
         {
             try
             {
-                PokemonSpecies species = await ApiClient.GetResourceAsync<PokemonSpecies>(speciesName);
+                PokemonSpecies species = await ApiClient.GetResourceAsync<PokemonSpecies>(
+                    speciesName
+                );
                 return species;
             }
             catch (Exception ex)
@@ -146,6 +154,7 @@ namespace PokemonDataModel
                 return null;
             }
         }
+
         public async Task<SmartPokemon?> GetPokemonAsync(int pokedexId)
         {
             try
@@ -196,11 +205,32 @@ namespace PokemonDataModel
         {
             try
             {
-                Pokemon p = await ApiClient.GetResourceAsync<Pokemon>(pokemon.Id);
-                if (p is null)
-                    return [];
+                List<int> evolvedIds = [];
 
-                return p.Moves;
+                PokemonSpecies species = await pokemon.GetSpeciesAsync();
+                evolvedIds.Add(species.Id);
+                while (species.EvolvesFromSpecies is not null)
+                {
+                    PokemonSpecies prevSpecies = await ApiClient.GetResourceAsync(
+                        species.EvolvesFromSpecies
+                    );
+                    evolvedIds.Add(prevSpecies.Id);
+
+                    species = prevSpecies;
+                }
+
+                HashSet<PokemonMove> moves = new(new ComparePokemonMoves());
+
+                foreach (int id in evolvedIds)
+                {
+                    Pokemon p = await ApiClient.GetResourceAsync<Pokemon>(id);
+                    if (p is not null)
+                    {
+                        moves.UnionWith(p.Moves);
+                    }
+                }
+
+                return [.. moves];
             }
             catch (Exception ex)
             {
@@ -209,22 +239,22 @@ namespace PokemonDataModel
             }
         }
 
-		public async Task<Type?> GetTypeAsync(string typeName)
-		{
-			try
-			{
-				Type type = await ApiClient.GetResourceAsync<Type>(typeName);
+        public async Task<Type?> GetTypeAsync(string typeName)
+        {
+            try
+            {
+                Type type = await ApiClient.GetResourceAsync<Type>(typeName);
 
-				return type;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex);
-				return null;
-			}
-		}
+                return type;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
 
-		public async Task<List<Type>> GetPokemonTypesAsync(Pokemon pokemon)
+        public async Task<List<Type>> GetPokemonTypesAsync(Pokemon pokemon)
         {
             List<Type> types = new List<Type>();
 
@@ -274,52 +304,58 @@ namespace PokemonDataModel
             if (parentLink.Species.Name == speciesName)
                 return parentLink;
 
-            ChainLink? chainLink = parentLink.EvolvesTo.FirstOrDefault((c) => c.Species.Name == speciesName);
-			if (chainLink is not null)
+            ChainLink? chainLink = parentLink.EvolvesTo.FirstOrDefault(
+                (c) => c.Species.Name == speciesName
+            );
+            if (chainLink is not null)
                 return chainLink;
 
             foreach (ChainLink childLink in parentLink.EvolvesTo)
             {
-				chainLink = FindPokemonChainLink(childLink, speciesName);
+                chainLink = FindPokemonChainLink(childLink, speciesName);
                 if (chainLink is not null)
                     return chainLink;
-			}
+            }
 
             return null;
         }
 
-		public async Task<List<SmartPokemon>> GetNextEvolutions(SmartPokemon pokemon)
-		{
+        public async Task<List<SmartPokemon>> GetNextEvolutions(SmartPokemon pokemon)
+        {
             List<SmartPokemon> result = [];
-			try
-			{
+            try
+            {
                 PokemonSpecies species = await pokemon.GetSpeciesAsync();
-				EvolutionChain chain = await ApiClient.GetResourceAsync(species.EvolutionChain);
+                EvolutionChain chain = await ApiClient.GetResourceAsync(species.EvolutionChain);
 
                 ChainLink? chainLink = FindPokemonChainLink(chain.Chain, species.Name);
                 if (chainLink is not null)
                 {
                     foreach (ChainLink evolution in chainLink.EvolvesTo)
                     {
-                        PokemonSpecies? evolvedSpecies = await GetPokemonSpeciesAsync(evolution.Species.Name);
+                        PokemonSpecies? evolvedSpecies = await GetPokemonSpeciesAsync(
+                            evolution.Species.Name
+                        );
                         if (evolvedSpecies is not null)
                         {
-                            SmartPokemon? evolvedPokemon = await GetPokemonAsync(evolvedSpecies.Varieties[0].Pokemon.Name);
+                            SmartPokemon? evolvedPokemon = await GetPokemonAsync(
+                                evolvedSpecies.Varieties[0].Pokemon.Name
+                            );
                             if (evolvedPokemon is not null)
                             {
                                 result.Add(evolvedPokemon);
                             }
-                        }                        
+                        }
                     }
                 }
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex);
-			}
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
 
             return result;
-		}
+        }
 
         public async Task<bool> CanEvolve(SmartPokemon pokemon)
         {
@@ -344,5 +380,18 @@ namespace PokemonDataModel
 
             return false;
         }
-	}
+
+        internal class ComparePokemonMoves : IEqualityComparer<PokemonMove>
+        {
+            public bool Equals(PokemonMove? x, PokemonMove? y)
+            {
+                return x?.Move.Name == y?.Move.Name;
+            }
+
+            public int GetHashCode(PokemonMove move)
+            {
+                return move.Move.Name.GetHashCode();
+            }
+        }
+    }
 }
