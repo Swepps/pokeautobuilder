@@ -247,11 +247,8 @@
         int teamIndex = cards.IndexOf(card);
         if (teamIndex >= 0 && teamIndex < PokemonTeam.MaxTeamSize)
         {
-            if (Session.Team.Pokemon[teamIndex] != card.Pokemon)
-            {
-                // this function call will trigger OnTeamChanged event
-                await Session.SetTeamPokemonAsync(teamIndex, card.Pokemon);
-            }
+            // this function call will trigger OnTeamChanged event
+            await Session.SetTeamPokemonAsync(teamIndex, card.Pokemon);
         }
     }
 

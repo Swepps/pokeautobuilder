@@ -270,6 +270,10 @@
             {
                 await Profile.UpdatePokemonStorageAsync();
             }
+
+            // fire and forget
+            _ = Session.UpdatePokemonTeamAsync();
+
             StateHasChanged();
         }
     }
