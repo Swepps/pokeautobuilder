@@ -6,7 +6,7 @@
 	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
 		@foreach (SmartPokemon? p in PokemonCollection!)
 		{
-			<PokemonMiniCard Pokemon="p" OnClick="OnClickPokemonCard" Variant="@(SelectedPokemon == p ? Variant.Outlined : Variant.Filled)"/>
+			<PokemonMiniCard Pokemon="p" OnClick="OnClickPokemonCard" Variant="@(SelectedPokemon is not null && SelectedPokemon.Contains(p) ? Variant.Outlined : Variant.Filled)" />
 		}
 	</div>
 </MudPaper>
@@ -19,7 +19,7 @@
 	public EventCallback<SmartPokemon> OnClickPokemon { get; set; }
 
 	[CascadingParameter]
-	public SmartPokemon? SelectedPokemon { get; set; }
+	public List<SmartPokemon>? SelectedPokemon { get; set; }
 
 	public Task OnClickPokemonCard(SmartPokemon pokemon)
 	{

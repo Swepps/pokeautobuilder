@@ -353,11 +353,8 @@
     {
         if (firstRender)
         {
-            // load the parameters from the current session
-            if (Session.AutobuilderParams is not null)
-            {
-                GenerationParameters = Session.AutobuilderParams;
-            }
+            // load the parameters from the profile
+            GenerationParameters = Profile.AutoBuilderParams;
 
             // set generation ran callback event
             GeneticAlgorithm.GenerationRan += HandleGenerationRan;
@@ -439,7 +436,7 @@
             }
         }
         await Session.SetTeamAsync(outputTeam);
-        await Session.SetAutobuilderParamsAsync(GenerationParameters);
+        await Profile.SetAutoBuilderParamsAsync(GenerationParameters);
         MudDialog!.Close(DialogResult.Ok(true));
     }
 
@@ -476,7 +473,7 @@
     async Task Submit() 
     {
         GeneticAlgorithm.Stop();
-        await Session.SetAutobuilderParamsAsync(GenerationParameters);
+        await Profile.SetAutoBuilderParamsAsync(GenerationParameters);
         MudDialog!.Close(DialogResult.Ok(true)); 
     }
     void Cancel() 

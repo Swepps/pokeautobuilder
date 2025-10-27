@@ -20,4 +20,15 @@
 @code {
 	[Parameter]
 	public PokemonTeam? Team { get; set; }
+
+	private PokemonTeam? _prevTeam;
+	private bool _shouldRender = true;
+
+	protected override void OnParametersSet()
+	{
+		_shouldRender = Team != _prevTeam;
+		_prevTeam = Team is null ? null : new PokemonTeam(Team);
+	}
+
+	protected override bool ShouldRender() => _shouldRender;
 }

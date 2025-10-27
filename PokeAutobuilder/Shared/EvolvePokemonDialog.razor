@@ -25,7 +25,7 @@
                 {
                     <MudText Typo="Typo.h6">@(Pokemon!.ToString()) evolutions</MudText>
                     <MudPaper Class="pa-1 d-flex" Elevation="0" Square="true">
-                        <CascadingValue Value="@SelectedPokemon">
+                        <CascadingValue Value="@_selectedPokemonList" Name="SelectedPokemon">
                             <PokemonStorageBox PokemonCollection="_evolutions" OnClickPokemon="OnSelectPokemon" />
                         </CascadingValue>
                     </MudPaper>
@@ -49,6 +49,7 @@
     private List<SmartPokemon> _evolutions = [];
     private bool _noEvolutions = false;
 
+    private List<SmartPokemon> _selectedPokemonList = [];
     private SmartPokemon? _selectedPokemon;
     public SmartPokemon? SelectedPokemon
     {
@@ -56,6 +57,8 @@
         set
         {
             _selectedPokemon = value;
+            _selectedPokemonList.Clear();
+            if (value is not null) _selectedPokemonList.Add(value);
         }
     }
 
@@ -75,8 +78,11 @@
 
     protected void Submit() 
     {
-        SelectedPokemon!.SelectAbility(Pokemon!.SelectedAbility.Ability.Name);
-        SelectedPokemon.SelectedMoves = Pokemon.SelectedMoves;
+        if (Pokemon!.SelectedAbility is not null)
+        {
+            SelectedPokemon!.SelectAbility(Pokemon!.SelectedAbility.Ability.Name);
+        }
+        SelectedPokemon!.SelectedMoves = Pokemon.SelectedMoves;
         MudDialog!.Close(DialogResult.Ok(SelectedPokemon));
     }
 

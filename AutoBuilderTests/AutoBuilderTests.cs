@@ -351,5 +351,74 @@ namespace PokeAutobuilderTests
             Assert.True(bestTeam.Pokemon[2] == spearow);
             Assert.True(bestTeam.Pokemon[3] == gliscor);
         }
+
+        [Fact]
+        public async Task OnlyOneMegaEvolved()
+        {
+            PokemonBox box = new();
+            // add a selection of "bad" pokemon
+            box.Pokemon.Add((await apiService!.GetPokemonAsync("rattata"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("wurmple"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("pidgey"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("zigzagoon"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("magikarp"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("whismur"))!);
+            box.Pokemon.Add((await apiService.GetPokemonAsync("spearow"))!);
+
+            // add 2 mega-evolved pokemon. only one should be added to the team
+            SmartPokemon megaGarchomp = (await apiService.GetPokemonAsync("garchomp-mega"))!;
+            SmartPokemon megaCharizard = (await apiService.GetPokemonAsync("charizard-mega-y"))!;
+
+            // add 4 other good pokemon to fill the space of a "good" team
+            SmartPokemon gengar = (await apiService.GetPokemonAsync("gengar"))!;
+            SmartPokemon talonflame = (await apiService.GetPokemonAsync("talonflame"))!;
+            SmartPokemon ferrothorn = (await apiService.GetPokemonAsync("ferrothorn"))!;
+            SmartPokemon gliscor = (await apiService.GetPokemonAsync("gliscor"))!;
+
+            box.Pokemon.Add(megaGarchomp);
+            box.Pokemon.Add(megaCharizard);
+            box.Pokemon.Add(gengar);
+            box.Pokemon.Add(talonflame);
+            box.Pokemon.Add(ferrothorn);
+            box.Pokemon.Add(gliscor);
+
+            PokemonTeamGeneticAlgorithm GA = new();
+            AutoBuilderWeightings weightings = new();
+
+            PokemonTeam bestTeam = new();
+            double? bestScore = 0;
+            GA.GenerationRan += (g) =>
+            {
+                if (g.BestChromosome is null)
+                    return;
+
+                if (g.BestChromosome.Fitness > bestScore)
+                {
+                    bestScore = g.BestChromosome.Fitness;
+                    bestTeam = g.BestChromosome.GetTeam();
+                }
+
+                output.WriteLine("{0,-4}|{1,-9:0.000}|{2,-14:0.000}|{3,-30}"
+                    , g.GenerationsNumber
+                    , g.BestChromosome.Fitness
+                    , bestScore
+                    , bestTeam.ToString()
+                    );
+            };
+            output.WriteLine("Gen |G.Fitness|Best Fitness  |Best Team");
+            PokemonTeam lockedMembers = new();
+            for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                lockedMembers.Pokemon.Add(null);
+            }
+            GA.Initialize(250, box, lockedMembers, weightings);
+            GA.Run(50);
+
+            // check that the final team has 6 unique members
+            Assert.False(bestTeam.ContainsDuplicates());
+
+            // check that the algorithm has not chosen both mega-evolved pokemon
+            Assert.True(bestTeam.CountMegaPokemon() <= 1);
+        }
     }
 }
