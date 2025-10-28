@@ -1,12 +1,13 @@
-﻿using Accord.IO;
+﻿using System.Diagnostics.Contracts;
+using System.Runtime.InteropServices;
+using Accord.IO;
+using ApexCharts;
 using AutoBuilder;
 using Blazored.LocalStorage;
 using Blazored.SessionStorage;
 using Microsoft.VisualBasic;
 using PokeApiNet;
 using PokemonDataModel;
-using System.Diagnostics.Contracts;
-using System.Runtime.InteropServices;
 using Utility;
 using static MudBlazor.Colors;
 using static PokeAutobuilder.Pages.TeamBuilderPage;
@@ -16,16 +17,62 @@ namespace PokeAutobuilder.Source.Services
     public record Preferences
     {
         public bool DarkMode { get; init; }
+        public bool AllowMultipleMegas { get; init; }
     }
 
-    public class ProfileService
+    public class ProfileService(
+        ILocalStorageService localStorageService,
+        IApexChartService apexChartService
+    )
     {
-        private readonly ILocalStorageService _localStorageService;
+        private readonly ILocalStorageService _localStorageService = localStorageService;
+        private readonly IApexChartService _apexChartService = apexChartService;
 
         public event Action? OnStorageChange;
         public event Action? OnTeamStorageChange;
+        public event Action? OnPreferencesChange;
+
+        // preferences
+        private Preferences _preferences = new() { DarkMode = true, AllowMultipleMegas = false };
+
+        private void NotifyPrefsChanged() => OnPreferencesChange?.Invoke();
+
+        public bool IsDarkMode
+        {
+            get => _preferences.DarkMode;
+            set
+            {
+                _preferences = _preferences with { DarkMode = value };
+                NotifyPrefsChanged();
+                _ = UpdatePreferencesAsync();
+                _ = _apexChartService.SetGlobalOptionsAsync(
+                    new ApexChartBaseOptions()
+                    {
+                        Theme = new Theme
+                        {
+                            Palette = ApexCharts.PaletteType.Palette7,
+                            Mode = value ? ApexCharts.Mode.Dark : ApexCharts.Mode.Light,
+                        },
+                    },
+                    true
+                );
+            }
+        }
+
+        public bool AllowMultipleMegas
+        {
+            get => _preferences.AllowMultipleMegas;
+            set
+            {
+                _preferences = _preferences with { AllowMultipleMegas = value };
+                NotifyPrefsChanged();
+                _ = UpdatePreferencesAsync();
+            }
+        }
 
         // global variables
+        private static readonly string PREFERENCES_KEY = "preferences";
+        private static readonly string VERSION_KEY = "version";
         private static readonly string POKEMON_TYPES_KEY = "pokemon_types";
         private static readonly string POKEMON_STORAGE_KEY = "pokemon_storage";
         private static readonly string TEAM_STORAGE_KEY = "pokemon_team_storage";
@@ -35,10 +82,7 @@ namespace PokeAutobuilder.Source.Services
         public List<PokeApiNet.Type> AllTypes
         {
             get => _allTypes;
-            set
-            {
-                _ = SetAllTypesAsync(value);
-            }
+            set { _ = SetAllTypesAsync(value); }
         }
 
         private PokemonStorage _pokemonStorage = new();
@@ -74,11 +118,6 @@ namespace PokeAutobuilder.Source.Services
             }
         }
 
-        public ProfileService(ILocalStorageService localStorageService)
-        {
-            _localStorageService = localStorageService;
-        }
-
         public async Task LoadProfileStorage()
         {
             try
@@ -89,7 +128,12 @@ namespace PokeAutobuilder.Source.Services
                 // the types are fresh from the API
                 if (profileStorageVersion == Globals.Version)
                 {
-                    _allTypes = await _localStorageService.GetItemAsync<List<PokeApiNet.Type>>(POKEMON_TYPES_KEY) is { } allTypes ? allTypes : [];
+                    _allTypes = await _localStorageService.GetItemAsync<List<PokeApiNet.Type>>(
+                        POKEMON_TYPES_KEY
+                    )
+                        is { } allTypes
+                        ? allTypes
+                        : [];
                 }
 
                 // if profile doesn't contain pokemon types, generate them
@@ -102,10 +146,12 @@ namespace PokeAutobuilder.Source.Services
                 // load pokemon storage
                 if (profileStorageVersion <= 1.3)
                 {
-                    PokemonBox? box = await _localStorageService.GetItemAsync<PokemonBox>(POKEMON_STORAGE_KEY);
+                    PokemonBox? box = await _localStorageService.GetItemAsync<PokemonBox>(
+                        POKEMON_STORAGE_KEY
+                    );
                     if (box is not null)
                     {
-                        _pokemonStorage.Boxes.Add(box);                                           
+                        _pokemonStorage.Boxes.Add(box);
                     }
                     else if (_pokemonStorage.Boxes.Count == 0)
                     {
@@ -121,40 +167,45 @@ namespace PokeAutobuilder.Source.Services
                 }
 
                 // load team storage
-                _teamStorage = await _localStorageService.GetItemAsync<List<PokemonTeam>>(TEAM_STORAGE_KEY) is { } teamStorage ? teamStorage : [];
+                _teamStorage = await _localStorageService.GetItemAsync<List<PokemonTeam>>(
+                    TEAM_STORAGE_KEY
+                )
+                    is { } teamStorage
+                    ? teamStorage
+                    : [];
 
                 // load autobuilder params
-                _autoBuilderParams = await _localStorageService.GetItemAsync<AutoBuilderWeightings>(AUTOBUILDER_PARAMS) is { } weightings ? weightings : new(
-                    AutoBuilderWeightings.MakeDefaultTypeWeightings()
-                    , resistanceAll: 0.5
-                    , resistanceBalance: 0.5
-                    , resistanceAmount: 0.5
-
-                    , weaknessBalance: 0.5
-                    , weaknessAmount: 0.5
-
-                    , stabAll: 0.5
-                    , stabBalance: 0.5
-                    , stabAmount: 0.5
-
-                    , moveSetAll: 0.5
-                    , moveSetBalance: 0.5
-                    , moveSetAmount: 0.5
-
-                    , coverageOnOffensive: 0.0
-                    , resistancesOnDefensive: 0.0
-
-                    , baseStatTotal: 0.5
-                    , baseStatHp: 0.5
-                    , baseStatAtt: 0.5
-                    , baseStatDef: 0.5
-                    , baseStatSpAtt: 0.5
-                    , baseStatSpDef: 0.5
-                    , baseStatSpe: 0.5
-                );
+                _autoBuilderParams = await _localStorageService.GetItemAsync<AutoBuilderWeightings>(
+                    AUTOBUILDER_PARAMS
+                )
+                    is { } weightings
+                    ? weightings
+                    : new(
+                        AutoBuilderWeightings.MakeDefaultTypeWeightings(),
+                        resistanceAll: 0.5,
+                        resistanceBalance: 0.5,
+                        resistanceAmount: 0.5,
+                        weaknessBalance: 0.5,
+                        weaknessAmount: 0.5,
+                        stabAll: 0.5,
+                        stabBalance: 0.5,
+                        stabAmount: 0.5,
+                        moveSetAll: 0.5,
+                        moveSetBalance: 0.5,
+                        moveSetAmount: 0.5,
+                        coverageOnOffensive: 0.0,
+                        resistancesOnDefensive: 0.0,
+                        baseStatTotal: 0.5,
+                        baseStatHp: 0.5,
+                        baseStatAtt: 0.5,
+                        baseStatDef: 0.5,
+                        baseStatSpAtt: 0.5,
+                        baseStatSpDef: 0.5,
+                        baseStatSpe: 0.5
+                    );
             }
             catch (Exception ex)
-            {                
+            {
                 Console.WriteLine(ex.Message);
 
                 // if loading storage fails we'll just have to reset it so users don't get stuck
@@ -162,15 +213,15 @@ namespace PokeAutobuilder.Source.Services
 #if DEBUG
 
 #else
-                await _localStorageService.ClearAsync();          
+                await _localStorageService.ClearAsync();
 #endif
             }
         }
 
         public async Task<double> GetVersionAsync()
         {
-            if (await _localStorageService.ContainKeyAsync("version"))
-                return await _localStorageService.GetItemAsync<double>("version");
+            if (await _localStorageService.ContainKeyAsync(VERSION_KEY))
+                return await _localStorageService.GetItemAsync<double>(VERSION_KEY);
 
             return Globals.Version;
         }
@@ -178,34 +229,26 @@ namespace PokeAutobuilder.Source.Services
         public async Task UpdateVersionAsync()
         {
             // store the current version in the cache
-            await _localStorageService.SetItemAsync("version", Globals.Version);
+            await _localStorageService.SetItemAsync(VERSION_KEY, Globals.Version);
         }
 
         // --- Preferences ---
         public async Task<Preferences> GetPreferencesAsync()
         {
             // if they've already specified their preferences explicitly, use them
-            if (await _localStorageService.ContainKeyAsync("preferences"))
-                return (await _localStorageService.GetItemAsync<Preferences>("preferences"))!;
-
-            // else default to OS settings...
-            // TODO, get theme provider
-            //bool prefersDarkMode = await Globals.MudThemeProvider!.GetSystemPreference();
-
-            return new Preferences
+            if (await _localStorageService.ContainKeyAsync(PREFERENCES_KEY))
             {
-                DarkMode = true
-            };
+                _preferences = (
+                    await _localStorageService.GetItemAsync<Preferences>(PREFERENCES_KEY)
+                )!;
+            }
+
+            return _preferences;
         }
 
-        public async Task SetDarkModeAsync(bool isDarkMode)
+        public async Task UpdatePreferencesAsync()
         {
-            Preferences prefs = await GetPreferencesAsync();
-            Preferences newPrefs = prefs
-                with
-            { DarkMode = isDarkMode };
-
-            await _localStorageService.SetItemAsync("preferences", newPrefs);
+            await _localStorageService.SetItemAsync(PREFERENCES_KEY, _preferences);
         }
 
         public async Task SetAllTypesAsync(List<PokeApiNet.Type> allTypes)
@@ -216,40 +259,54 @@ namespace PokeAutobuilder.Source.Services
 
         public async Task LoadPokemonStorageAsync()
         {
-            _pokemonStorage = await _localStorageService.GetItemAsync<PokemonStorage>(POKEMON_STORAGE_KEY) is { } pokemonStorage ? pokemonStorage : new();
+            _pokemonStorage = await _localStorageService.GetItemAsync<PokemonStorage>(
+                POKEMON_STORAGE_KEY
+            )
+                is { } pokemonStorage
+                ? pokemonStorage
+                : new();
             if (_pokemonStorage.Boxes.Count == 0)
             {
                 _pokemonStorage.Boxes.Add(new PokemonBox("Box 1"));
             }
         }
+
         public async Task SetPokemonStorageAsync(PokemonStorage storage)
         {
             OnStorageChange?.Invoke();
             await _localStorageService.SetItemAsync(POKEMON_STORAGE_KEY, storage);
         }
+
         public async Task UpdatePokemonStorageAsync()
         {
             await SetPokemonStorageAsync(PokemonStorage);
         }
+
         public async Task AddPokemonToStorageAsync(SmartPokemon pokemon, int boxIdx)
         {
             if (boxIdx < 0 || boxIdx >= PokemonStorage.Boxes.Count)
             {
-                throw new IndexOutOfRangeException($"Box with index {boxIdx} does not exist in storage.");
+                throw new IndexOutOfRangeException(
+                    $"Box with index {boxIdx} does not exist in storage."
+                );
             }
 
             PokemonStorage.Boxes[boxIdx].Pokemon.Add(pokemon);
             await UpdatePokemonStorageAsync();
         }
+
         public PokemonBox? FindPokemonBoxForPokemon(SmartPokemon pokemon)
         {
-            return PokemonStorage.Boxes.Where(box => box.Pokemon.Contains(pokemon)).FirstOrDefault();
+            return PokemonStorage
+                .Boxes.Where(box => box.Pokemon.Contains(pokemon))
+                .FirstOrDefault();
         }
 
         public async Task<bool> RemovePokemonFromStorageAsync(SmartPokemon pokemon)
         {
             PokemonBox? owningBox = FindPokemonBoxForPokemon(pokemon);
-            if (owningBox is null) return false;
+            if (owningBox is null)
+                return false;
 
             bool removed = owningBox.Pokemon.Remove(pokemon);
             if (removed)
@@ -257,10 +314,15 @@ namespace PokeAutobuilder.Source.Services
 
             return removed;
         }
-        public async Task<bool> ReplacePokemonInStorageAsync(SmartPokemon oldPokemon, SmartPokemon newPokemon)
+
+        public async Task<bool> ReplacePokemonInStorageAsync(
+            SmartPokemon oldPokemon,
+            SmartPokemon newPokemon
+        )
         {
             PokemonBox? owningBox = FindPokemonBoxForPokemon(oldPokemon);
-            if (owningBox is null) return false;
+            if (owningBox is null)
+                return false;
 
             int pokemonIdx = owningBox.Pokemon.IndexOf(oldPokemon);
 
@@ -279,16 +341,20 @@ namespace PokeAutobuilder.Source.Services
             OnTeamStorageChange?.Invoke();
             await _localStorageService.SetItemAsync(TEAM_STORAGE_KEY, teamStorage);
         }
+
         public async Task AddTeamToStorageAsync(PokemonTeam team)
         {
-            if (TeamStorage == null) return;
+            if (TeamStorage == null)
+                return;
 
             TeamStorage.Add(new PokemonTeam(team));
             await SetTeamStorageAsync(TeamStorage);
         }
+
         public async Task<bool> RemoveTeamFromStorageAsync(PokemonTeam team)
         {
-            if (TeamStorage == null) return false;
+            if (TeamStorage == null)
+                return false;
 
             bool removed = TeamStorage.Remove(team);
             if (removed)

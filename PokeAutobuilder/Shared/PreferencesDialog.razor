@@ -1,0 +1,48 @@
+﻿@using PokeAutobuilder.Source.Services
+
+@inject ProfileService ProfileService
+
+<MudDialog Class="" Style=""
+           ContentStyle="overflow-y: scroll;" ContentClass="d-flex flex-column"
+           OnBackdropClick="OnCloseDialog" @onkeydown="(e) => OnDialogKeyDown(e)">
+    <DialogContent>
+        <MudStack Class="py-4">
+            <MudSwitch @bind-Value="ProfileService.AllowMultipleMegas" T="bool"
+                       Label="Allow more than one mega-evolved Pokémon per team" />
+            <MudSwitch @bind-Value="ProfileService.IsDarkMode" T="bool"
+                       Label="Dark theme" ThumbIcon="@(ProfileService.IsDarkMode ? Icons.Material.Outlined.DarkMode : Icons.Material.Filled.LightMode)"
+                       ThumbIconColor="@(ProfileService.IsDarkMode ? Color.Dark : Color.Default)" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="OnCloseDialog">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance? MudDialog { get; set; }
+
+    private void OnCloseDialog()
+    {
+        MudDialog!.Close();
+    }
+
+    private void OnDialogKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            OnCloseDialog();
+        }
+    }
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+
+        if (MudDialog == null)
+            throw new InvalidOperationException($"{nameof(PreferencesDialog)} requires a {nameof(IMudDialogInstance)} parameter.");
+
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+}
