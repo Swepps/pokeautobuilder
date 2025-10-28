@@ -25,10 +25,12 @@ namespace AutoBuilder
 
             // duplicates in a team don't qualify as a valid team
             // can't have more than one mega-evolved pokemon in a team
-            if (fitness < 0 
+            if (
+                fitness < 0
                 || team.ContainsDuplicates()
-                || team.CountMegaPokemon() > 1
-                || team.CountGmaxPokemon() > 1)
+                || (!_weightings.AllowMultipleMegas && team.CountMegaPokemon() > 1)
+                || (!_weightings.AllowMultipleGmax && team.CountGmaxPokemon() > 1)
+            )
                 fitness = 0;
 
             return fitness;

@@ -61,13 +61,13 @@
             </MudItem>
         }
     </MudGrid>
-    @if (MultipleMegasSelected)
+    @if (!Profile.AllowMultipleMegas && MultipleMegasSelected)
     {
-        <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: Multiple Mega-Evolved Pokémon have been added to the team</MudText>
+        <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: More than one Mega-Evolved Pokémon have been added to the team</MudText>
     }
-    @if (MultipleGmaxSelected)
+    @if (!Profile.AllowMultipleGmax && MultipleGmaxSelected)
     {
-        <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: Multiple Gigantamaxed Pokémon have been added to the team</MudText>
+        <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: More than one Gigantamax Pokémon have been added to the team</MudText>
     }
     <MudDivider DividerType="DividerType.FullWidth" />
     <div style="width: 100%; text-align: center;">

@@ -554,6 +554,8 @@
         _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
 
         AutoBuilderWeightings weightingsCopy = new(GenerationParameters);
+        weightingsCopy.AllowMultipleMegas = Profile.AllowMultipleMegas;
+        weightingsCopy.AllowMultipleGmax = Profile.AllowMultipleGmax;
 
         PokemonTeam lockedMembers = new();
         lockedMembers.Pokemon.AddRange(_lockedPokemon);

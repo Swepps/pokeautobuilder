@@ -18,6 +18,7 @@ namespace PokeAutobuilder.Source.Services
     {
         public bool DarkMode { get; init; }
         public bool AllowMultipleMegas { get; init; }
+        public bool AllowMultipleGmax { get; init; }
     }
 
     public class ProfileService(
@@ -33,7 +34,12 @@ namespace PokeAutobuilder.Source.Services
         public event Action? OnPreferencesChange;
 
         // preferences
-        private Preferences _preferences = new() { DarkMode = true, AllowMultipleMegas = false };
+        private Preferences _preferences = new()
+        {
+            DarkMode = true,
+            AllowMultipleMegas = false,
+            AllowMultipleGmax = false,
+        };
 
         private void NotifyPrefsChanged() => OnPreferencesChange?.Invoke();
 
@@ -65,6 +71,17 @@ namespace PokeAutobuilder.Source.Services
             set
             {
                 _preferences = _preferences with { AllowMultipleMegas = value };
+                NotifyPrefsChanged();
+                _ = UpdatePreferencesAsync();
+            }
+        }
+
+        public bool AllowMultipleGmax
+        {
+            get => _preferences.AllowMultipleGmax;
+            set
+            {
+                _preferences = _preferences with { AllowMultipleGmax = value };
                 NotifyPrefsChanged();
                 _ = UpdatePreferencesAsync();
             }

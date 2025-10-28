@@ -8,7 +8,9 @@
     <DialogContent>
         <MudStack Class="py-4">
             <MudSwitch @bind-Value="ProfileService.AllowMultipleMegas" T="bool"
-                       Label="Allow more than one mega-evolved Pokémon per team" />
+                       Label="Allow more than one Mega-Evolved Pokémon per team" />
+            <MudSwitch @bind-Value="ProfileService.AllowMultipleGmax" T="bool"
+                       Label="Allow more than one Gigantamax Pokémon per team" />
             <MudSwitch @bind-Value="ProfileService.IsDarkMode" T="bool"
                        Label="Dark theme" ThumbIcon="@(ProfileService.IsDarkMode ? Icons.Material.Outlined.DarkMode : Icons.Material.Filled.LightMode)"
                        ThumbIconColor="@(ProfileService.IsDarkMode ? Color.Dark : Color.Default)" />
