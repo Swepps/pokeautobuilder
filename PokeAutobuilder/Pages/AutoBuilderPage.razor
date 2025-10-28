@@ -47,7 +47,7 @@
                 <MudExpansionPanel Text="Generation Settings" Expanded="true">
 
                     <MudStack>
-                        <MudSlider Disabled="Generating" Min="1" Max="6" Step="1" @bind-Value="@TeamSize" Variant="Variant.Filled" TickMarks="true">Team Size</MudSlider>
+                        <MudSlider Disabled="Generating" Min="3" Max="6" Step="1" @bind-Value="@TeamSize" Variant="Variant.Filled" TickMarks="true">Team Size</MudSlider>
                         <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10" />
                         <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
                     </MudStack>
@@ -284,7 +284,7 @@
                     @if (p is not null)
                     {
                         <MudItem xs="4" md="2">
-                            <MudPaper>
+                            <MudPaper Width="fit-content" Height="fit-content">
                                 @if (locked)
                                 {
                                     <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
@@ -319,9 +319,9 @@
             }
             else
             {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerate" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerateAsync" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
             }
-            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickReset">Reset</MudButton>
+            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickResetAsync">Reset</MudButton>
             <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Size="Size.Large" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
         </MudStack>
     </div>
@@ -537,7 +537,7 @@
         StateHasChanged();
     }
 
-    public void OnClickGenerate()
+    public async Task OnClickGenerateAsync()
     {
         Generating = true;
         GenerationsRan = 0;
@@ -545,10 +545,17 @@
         BestOverallFitness = 0;
         UniqueTeamsSorted.Clear();
 
+        if (_chart is not null)
+        {
+            await _chart.UpdateSeriesAsync(true);
+        }
+
         // save the params into local storage
         _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
 
         AutoBuilderWeightings weightingsCopy = new(GenerationParameters);
+        weightingsCopy.AllowMultipleMegas = Profile.AllowMultipleMegas;
+        weightingsCopy.AllowMultipleGmax = Profile.AllowMultipleGmax;
 
         PokemonTeam lockedMembers = new();
         lockedMembers.Pokemon.AddRange(_lockedPokemon);
@@ -575,11 +582,15 @@
         StateHasChanged();
     }
 
-    public void OnClickReset()
+    public async Task OnClickResetAsync()
     {
         BestTeam.Pokemon.Clear();
         BestTeamScore = null;
         UniqueTeamsSorted.Clear();
+        if (_chart is not null)
+        {
+            await _chart.UpdateSeriesAsync(true);
+        }
         GenerationsRan = 0;
         ProgressValue = 0;
         BestOverallFitness = 0;
