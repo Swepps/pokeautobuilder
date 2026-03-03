@@ -3,11 +3,11 @@
 Poké Autobuilder is a web app that helps you plan and build a Pokémon team for your playthroughs.  
 It takes the guesswork out of team composition by letting you explore stats, coverage, and weaknesses - or even generate complete teams automatically.
 
-🌐 **Try it here:** [https://pokeautobuilder.com](https://pokeautobuilder.com)
+**Try it here:** [https://pokeautobuilder.com](https://pokeautobuilder.com)
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 1. **Choose your game version**  
    - In the Team Builder, edit the **Search Location** box to select which game you’re playing (e.g. *FireRed & LeafGreen*, *Platinum*, *Sword & Shield*).  
@@ -35,7 +35,7 @@ It takes the guesswork out of team composition by letting you explore stats, cov
 
 ---
 
-## 🧩 Features
+## Features
 
 ### **Team Builder**
 - Build teams of up to six Pokémon.
@@ -102,7 +102,7 @@ Alternate Generated Teams
 
 ---
 
-## 🧠 How the Auto Builder Works
+## How the Auto Builder Works
 
 The Auto Builder uses a **genetic algorithm** - a kind of "evolution simulator" for teams.
 
@@ -121,7 +121,7 @@ The default of **50 generations** and **population size 250** works great for mo
 
 ---
 
-## 🪄 Built With
+## Built With
 Poké Autobuilder is powered by **Blazor WebAssembly**, which lets the genetic algorithm run quickly and smoothly right in your browser.
 
 ---
@@ -133,7 +133,7 @@ Poké Autobuilder is powered by **Blazor WebAssembly**, which lets the genetic a
 
 ---
 
-## 🏗️ Future Plans
+## Future Plans
 - More advanced Auto Builder tuning options
 - UX improvments
 - Performance improvements 
@@ -142,7 +142,7 @@ Poké Autobuilder is powered by **Blazor WebAssembly**, which lets the genetic a
 
 ---
 
-## ⚡ Try It Now
+## Try It Now
 Build your perfect Pokémon team at **[pokeautobuilder.com](https://pokeautobuilder.com)**!
 
 ---
