@@ -1,4 +1,8 @@
 ﻿window.localStorageHelper = {
+    clickElement: function (element) {
+        element.click();
+    },
+
     exportBoxToFile: function (storageKey, boxIdx, filename) {
         var box = null;
         for (let i = 0; i < localStorage.length; i++) {
@@ -60,8 +64,9 @@
                 }
 
                 if (pokemonStorage == null || !Array.isArray(pokemonStorage.boxes)) {
-                    console.error("Failed to import box. Pokemon storage has not been created yet.");
-                    throw new Error("Failed to import box. Pokemon storage has not been created yet.");
+                    // no pokemon storage in local storage yet (e.g. a fresh profile that hasn't saved
+                    // any pokemon) - importing a box should still work and create it
+                    pokemonStorage = { boxes: [] };
                 }
 
                 const boxJson = reader.result;
