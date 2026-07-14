@@ -119,6 +119,21 @@ namespace PokeAutobuilderTests
         }
 
         [Fact]
+        public async Task ApiServiceGetPokemonMovesForRegionalVariant()
+        {
+            // marowak-alola should get its own variety's moves (e.g. shadow-bone, which regular
+            // Kanto marowak can't learn), not the default marowak variety's moves, while still
+            // inheriting moves from its pre-evolution cubone (e.g. bone-club)
+            SmartPokemon? marowakAlola = await apiService!.GetPokemonAsync("marowak-alola");
+            Assert.NotNull(marowakAlola);
+            List<PokemonMove> moves = await apiService.GetPokemonMovesAsync(marowakAlola!);
+
+            Assert.Contains(moves, move => move.Move.Name == "shadow-bone");
+            Assert.Contains(moves, move => move.Move.Name == "bone-club");
+            Assert.DoesNotContain(moves, move => move.Move.Name == "sing"); // kanto marowak-only move that cubone can't learn
+        }
+
+        [Fact]
         public async Task ApiServiceGetType()
         {
             Type? type = await apiService!.GetTypeAsync("electric");

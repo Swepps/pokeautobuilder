@@ -205,25 +205,41 @@ namespace PokemonDataModel
         {
             try
             {
-                List<int> evolvedIds = [];
-
                 PokemonSpecies species = await pokemon.GetSpeciesAsync();
-                evolvedIds.Add(species.Id);
+
+                // a species id only resolves to its *default* variety, so walking the chain by id loses
+                // the current form entirely (e.g. marowak-alola -> id 105 -> plain Kanto marowak).
+                // PokeAPI doesn't link a variety to its pre-evolution's matching variety either, so we
+                // derive the form suffix (e.g. "-alola") and look for it on each prior evolution,
+                // falling back to that species' default variety when no matching form exists
+                // (e.g. sandslash-alola -> sandshrew-alola exists, but marowak-alola -> cubone-alola doesn't)
+                string formSuffix = pokemon.Name.StartsWith(species.Name)
+                    ? pokemon.Name[species.Name.Length..]
+                    : "";
+
+                List<string> varietyNames = [pokemon.Name];
+
                 while (species.EvolvesFromSpecies is not null)
                 {
                     PokemonSpecies prevSpecies = await ApiClient.GetResourceAsync(
                         species.EvolvesFromSpecies
                     );
-                    evolvedIds.Add(prevSpecies.Id);
+
+                    PokemonSpeciesVariety variety =
+                        prevSpecies.Varieties.FirstOrDefault(
+                            v => v.Pokemon.Name == prevSpecies.Name + formSuffix
+                        ) ?? prevSpecies.Varieties.First(v => v.IsDefault);
+
+                    varietyNames.Add(variety.Pokemon.Name);
 
                     species = prevSpecies;
                 }
 
                 HashSet<PokemonMove> moves = new(new ComparePokemonMoves());
 
-                foreach (int id in evolvedIds)
+                foreach (string name in varietyNames)
                 {
-                    Pokemon p = await ApiClient.GetResourceAsync<Pokemon>(id);
+                    Pokemon p = await ApiClient.GetResourceAsync<Pokemon>(name);
                     if (p is not null)
                     {
                         moves.UnionWith(p.Moves);
