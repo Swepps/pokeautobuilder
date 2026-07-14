@@ -24,7 +24,7 @@ jobs:
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.*
+          dotnet-version: 10.*
 
       # Installs wasm-tools needed for AOT compilation (hopefully)
       - name: Install wasm-tools
