@@ -220,8 +220,8 @@
         await OnMoveChanged.InvokeAsync((Pokemon, index, move));
     }
 
-    private string MoveToString(PokemonMove move)
+    private string MoveToString(PokemonMove? move)
     {
-        return move.Move.Name;
+        return move?.Move.Name ?? "";
     }
 }
