@@ -16,25 +16,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Application\**" />
-    <Compile Remove="archive\**" />
-    <Compile Remove="blazorWebAssemblyApp\**" />
-    <Compile Remove="FileStore\**" />
-    <Content Remove="Application\**" />
-    <Content Remove="archive\**" />
-    <Content Remove="blazorWebAssemblyApp\**" />
-    <Content Remove="FileStore\**" />
-    <EmbeddedResource Remove="Application\**" />
-    <EmbeddedResource Remove="archive\**" />
-    <EmbeddedResource Remove="blazorWebAssemblyApp\**" />
-    <EmbeddedResource Remove="FileStore\**" />
-    <None Remove="Application\**" />
-    <None Remove="archive\**" />
-    <None Remove="blazorWebAssemblyApp\**" />
-    <None Remove="FileStore\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Accord.Genetic" Version="3.8.0" />
     <PackageReference Include="Blazor-Analytics" Version="3.12.0" />
     <PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
@@ -51,10 +32,6 @@
 
   <ItemGroup>
     <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\NewFolder\" />
   </ItemGroup>
 
   <ItemGroup>

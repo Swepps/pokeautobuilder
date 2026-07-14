@@ -18,11 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # uses GitHub's checkout action to checkout code form the master branch
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       
       # sets up .NET Core SDK
       - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.*
 
@@ -81,9 +81,9 @@ jobs:
         run: touch ${{ env.WWWROOT_DIR }}/.nojekyll
         
       - name: Commit wwwroot to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@3.7.1
+        uses: JamesIves/github-pages-deploy-action@v4.8.0
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: ${{ env.WWWROOT_DIR }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: ${{ env.WWWROOT_DIR }}
     
