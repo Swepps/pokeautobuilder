@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "PokeAutobuilder",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "PokeAutobuilder/PokeAutobuilder.csproj", "--urls", "http://localhost:5136"],
+      "port": 5136
+    }
+  ]
+}

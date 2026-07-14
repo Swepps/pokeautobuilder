@@ -261,7 +261,7 @@
         if (SelectedBoxNumber > 0 
             && SelectedBoxNumber <= Profile.PokemonStorage.Boxes.Count)
         {
-            bool? result = await DialogService.ShowMessageBox(
+            bool? result = await DialogService.ShowMessageBoxAsync(
                 "Warning"
                 , $"Are you sure you want to delete box: {SelectedBox.Name}?"
                 , yesText: "Delete!"
@@ -330,7 +330,7 @@
     {
         if (SelectedPokemon is not null)
         {
-            bool? result = await DialogService.ShowMessageBox(
+            bool? result = await DialogService.ShowMessageBoxAsync(
                 "Warning"
                 , "Are you sure you want to release " + SelectedPokemon.ToString() + "?"
                 , yesText: "Release!"
