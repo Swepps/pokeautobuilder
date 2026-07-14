@@ -172,6 +172,10 @@ main[b-j7339zpfrp] {
         overflow-y: auto;
     }
 }
+/* /Shared/PreferencesDialog.razor.rz.scp.css */
+.preferences-dialog-content[b-en241o7a6z] {
+    overflow-y: scroll;
+}
 /* /Shared/StatsTeamPanel.razor.rz.scp.css */
 .table-header[b-5yukosz1dc]
 {
