@@ -51,18 +51,26 @@ namespace PokeAutobuilder.Source.Services
                 _preferences = _preferences with { DarkMode = value };
                 NotifyPrefsChanged();
                 _ = UpdatePreferencesAsync();
-                _ = _apexChartService.SetGlobalOptionsAsync(
-                    new ApexChartBaseOptions()
-                    {
-                        Theme = new Theme
-                        {
-                            Palette = ApexCharts.PaletteType.Palette7,
-                            Mode = value ? ApexCharts.Mode.Dark : ApexCharts.Mode.Light,
-                        },
-                    },
-                    true
-                );
+                _ = SyncApexChartsThemeAsync(value);
             }
+        }
+
+        // ApexCharts renders via its own JS-side global options rather than the app's CSS theme, so it
+        // needs to be told about dark mode explicitly - both when the user toggles it and when the
+        // stored preference is first loaded, since that load bypasses the IsDarkMode setter above
+        private Task SyncApexChartsThemeAsync(bool isDarkMode)
+        {
+            return _apexChartService.SetGlobalOptionsAsync(
+                new ApexChartBaseOptions()
+                {
+                    Theme = new Theme
+                    {
+                        Palette = ApexCharts.PaletteType.Palette7,
+                        Mode = isDarkMode ? ApexCharts.Mode.Dark : ApexCharts.Mode.Light,
+                    },
+                },
+                true
+            );
         }
 
         public bool AllowMultipleMegas
@@ -259,6 +267,8 @@ namespace PokeAutobuilder.Source.Services
                     await _localStorageService.GetItemAsync<Preferences>(PREFERENCES_KEY)
                 )!;
             }
+
+            await SyncApexChartsThemeAsync(_preferences.DarkMode);
 
             return _preferences;
         }
