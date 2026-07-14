@@ -292,8 +292,7 @@
     {
         if (_filePicker is null) return;
 
-        await JS.InvokeVoidAsync("HTMLElement.prototype.click.call",
-            _filePicker.Element);
+        await JS.InvokeVoidAsync("localStorageHelper.clickElement", _filePicker.Element);
     }
 
     [JSInvokable]
@@ -341,7 +340,7 @@
             if (_messageBoxState == "Released")
             {
                 await Profile.RemovePokemonFromStorageAsync(SelectedPokemon);
-                SmartPokemon? newSelectedPokemon = Profile.PokemonStorage.Boxes[0].Pokemon.FirstOrDefault();
+                SmartPokemon? newSelectedPokemon = SelectedBox.Pokemon.FirstOrDefault();
                 if (newSelectedPokemon is not null)
                 {
                     await OnSelectPokemonAsync(newSelectedPokemon);
