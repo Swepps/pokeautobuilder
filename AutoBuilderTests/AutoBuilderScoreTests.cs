@@ -1,0 +1,220 @@
+using AutoBuilder;
+using PokemonDataModel;
+using Utility;
+using Xunit;
+
+namespace PokeAutobuilderTests
+{
+    // Tests for AutoBuilder.CalculateScore (AutoBuilder/AutoBuilder.cs) - the scoring heart of the
+    // genetic algorithm. Fully offline: uses TestFixtures.MakeScoringPokemon to inject exact
+    // Defense/Attack/move-coverage values directly, sidestepping SmartPokemon's own type-chart
+    // resolution (that's covered separately by SmartPokemonMultiplierTests) so these tests are
+    // purely about the scoring math itself.
+    public class AutoBuilderScoreTests
+    {
+        // a weightings set with every component zeroed out, so tests can enable just the one
+        // component they care about and isolate it from the rest of CalculateScore
+        private static AutoBuilderWeightings ZeroedWeightings(
+            double resistanceAll = 0,
+            double resistanceBalance = 0,
+            double resistanceAmount = 0,
+            double weaknessBalance = 0,
+            double weaknessAmount = 0,
+            double stabAll = 0,
+            double stabBalance = 0,
+            double stabAmount = 0,
+            double moveSetAll = 0,
+            double moveSetBalance = 0,
+            double moveSetAmount = 0,
+            double coverageOnOffensive = 0,
+            double resistancesOnDefensive = 0,
+            double baseStatTotal = 0,
+            double baseStatHp = 0,
+            double baseStatAtt = 0,
+            double baseStatDef = 0,
+            double baseStatSpAtt = 0,
+            double baseStatSpDef = 0,
+            double baseStatSpe = 0
+        )
+        {
+            return new AutoBuilderWeightings(
+                AutoBuilderWeightings.MakeDefaultTypeWeightings(),
+                resistanceAll: resistanceAll,
+                resistanceBalance: resistanceBalance,
+                resistanceAmount: resistanceAmount,
+                weaknessBalance: weaknessBalance,
+                weaknessAmount: weaknessAmount,
+                stabAll: stabAll,
+                stabBalance: stabBalance,
+                stabAmount: stabAmount,
+                moveSetAll: moveSetAll,
+                moveSetBalance: moveSetBalance,
+                moveSetAmount: moveSetAmount,
+                coverageOnOffensive: coverageOnOffensive,
+                resistancesOnDefensive: resistancesOnDefensive,
+                baseStatTotal: baseStatTotal,
+                baseStatHp: baseStatHp,
+                baseStatAtt: baseStatAtt,
+                baseStatDef: baseStatDef,
+                baseStatSpAtt: baseStatSpAtt,
+                baseStatSpDef: baseStatSpDef,
+                baseStatSpe: baseStatSpe
+            );
+        }
+
+        private static PokemonTeam MakeTeam(params SmartPokemon?[] members)
+        {
+            PokemonTeam team = new();
+            team.Pokemon.AddRange(members);
+            return team;
+        }
+
+        [Fact]
+        public void EmptyTeam_ReturnsZeroedScore()
+        {
+            PokemonTeam team = new();
+            AutoBuilderWeightings weightings = new(); // all defaults "on"
+
+            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+
+            Assert.Equal(0.0, result.SumWeightings());
+        }
+
+        [Fact]
+        public void BaseStatScore_IsSumAcrossTeamNormalizedBy600()
+        {
+            var pokemon = TestFixtures.MakeScoringPokemon(
+                "stat-mon",
+                baseStats: new Dictionary<string, int> { { "hp", 300 } }
+            );
+            PokemonTeam team = MakeTeam(pokemon);
+
+            AutoBuilderWeightings weightings = ZeroedWeightings(baseStatTotal: 1.0, baseStatHp: 1.0);
+
+            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+
+            Assert.Equal(300 / 600.0, result.BaseStatHp);
+            // the other stat scores shouldn't have been touched since their weightings are 0
+            Assert.Equal(0.0, result.BaseStatAtt);
+        }
+
+        [Fact]
+        public void ResistanceAll_IsFullScoreWhenEveryTypeIsCovered()
+        {
+            Dictionary<string, double> defense = Globals.AllTypes.ToDictionary(t => t, _ => 0.5);
+            var pokemon = TestFixtures.MakeScoringPokemon("fully-resistant-mon", defense: defense);
+            PokemonTeam team = MakeTeam(pokemon);
+
+            AutoBuilderWeightings weightings = ZeroedWeightings(resistanceAll: 1.0);
+
+            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+
+            Assert.Equal(1.0, result.ResistanceAll, precision: 10);
+        }
+
+        [Fact]
+        public void ResistanceAll_PenalizesEachUncoveredType()
+        {
+            // resistant to every type except one
+            Dictionary<string, double> defense = Globals
+                .AllTypes.Where(t => t != "dragon")
+                .ToDictionary(t => t, _ => 0.5);
+            var pokemon = TestFixtures.MakeScoringPokemon("almost-resistant-mon", defense: defense);
+            PokemonTeam team = MakeTeam(pokemon);
+
+            AutoBuilderWeightings weightings = ZeroedWeightings(resistanceAll: 1.0);
+
+            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+
+            double expected = 1.0 - (1.0 / Globals.AllTypes.Count);
+            Assert.Equal(expected, result.ResistanceAll, precision: 10);
+        }
+
+        [Fact]
+        public void WeaknessAmount_IsPerfectWithNoWeaknesses()
+        {
+            var pokemon = TestFixtures.MakeScoringPokemon("no-weakness-mon");
+            PokemonTeam team = MakeTeam(pokemon);
+
+            AutoBuilderWeightings weightings = ZeroedWeightings(weaknessAmount: 1.0);
+
+            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+
+            Assert.Equal(1.0, result.WeaknessAmount, precision: 10);
+        }
+
+        [Fact]
+        public void WeaknessAmount_DecreasesAsWeaknessCountIncreases_ButNeverReachesZero()
+        {
+            Dictionary<string, double> fewWeaknesses = new() { { "fire", 2.0 } };
+            Dictionary<string, double> manyWeaknesses = Globals.AllTypes.ToDictionary(t => t, _ => 2.0);
+
+            var fewMon = TestFixtures.MakeScoringPokemon("few-weak-mon", defense: fewWeaknesses);
+            var manyMon = TestFixtures.MakeScoringPokemon("many-weak-mon", defense: manyWeaknesses);
+
+            AutoBuilderWeightings weightings = ZeroedWeightings(weaknessAmount: 1.0);
+
+            AutoBuilderWeightings fewResult = AutoBuilder.AutoBuilder.CalculateScore(MakeTeam(fewMon), weightings);
+            AutoBuilderWeightings manyResult = AutoBuilder.AutoBuilder.CalculateScore(MakeTeam(manyMon), weightings);
+
+            Assert.True(fewResult.WeaknessAmount < 1.0);
+            Assert.True(manyResult.WeaknessAmount < fewResult.WeaknessAmount);
+            Assert.True(manyResult.WeaknessAmount > 0.0);
+        }
+
+        [Fact]
+        public void ResistanceBalance_RewardsEvenDistributionOverConcentrated()
+        {
+            // resistant to every type exactly once each -> perfectly even, stddev == 0
+            Dictionary<string, double> even = Globals.AllTypes.ToDictionary(t => t, _ => 0.5);
+            // resistant to only a handful of types -> uneven, stddev > 0
+            Dictionary<string, double> concentrated = new()
+            {
+                { "fire", 0.5 },
+                { "water", 0.5 },
+                { "grass", 0.5 },
+            };
+
+            var evenMon = TestFixtures.MakeScoringPokemon("even-mon", defense: even);
+            var concentratedMon = TestFixtures.MakeScoringPokemon("concentrated-mon", defense: concentrated);
+
+            AutoBuilderWeightings weightings = ZeroedWeightings(resistanceBalance: 1.0);
+
+            AutoBuilderWeightings evenResult = AutoBuilder.AutoBuilder.CalculateScore(MakeTeam(evenMon), weightings);
+            AutoBuilderWeightings concentratedResult = AutoBuilder.AutoBuilder.CalculateScore(
+                MakeTeam(concentratedMon),
+                weightings
+            );
+
+            Assert.Equal(1.0, evenResult.ResistanceBalance, precision: 10);
+            Assert.True(concentratedResult.ResistanceBalance < evenResult.ResistanceBalance);
+        }
+
+        [Fact]
+        public void MoveSetAll_IsFullScoreOnlyWhenEveryTypeHasCoverage()
+        {
+            var fullCoverageMon = TestFixtures.MakeScoringPokemon(
+                "full-coverage-mon",
+                moveCoverage: Globals.AllTypes
+            );
+            var partialCoverageMon = TestFixtures.MakeScoringPokemon(
+                "partial-coverage-mon",
+                moveCoverage: Globals.AllTypes.Where(t => t != "dragon")
+            );
+
+            AutoBuilderWeightings weightings = ZeroedWeightings(moveSetAll: 1.0);
+
+            AutoBuilderWeightings fullResult = AutoBuilder.AutoBuilder.CalculateScore(
+                MakeTeam(fullCoverageMon),
+                weightings
+            );
+            AutoBuilderWeightings partialResult = AutoBuilder.AutoBuilder.CalculateScore(
+                MakeTeam(partialCoverageMon),
+                weightings
+            );
+
+            Assert.Equal(1.0, fullResult.MoveSetAll, precision: 10);
+            Assert.True(partialResult.MoveSetAll < 1.0);
+        }
+    }
+}

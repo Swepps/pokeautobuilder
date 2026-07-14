@@ -25,10 +25,7 @@ namespace PokeAutobuilderTests
         public async Task InitializeAsync()
         {
             apiService = new PokeApiService(new HttpClient());
-            if (DataModelCache.LoadedTypes.Count == 0)
-            {
-                DataModelCache.LoadedTypes = await apiService.GetAllTypesAsync();
-            }
+            await TestFixtures.EnsureRealTypesLoadedAsync(apiService);
         }
 
         [Fact]
@@ -181,10 +178,7 @@ namespace PokeAutobuilderTests
         public async Task InitializeAsync()
         {
             apiService = new PokeApiService(new HttpClient());
-            if (DataModelCache.LoadedTypes.Count == 0)
-            {
-                DataModelCache.LoadedTypes = await apiService.GetAllTypesAsync();
-            }
+            await TestFixtures.EnsureRealTypesLoadedAsync(apiService);
         }
 
         [Fact]
