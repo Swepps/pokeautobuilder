@@ -56,7 +56,7 @@ namespace PokemonDataModel
         public int CountMoves()
         {
             int count = 0;
-            for (int i = 0; i < MaxMovesetSize; i++)
+            for (int i = 0; i < Math.Min(MaxMovesetSize, _moves.Count); i++)
             {
                 Move? m = _moves[i];
                 if (m != null) count++;
@@ -68,6 +68,7 @@ namespace PokemonDataModel
         {
 			if (index >= 0 && index < MaxMovesetSize)
 			{
+				await EnsureMovesPopulatedAsync();
                 _moves[index] = move;
                 MoveNames[index] = move?.Name;
 				_multipliersNeedUpdating = true;
@@ -99,18 +100,13 @@ namespace PokemonDataModel
 			}
 		}
 
-        public async Task UpdateAttackMultipliers()
+        private async Task EnsureMovesPopulatedAsync()
         {
-			if (!_multipliersNeedUpdating)
-				return;
-
-			_multipliersNeedUpdating = false;
-
 			// load in move details
 			if (MoveNames.Count > _moves.Count)
 			{
 				_moves.Clear();
-				foreach (string? name in MoveNames) 
+				foreach (string? name in MoveNames)
 				{
 					if (name is null)
 					{
@@ -121,6 +117,16 @@ namespace PokemonDataModel
 					_moves.Add(await PokeApiService.Instance!.GetMoveAsync(name));
 				}
 			}
+		}
+
+        public async Task UpdateAttackMultipliers()
+        {
+			if (!_multipliersNeedUpdating)
+				return;
+
+			_multipliersNeedUpdating = false;
+
+			await EnsureMovesPopulatedAsync();
 
             AttackMultipliers.Clear();
 
