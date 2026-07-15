@@ -182,21 +182,7 @@ namespace AutoBuilder
             double totalTypes = weightings.Types.Where((t) => t.Value).Count();
 
             // gather some information about the types in the team
-            Dictionary<string, int> weaknesses = [];
-            Dictionary<string, int> resistances = [];
-            Dictionary<string, int> STABcoverage = [];
-            Dictionary<string, int> movecoverage = [];
-
-            double totalWeaknesses = 0;
-            double totalResistances = 0;
-            double totalSTABCoverage = 0;
-            foreach (string t in Globals.AllTypes)
-            {
-                totalWeaknesses += weaknesses[t] = team.CountWeaknesses(t);
-                totalResistances += resistances[t] = team.CountResistances(t);
-                totalSTABCoverage += STABcoverage[t] = team.CountSTABCoverage(t);
-                movecoverage[t] = team.CountMoveCoverage(t);
-            }
+            var (weaknesses, resistances, STABcoverage, movecoverage) = team.CountTypeCoverage();
 
             // --- calculate the scores ---
 
@@ -484,16 +470,28 @@ namespace AutoBuilder
                 if (p is null)
                     continue;
 
+                // Scan the Pokemon's own (small) attack/move-coverage dictionaries instead of
+                // checking every global type against them - equivalent to the
+                // IsTypeCoveredBySTAB/IsTypeCoveredByMove checks below, just without re-testing
+                // types that can't be covered.
                 double countCoverage = 0;
-                foreach (string type in Globals.AllTypes)
+                foreach (KeyValuePair<string, double> kvp in p.Multipliers.Attack)
                 {
-                    if (weightings.Types[type])
-                    {
-                        if (p.IsTypeCoveredBySTAB(type))
-                            countCoverage++;
-                        if (p.IsTypeCoveredByMove(type))
-                            countCoverage++;
-                    }
+                    if (
+                        kvp.Value >= 2.0
+                        && weightings.Types.TryGetValue(kvp.Key, out bool isWeighted)
+                        && isWeighted
+                    )
+                        countCoverage++;
+                }
+                foreach (KeyValuePair<string, double> kvp in p.SelectedMoves.AttackMultipliers)
+                {
+                    if (
+                        kvp.Value >= 2.0
+                        && weightings.Types.TryGetValue(kvp.Key, out bool isWeighted)
+                        && isWeighted
+                    )
+                        countCoverage++;
                 }
                 // only really care about the highest offensive stat
                 double highestOffStat = Math.Max(
@@ -527,23 +525,28 @@ namespace AutoBuilder
         )
         {
             double resistancesScore = 0;
-            double totalTypes = weightings.Types.Where((t) => t.Value).Count();
 
             foreach (SmartPokemon? p in team.Pokemon)
             {
                 if (p is null)
                     continue;
 
+                // types absent from Defense default to a neutral 1.0 via GetResistance, which
+                // contributes exactly 0 once the old "- totalTypes" normalization is applied
+                // (1.0 / 1.0 - 1.0 = 0) - so only types actually present in Defense can affect
+                // the result, and we can scan just those instead of every global type.
                 double countResistances = 0;
-                foreach (string type in Globals.AllTypes)
+                foreach (KeyValuePair<string, double> kvp in p.Multipliers.Defense)
                 {
-                    if (weightings.Types[type])
-                    {
-                        countResistances +=
-                            1.0 / (p.GetResistance(type) == 0 ? 0.25 : p.GetResistance(type));
-                    }
+                    if (
+                        !weightings.Types.TryGetValue(kvp.Key, out bool isWeighted)
+                        || !isWeighted
+                    )
+                        continue;
+
+                    double value = kvp.Value;
+                    countResistances += 1.0 / (value == 0 ? 0.25 : value) - 1.0;
                 }
-                countResistances -= totalTypes; // normal resistance is counted as 1, so minus the number of types to get a real value
                 double totalOffStats =
                     p.GetBaseStat("attack")
                     + p.GetBaseStat("special-attack")

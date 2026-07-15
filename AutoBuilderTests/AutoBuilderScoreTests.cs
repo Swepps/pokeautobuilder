@@ -216,5 +216,71 @@ namespace PokeAutobuilderTests
             Assert.Equal(1.0, fullResult.MoveSetAll, precision: 10);
             Assert.True(partialResult.MoveSetAll < 1.0);
         }
+
+        [Fact]
+        public void CoverageOnOffensive_MatchesHandCalculatedScore()
+        {
+            var pokemon = TestFixtures.MakeScoringPokemon(
+                "coverage-mon",
+                attack: new Dictionary<string, double> { { "fire", 2.0 }, { "water", 2.0 } },
+                moveCoverage: ["grass"],
+                baseStats: new Dictionary<string, int>
+                {
+                    { "attack", 100 },
+                    { "special-attack", 50 },
+                    { "speed", 50 },
+                    { "hp", 50 },
+                    { "defense", 50 },
+                    { "special-defense", 50 },
+                }
+            );
+            PokemonTeam team = MakeTeam(pokemon);
+
+            AutoBuilderWeightings weightings = ZeroedWeightings(coverageOnOffensive: 1.0);
+
+            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+
+            // countCoverage = 2 STAB types (fire, water) + 1 move-covered type (grass) = 3
+            // offensiveFactor = (100 + 50) / (0.66 * (50 + 50 + 50)) = 150 / 99
+            double offensiveFactor = 150.0 / 99.0;
+            double expected = ((offensiveFactor * 3) + (10.0 / offensiveFactor)) / 150.0;
+            Assert.Equal(expected, result.CoverageOnOffensive, precision: 10);
+        }
+
+        [Fact]
+        public void ResistancesOnDefensive_MatchesHandCalculatedScore()
+        {
+            var pokemon = TestFixtures.MakeScoringPokemon(
+                "resist-mon",
+                defense: new Dictionary<string, double>
+                {
+                    { "fire", 0.5 },
+                    { "water", 0.0 }, // immune - exercises the 0 => 0.25 special case
+                    { "grass", 2.0 }, // weakness - should reduce the score
+                },
+                baseStats: new Dictionary<string, int>
+                {
+                    { "attack", 50 },
+                    { "special-attack", 50 },
+                    { "speed", 50 },
+                    { "hp", 100 },
+                    { "defense", 100 },
+                    { "special-defense", 100 },
+                }
+            );
+            PokemonTeam team = MakeTeam(pokemon);
+
+            AutoBuilderWeightings weightings = ZeroedWeightings(resistancesOnDefensive: 1.0);
+
+            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+
+            // countResistances = (1/0.5 - 1) + (1/0.25 - 1) + (1/2.0 - 1) = 1.0 + 3.0 - 0.5 = 3.5
+            // (types not in the Defense dict are neutral and contribute 0, per the comment in
+            // CalculateResistancesScore)
+            // defensiveFactor = (100 + 100 + 100) / (50 + 50 + 50) = 2.0
+            double expected = ((2.0 * 3.5) + (10.0 / 2.0)) / 150.0;
+            Assert.Equal(0.08, expected, precision: 10); // sanity-check the hand calculation itself
+            Assert.Equal(expected, result.ResistancesOnDefensive, precision: 10);
+        }
     }
 }
