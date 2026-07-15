@@ -10,6 +10,6 @@ namespace PokemonDataModel
             set;
         }
         IEnumerable<NamedApiResource<Pokemon>> GetAllVarieties();
-        Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync();
+        Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync(PokeApiService apiService);
     }
 }

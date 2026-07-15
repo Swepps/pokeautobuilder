@@ -62,16 +62,19 @@ namespace PokemonDataModel
             get { return Name.Split('-').Contains("gmax"); }
         }
 
-        public static async Task<SmartPokemon> BuildSmartPokemonAsync(Pokemon basePokemon)
+        public static async Task<SmartPokemon> BuildSmartPokemonAsync(
+            Pokemon basePokemon,
+            PokeApiService apiService
+        )
         {
             PokemonSpecies? species =
-                await PokeApiService.Instance!.GetPokemonSpeciesAsync(basePokemon.Species.Name)
+                await apiService.GetPokemonSpeciesAsync(basePokemon.Species.Name)
                 ?? throw new Exception(
                     "Could not load species information from " + basePokemon.Name
                 );
 
             Generation? generation =
-                await PokeApiService.Instance!.GetGenerationAsync(species)
+                await apiService.GetGenerationAsync(species)
                 ?? throw new Exception(
                     "Could not load generation information from " + species.Name
                 );
@@ -190,46 +193,49 @@ namespace PokemonDataModel
             UpdateMultipliers();
         }
 
-        public async Task<PokemonSpecies> GetSpeciesAsync()
+        public async Task<PokemonSpecies> GetSpeciesAsync(PokeApiService apiService)
         {
             if (_loadedSpecies is null)
-                await LoadFromAPI();
+                await LoadFromAPI(apiService);
 
             return _loadedSpecies!;
         }
 
-        public async Task<Generation> GetGenerationAsync()
+        public async Task<Generation> GetGenerationAsync(PokeApiService apiService)
         {
             if (_generation is null)
-                await LoadFromAPI();
+                await LoadFromAPI(apiService);
 
             return _generation!;
         }
 
-        public async Task<List<PokemonMove>> GetMovesAsync()
+        public async Task<List<PokemonMove>> GetMovesAsync(PokeApiService apiService)
         {
             if (Moves is null || Moves.Count == 0)
-                await LoadFromAPI();
+                await LoadFromAPI(apiService);
 
             return Moves!;
         }
 
-        public async Task LoadFromAPI()
+        public async Task LoadFromAPI(PokeApiService apiService)
         {
             _loadedSpecies =
-                await PokeApiService.Instance!.GetPokemonSpeciesAsync(Species.Name)
+                await apiService.GetPokemonSpeciesAsync(Species.Name)
                 ?? throw new Exception("Could not load species information from " + Name);
             _generation =
-                await PokeApiService.Instance!.GetGenerationAsync(_loadedSpecies)
+                await apiService.GetGenerationAsync(_loadedSpecies)
                 ?? throw new Exception(
                     "Could not load generation information from " + Species.Name
                 );
-            Moves = await PokeApiService.Instance!.GetPokemonMovesAsync(this);
+            Moves = await apiService.GetPokemonMovesAsync(this);
         }
 
-        public async Task<List<PokemonMove>> SearchAvailableMoves(string searchTerm)
+        public async Task<List<PokemonMove>> SearchAvailableMoves(
+            string searchTerm,
+            PokeApiService apiService
+        )
         {
-            List<PokemonMove> results = await GetMovesAsync();
+            List<PokemonMove> results = await GetMovesAsync(apiService);
             results = results
                 .Where(move => move.Move.Name.Contains(searchTerm))
                 .OrderBy(move => move.Move.Name)
@@ -237,7 +243,7 @@ namespace PokemonDataModel
             return results;
         }
 
-        public async Task<PokemonMove?> GetSelectedMoveResource(int index)
+        public async Task<PokemonMove?> GetSelectedMoveResource(int index, PokeApiService apiService)
         {
             if (index < 0 || index >= PokemonMoveset.MaxMovesetSize)
                 return null;
@@ -245,7 +251,7 @@ namespace PokemonDataModel
                 return null;
 
             string? moveName = SelectedMoves.GetMoveNames()[index]!;
-            List<PokemonMove> moves = await GetMovesAsync();
+            List<PokemonMove> moves = await GetMovesAsync(apiService);
             return moves.Find(m => m.Move.Name == moveName);
         }
 
@@ -292,11 +298,11 @@ namespace PokemonDataModel
             return false;
         }
 
-        public async Task<bool> SelectMoveAsync(int index, Move? move)
+        public async Task<bool> SelectMoveAsync(int index, Move? move, PokeApiService apiService)
         {
             if (index >= 0 && index < PokemonMoveset.MaxMovesetSize)
             {
-                await SelectedMoves.SetAt(index, move);
+                await SelectedMoves.SetAt(index, move, apiService);
                 return true;
             }
             return false;
@@ -535,9 +541,11 @@ namespace PokemonDataModel
             return varieties;
         }
 
-        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync()
+        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync(
+            PokeApiService apiService
+        )
         {
-            PokemonSpecies species = await GetSpeciesAsync();
+            PokemonSpecies species = await GetSpeciesAsync(apiService);
 
             List<NamedApiResource<Pokemon>> varieties = [];
 

@@ -11,6 +11,7 @@
 @inject IDialogService DialogService
 @inject IJSRuntime JS
 @inject ISnackbar Snackbar
+@inject PokeApiService PokeApiService
 
 @implements IDisposable
 
@@ -237,7 +238,7 @@
 
     protected async Task OnSelectPokemonAsync(SmartPokemon selectedPokemon)
     {
-        _selectedPokemonCanEvolve = await PokeApiService.Instance!.CanEvolve(selectedPokemon);
+        _selectedPokemonCanEvolve = await PokeApiService.CanEvolve(selectedPokemon);
         SelectedPokemon = selectedPokemon;
         _storagePanel = StoragePanel.Edit;
         StateHasChanged();

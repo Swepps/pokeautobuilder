@@ -18,6 +18,7 @@ namespace PokeAutobuilder.Source.Services
     {
         private readonly ILocalStorageService _localStorageService;
         private readonly IApexChartService _apexChartService;
+        private readonly PokeApiService _apiService;
 
         public event Action? OnStorageChange;
         public event Action? OnTeamStorageChange;
@@ -39,11 +40,13 @@ namespace PokeAutobuilder.Source.Services
 
         public ProfileService(
             ILocalStorageService localStorageService,
-            IApexChartService apexChartService
+            IApexChartService apexChartService,
+            PokeApiService apiService
         )
         {
             _localStorageService = localStorageService;
             _apexChartService = apexChartService;
+            _apiService = apiService;
 
             _preferences = new(
                 PREFERENCES_KEY,
@@ -175,7 +178,7 @@ namespace PokeAutobuilder.Source.Services
                 // if profile doesn't contain pokemon types, generate them
                 if (AllTypes.Count == 0)
                 {
-                    AllTypes = await PokeApiService.Instance!.GetAllTypesAsync();
+                    AllTypes = await _apiService.GetAllTypesAsync();
                 }
                 DataModelCache.LoadedTypes = AllTypes;
 

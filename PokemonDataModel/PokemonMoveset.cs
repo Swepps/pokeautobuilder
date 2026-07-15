@@ -64,15 +64,15 @@ namespace PokemonDataModel
             return count;
         }
 
-        public async Task SetAt(int index, Move? move)
+        public async Task SetAt(int index, Move? move, PokeApiService apiService)
         {
 			if (index >= 0 && index < MaxMovesetSize)
 			{
-				await EnsureMovesPopulatedAsync();
+				await EnsureMovesPopulatedAsync(apiService);
                 _moves[index] = move;
                 MoveNames[index] = move?.Name;
 				_multipliersNeedUpdating = true;
-				await UpdateAttackMultipliers();
+				await UpdateAttackMultipliers(apiService);
 			}
 		}
 
@@ -100,7 +100,7 @@ namespace PokemonDataModel
 			}
 		}
 
-        private async Task EnsureMovesPopulatedAsync()
+        private async Task EnsureMovesPopulatedAsync(PokeApiService apiService)
         {
 			// load in move details
 			if (MoveNames.Count > _moves.Count)
@@ -114,19 +114,19 @@ namespace PokemonDataModel
 						continue;
 					}
 
-					_moves.Add(await PokeApiService.Instance!.GetMoveAsync(name));
+					_moves.Add(await apiService.GetMoveAsync(name));
 				}
 			}
 		}
 
-        public async Task UpdateAttackMultipliers()
+        public async Task UpdateAttackMultipliers(PokeApiService apiService)
         {
 			if (!_multipliersNeedUpdating)
 				return;
 
 			_multipliersNeedUpdating = false;
 
-			await EnsureMovesPopulatedAsync();
+			await EnsureMovesPopulatedAsync(apiService);
 
             AttackMultipliers.Clear();
 
@@ -135,7 +135,7 @@ namespace PokemonDataModel
                 if (move is null || move.DamageClass.Name == "status")
                     continue;
 
-				Type? type = await PokeApiService.Instance!.GetTypeAsync(move.Type.Name);
+				Type? type = await apiService.GetTypeAsync(move.Type.Name);
                 if (type is null)
                     continue;
 

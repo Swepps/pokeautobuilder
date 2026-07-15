@@ -31,9 +31,9 @@ namespace PokemonDataModel
             this.SpeciesResource = SpeciesResource;
         }
 
-        public async Task<PokemonSpecies> GetSpecies()
+        public async Task<PokemonSpecies> GetSpecies(PokeApiService apiService)
         {
-            Species ??= await PokeApiService.Instance!.GetPokemonSpeciesAsync(SpeciesResource.Name);
+            Species ??= await apiService.GetPokemonSpeciesAsync(SpeciesResource.Name);
 
             return Species ?? throw new Exception($"Could not load pokemon species: {SpeciesResource.Name}");
 		}
@@ -57,9 +57,11 @@ namespace PokemonDataModel
             return varieties;
         }
 
-        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync()
+        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync(
+            PokeApiService apiService
+        )
         {
-            if (Species == null) await GetSpecies();
+            if (Species == null) await GetSpecies(apiService);
 
             List<NamedApiResource<Pokemon>> varieties = [];
 
@@ -76,18 +78,26 @@ namespace PokemonDataModel
     // for the pokedex combobox
     public class SmartPokedex : List<SmartPokemonEntry>, ILazyPokemonList
     {
-        public SmartPokedex(string name, NamedApiResource<Pokedex> pokedexResource) 
-        { 
-            Name = name; 
+        // SmartPokedex is never persisted (unlike PokemonBox, its sibling ILazyPokemonList
+        // implementer) - it's rebuilt fresh every session from MainLayout, which always has DI
+        // access - so it can take PokeApiService via constructor injection rather than needing it
+        // threaded through GetListAsync as a parameter (which would force a signature change on
+        // the shared ILazyPokemonList interface, including PokemonBox which doesn't need it).
+        public SmartPokedex(PokeApiService apiService, string name, NamedApiResource<Pokedex> pokedexResource)
+        {
+            _apiService = apiService;
+            Name = name;
             PokedexResource = pokedexResource;
         }
-        public SmartPokedex(string name, NamedApiResource<VersionGroup> versionGroupResource)
+        public SmartPokedex(PokeApiService apiService, string name, NamedApiResource<VersionGroup> versionGroupResource)
         {
+            _apiService = apiService;
             Name = name;
             VersionGroupResource = versionGroupResource;
         }
-        public SmartPokedex(string name, Pokedex pokedex) 
+        public SmartPokedex(PokeApiService apiService, string name, Pokedex pokedex)
         {
+            _apiService = apiService;
             Name = name;
             AddPokedex(pokedex);
         }
@@ -95,6 +105,7 @@ namespace PokemonDataModel
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        private readonly PokeApiService _apiService;
         private readonly NamedApiResource<Pokedex>? PokedexResource;
         private readonly NamedApiResource<VersionGroup>? VersionGroupResource;
 
@@ -139,7 +150,7 @@ namespace PokemonDataModel
             {
                 if (PokedexResource is not null)
                 {
-                    Pokedex? fetchedDex = await PokeApiService.Instance!.GetPokedexAsync(PokedexResource);
+                    Pokedex? fetchedDex = await _apiService.GetPokedexAsync(PokedexResource);
                     if (fetchedDex is not null)
                     {
                         AddPokedex(fetchedDex);
@@ -147,12 +158,12 @@ namespace PokemonDataModel
                 }
                 else if (VersionGroupResource is not null)
                 {
-                    VersionGroup group = await PokeApiService.Instance!.GetVersionGroupAsync(VersionGroupResource);
+                    VersionGroup group = await _apiService.GetVersionGroupAsync(VersionGroupResource);
 
                     List<Task<Pokedex?>> pokedexTasks = [];
                     foreach (var pokedex in group.Pokedexes)
                     {
-                        pokedexTasks.Add(PokeApiService.Instance.GetPokedexAsync(pokedex));
+                        pokedexTasks.Add(_apiService.GetPokedexAsync(pokedex));
                     }
                     await Task.WhenAll(pokedexTasks);
 
