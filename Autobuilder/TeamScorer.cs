@@ -49,171 +49,42 @@ namespace Autobuilder
             var (weaknesses, resistances, STABcoverage, movecoverage) = team.CountTypeCoverage();
 
             // --- calculate the scores ---
+            // Resistance/Weakness/STAB/MoveSet each score the same three ways - "All" (full marks
+            // unless some enabled type isn't covered at all; weaknesses have no such score, since
+            // "weak to everything" isn't something we reward the absence of), "Balance" (even
+            // spread across enabled types), and "Amount" (more is better, except weaknesses invert
+            // the curve since more weaknesses is worse) - so those three shapes are factored out
+            // below instead of repeating each one per dimension.
 
             // - Resistance scores -
-            // Resistant to all types
             if (weightings.ResistanceAll > 0 && totalTypes > 0)
-            {
-                result.ResistanceAll = weightings.ResistanceAll;
-                double scorePerType = result.ResistanceAll / totalTypes;
-                foreach (string type in Globals.AllTypes)
-                {
-                    if (
-                        weightings.Types[type] // only reduce if the type is being counted
-                        && resistances.TryGetValue(type, out int count)
-                        && count < 1
-                    )
-                    {
-                        result.ResistanceAll -= scorePerType;
-                    }
-                }
-            }
-            // resistance balance score
+                result.ResistanceAll = CalculateAllTypesScore(resistances, weightings.ResistanceAll, totalTypes, weightings.Types);
             if (weightings.ResistanceBalance > 0 && totalTypes > 0)
-            {
-                double resistancesSD = CalculateStandardDeviation(resistances, weightings);
-                result.ResistanceBalance = 1.0 - (0.2 * resistancesSD);
-                result.ResistanceBalance *= weightings.ResistanceBalance;
-            }
-            // resistance amount score
+                result.ResistanceBalance = CalculateBalanceScore(resistances, weightings.ResistanceBalance, weightings);
             if (weightings.ResistanceAmount > 0 && totalTypes > 0)
-            {
-                int totalInterestedResistances = 0;
-                foreach (string type in Globals.AllTypes)
-                {
-                    if (weightings.Types[type])
-                    {
-                        totalInterestedResistances += resistances[type];
-                    }
-                }
-                // use a semi-logarithmic algorithm to make increasing resistances scale closer to (but never reach) 1.0
-                result.ResistanceAmount =
-                    1.0
-                    - Math.Pow(
-                        (2 * totalTypes - 1) / (2 * totalTypes),
-                        2 * totalInterestedResistances
-                    );
-                result.ResistanceAmount *= weightings.ResistanceAmount;
-            }
+                result.ResistanceAmount = CalculateAmountScore(resistances, weightings.ResistanceAmount, totalTypes, weightings.Types, invert: false);
 
             // - Weaknesses scores -
-            // weaknesses balance score
             if (weightings.WeaknessBalance > 0 && totalTypes > 0)
-            {
-                double weaknessesSD = CalculateStandardDeviation(weaknesses, weightings);
-                result.WeaknessBalance = 1.0 - (0.2 * weaknessesSD);
-                result.WeaknessBalance *= weightings.WeaknessBalance;
-            }
-            // weaknesses amount score
+                result.WeaknessBalance = CalculateBalanceScore(weaknesses, weightings.WeaknessBalance, weightings);
             if (weightings.WeaknessAmount > 0 && totalTypes > 0)
-            {
-                int totalInterestedWeaknesses = 0;
-                foreach (string type in Globals.AllTypes)
-                {
-                    if (weightings.Types[type])
-                    {
-                        totalInterestedWeaknesses += weaknesses[type];
-                    }
-                }
-                // use a semi-logarithmic algorithm to make increasing weakness scale closer to (but never reach) 0
-                result.WeaknessAmount = Math.Pow(
-                    (2 * totalTypes - 1) / (2 * totalTypes),
-                    2 * totalInterestedWeaknesses
-                );
-                result.WeaknessAmount *= weightings.WeaknessAmount;
-            }
+                result.WeaknessAmount = CalculateAmountScore(weaknesses, weightings.WeaknessAmount, totalTypes, weightings.Types, invert: true);
 
             // - STAB scores -
-            // STAB coverage againt all types
             if (weightings.StabAll > 0 && totalTypes > 0)
-            {
-                result.StabAll = weightings.StabAll;
-                double scorePerType = result.StabAll / totalTypes;
-                foreach (string type in Globals.AllTypes)
-                {
-                    if (
-                        weightings.Types[type] // only reduce if the type is being counted
-                        && STABcoverage.TryGetValue(type, out int count)
-                        && count < 1
-                    )
-                    {
-                        result.StabAll -= scorePerType;
-                    }
-                }
-            }
-            // STAB coverage balance score
+                result.StabAll = CalculateAllTypesScore(STABcoverage, weightings.StabAll, totalTypes, weightings.Types);
             if (weightings.StabBalance > 0 && totalTypes > 0)
-            {
-                double stabBalanceSD = CalculateStandardDeviation(STABcoverage, weightings);
-                result.StabBalance = 1.0 - (0.2 * stabBalanceSD);
-                result.StabBalance *= weightings.StabBalance;
-            }
-            // STAB coverage amount
+                result.StabBalance = CalculateBalanceScore(STABcoverage, weightings.StabBalance, weightings);
             if (weightings.StabAmount > 0 && totalTypes > 0)
-            {
-                int totalInterestedStabCoverage = 0;
-                foreach (string type in Globals.AllTypes)
-                {
-                    if (weightings.Types[type])
-                    {
-                        totalInterestedStabCoverage += STABcoverage[type];
-                    }
-                }
-                // use a semi-logarithmic algorithm to make increasing STAB coverage scale closer to (but never reach) 1.0
-                result.StabAmount =
-                    1.0
-                    - Math.Pow(
-                        (2 * totalTypes - 1) / (2 * totalTypes),
-                        2 * totalInterestedStabCoverage
-                    );
-                result.StabAmount *= weightings.StabAmount;
-            }
+                result.StabAmount = CalculateAmountScore(STABcoverage, weightings.StabAmount, totalTypes, weightings.Types, invert: false);
 
             // - Move set scores -
-            // Move set coverage againt all types
             if (weightings.MoveSetAll > 0 && totalTypes > 0)
-            {
-                result.MoveSetAll = weightings.MoveSetAll;
-                double scorePerType = result.MoveSetAll / totalTypes;
-                foreach (string type in Globals.AllTypes)
-                {
-                    if (
-                        weightings.Types[type] // only reduce if the type is being counted
-                        && movecoverage.TryGetValue(type, out int count)
-                        && count < 1
-                    )
-                    {
-                        result.MoveSetAll -= scorePerType;
-                    }
-                }
-            }
-            // move coverage balance score
+                result.MoveSetAll = CalculateAllTypesScore(movecoverage, weightings.MoveSetAll, totalTypes, weightings.Types);
             if (weightings.MoveSetBalance > 0 && totalTypes > 0)
-            {
-                double moveBalanceSD = CalculateStandardDeviation(movecoverage, weightings);
-                result.MoveSetBalance = 1.0 - (0.2 * moveBalanceSD);
-                result.MoveSetBalance *= weightings.MoveSetBalance;
-            }
-            // move set coverage amount
+                result.MoveSetBalance = CalculateBalanceScore(movecoverage, weightings.MoveSetBalance, weightings);
             if (weightings.MoveSetAmount > 0 && totalTypes > 0)
-            {
-                int totalInterestedMoveSetCoverage = 0;
-                foreach (string type in Globals.AllTypes)
-                {
-                    if (weightings.Types[type])
-                    {
-                        totalInterestedMoveSetCoverage += movecoverage[type];
-                    }
-                }
-                // use a semi-logarithmic algorithm to make increasing STAB coverage scale closer to (but never reach) 1.0
-                result.MoveSetAmount =
-                    1.0
-                    - Math.Pow(
-                        (2 * totalTypes - 1) / (2 * totalTypes),
-                        2 * totalInterestedMoveSetCoverage
-                    );
-                result.MoveSetAmount *= weightings.MoveSetAmount;
-            }
+                result.MoveSetAmount = CalculateAmountScore(movecoverage, weightings.MoveSetAmount, totalTypes, weightings.Types, invert: false);
 
             // - Misc Scores -
             // offensive pokemon have good coverage score
@@ -262,6 +133,67 @@ namespace Autobuilder
             variance /= totalTypes;
 
             return Math.Sqrt(variance);
+        }
+
+        // "All" pattern: starts at full weight and loses an even share for every enabled type this
+        // dictionary doesn't cover at all. Shared by ResistanceAll/StabAll/MoveSetAll.
+        private static double CalculateAllTypesScore(
+            Dictionary<string, int> typeCoverage,
+            double weighting,
+            double totalTypes,
+            Dictionary<string, bool> enabledTypes
+        )
+        {
+            double score = weighting;
+            double scorePerType = score / totalTypes;
+            foreach (string type in Globals.AllTypes)
+            {
+                if (
+                    enabledTypes[type] // only reduce if the type is being counted
+                    && typeCoverage.TryGetValue(type, out int count)
+                    && count < 1
+                )
+                {
+                    score -= scorePerType;
+                }
+            }
+            return score;
+        }
+
+        // "Balance" pattern: rewards an even spread across enabled types (low standard deviation).
+        // Shared by all four dimensions (Resistance/Weakness/Stab/MoveSet).
+        private static double CalculateBalanceScore(
+            Dictionary<string, int> typeCoverage,
+            double weighting,
+            AutobuilderWeightings weightings
+        )
+        {
+            double standardDeviation = CalculateStandardDeviation(typeCoverage, weightings);
+            return (1.0 - (0.2 * standardDeviation)) * weighting;
+        }
+
+        // "Amount" pattern: semi-logarithmic scale so more coverage approaches (but never reaches)
+        // a perfect score. Shared by all four dimensions; weaknesses invert the curve since a
+        // higher weakness count should score worse, not better.
+        private static double CalculateAmountScore(
+            Dictionary<string, int> typeCoverage,
+            double weighting,
+            double totalTypes,
+            Dictionary<string, bool> enabledTypes,
+            bool invert
+        )
+        {
+            int totalInterested = 0;
+            foreach (string type in Globals.AllTypes)
+            {
+                if (enabledTypes[type])
+                {
+                    totalInterested += typeCoverage[type];
+                }
+            }
+
+            double curve = Math.Pow((2 * totalTypes - 1) / (2 * totalTypes), 2 * totalInterested);
+            return (invert ? curve : 1.0 - curve) * weighting;
         }
 
         private static void CalculateStatsScore(
