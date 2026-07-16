@@ -1,4 +1,4 @@
-﻿using GeneticSharp;
+using GeneticSharp;
 using PokemonDataModel;
 
 namespace Autobuilder
@@ -6,12 +6,12 @@ namespace Autobuilder
     public class PokemonTeamGeneticAlgorithm
     {
         GeneticAlgorithm? _ga;
-        Timer? _timer;
+        CancellationTokenSource? _cts;
         public event Action<PokemonTeamGeneticAlgorithm>? GenerationRan;
         public PokemonTeamFitness? Fitness { get; private set; }
         public PokemonTeamChromosome? BestChromosome => _ga != null ? _ga.BestChromosome as PokemonTeamChromosome : null;
         public int GenerationsNumber => _ga != null ? _ga.GenerationsNumber : 0;
-        public bool IsRunning => _timer != null;
+        public bool IsRunning => _cts != null;
 
         public void Initialize(int populationsize, PokemonBox box, PokemonTeam lockedMembers, AutobuilderWeightings weightings)
         {
@@ -33,23 +33,24 @@ namespace Autobuilder
 
         public void RunInBackground()
         {
-            if (!IsRunning)
-            {
-                // As is there no way to use a new thread on WebAssembly right now, we wil use a timer
-                // to start a new generation each 1 microsecond. This allows it to run in the background
-                // so the UI thread can be updated. STINKY!!
-                _timer = new Timer(new TimerCallback(_ =>
-                {
-                    if (_ga is null)
-                        return;
+            if (IsRunning)
+                return;
 
-                    _ga.Termination = new GenerationNumberTermination(_ga.GenerationsNumber + 1);
-                    if (_ga.GenerationsNumber > 0)
-                        _ga.Resume();
-                    else
-                        _ga.Start();
-                    GenerationRan?.Invoke(this);
-                }), null, 0, 1);                
+            _cts = new CancellationTokenSource();
+
+            // WebAssembly has no real background thread to hand this off to (and even the newer
+            // WasmEnableThreads support needs cross-origin isolation headers our GitHub Pages host
+            // can't set), so this just runs one generation at a time on the UI thread, yielding
+            // back to the browser's event loop between each so it stays responsive.
+            _ = RunLoopAsync(_cts.Token);
+        }
+
+        async Task RunLoopAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                RunOneGeneration();
+                await Task.Delay(1);
             }
         }
 
@@ -61,22 +62,28 @@ namespace Autobuilder
                 if (_ga is null)
                     return;
 
-                _ga.Termination = new GenerationNumberTermination(_ga.GenerationsNumber + 1);
-                if (_ga.GenerationsNumber > 0)
-                    _ga.Resume();
-                else
-                    _ga.Start();
-                GenerationRan?.Invoke(this);
+                RunOneGeneration();
             }
+        }
+
+        void RunOneGeneration()
+        {
+            if (_ga is null)
+                return;
+
+            _ga.Termination = new GenerationNumberTermination(_ga.GenerationsNumber + 1);
+            if (_ga.GenerationsNumber > 0)
+                _ga.Resume();
+            else
+                _ga.Start();
+            GenerationRan?.Invoke(this);
         }
 
         public void Stop()
         {
-            if (IsRunning && _timer is not null)
-            {
-                _timer.Dispose();
-                _timer = null;
-            }
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
         }
     }
 }

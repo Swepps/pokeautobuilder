@@ -394,17 +394,8 @@
         _ = Profile.UpdatePokemonStorageAsync();
     }
 
-    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString, CancellationToken token)
+    protected Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString, CancellationToken token)
     {
-        if (_searchLocation is not null)
-        {
-            IEnumerable<IPokemonSearchable> list = await _searchLocation.GetListAsync();
-            if (String.IsNullOrEmpty(searchString))
-                return list;
-
-            return list.Where((p) => p.Name.ToLower().Contains(searchString.ToLower()));
-        }
-
-        return Enumerable.Empty<SmartPokemonEntry>();
+        return _searchLocation.SearchAsync(searchString);
     }
 }

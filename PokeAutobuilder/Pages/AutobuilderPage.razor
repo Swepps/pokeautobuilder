@@ -392,6 +392,7 @@
     private PokemonTeamGeneticAlgorithm GeneticAlgorithm = new PokemonTeamGeneticAlgorithm();
     private PokemonTeam BestTeam = new PokemonTeam();
     private List<Tuple<double, PokemonTeam>> UniqueTeamsSorted = new();
+    private readonly HashSet<string> _uniqueTeamSignatures = new();
     private AutobuilderWeightings? BestTeamScore;
     private bool _renderDuringGenerating = true;
 
@@ -544,6 +545,7 @@
         ProgressValue = 0;
         BestOverallFitness = 0;
         UniqueTeamsSorted.Clear();
+        _uniqueTeamSignatures.Clear();
 
         if (_chart is not null)
         {
@@ -587,6 +589,7 @@
         BestTeam.Pokemon.Clear();
         BestTeamScore = null;
         UniqueTeamsSorted.Clear();
+        _uniqueTeamSignatures.Clear();
         if (_chart is not null)
         {
             await _chart.UpdateSeriesAsync(true);
@@ -622,60 +625,17 @@
         StateHasChanged();
     }
 
-    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString, CancellationToken token)
-    {
-        if (SelectedBox is not null)
-        {
-            IEnumerable<IPokemonSearchable> list = await SelectedBox.GetListAsync();
-            if (String.IsNullOrEmpty(searchString))
-                return list;
-
-            return list.Where((p) => p.Name.ToLower().Contains(searchString.ToLower()));
-        }
-
-        return Enumerable.Empty<SmartPokemonEntry>();
-    }
-
     // called after each generation is completed
     void HandleGenerationRan(PokemonTeamGeneticAlgorithm geneticAlgorithm)
     {
         if (geneticAlgorithm.BestChromosome is null)
             return;
 
-        PokemonTeam GeneratedTeam = geneticAlgorithm.BestChromosome.GetTeam();
-        SortGeneratedTeam(ref GeneratedTeam);
-
-        GABestChromFitness = geneticAlgorithm.BestChromosome.Fitness.GetValueOrDefault();
-
-        if (!UniqueTeamsSorted.Any((tuple) => { return tuple.Item2.IsSameTeam(GeneratedTeam); }))
-        {
-            int insertIndex = UniqueTeamsSorted.FindIndex(tuple => tuple.Item1 <= GABestChromFitness);
-
-            if (insertIndex == -1)
-            {
-                UniqueTeamsSorted.Add(new Tuple<double, PokemonTeam>(GABestChromFitness, GeneratedTeam));
-            }
-            else
-            {
-                UniqueTeamsSorted.Insert(insertIndex, new Tuple<double, PokemonTeam>(GABestChromFitness, GeneratedTeam));
-            }
-        }
-
-        _renderDuringGenerating = false;
-
-        if (GABestChromFitness > BestOverallFitness)
-        {
-            BestTeam = GeneratedTeam;
-
-            // calculate the objective score for each param (ignoring input weightings)
-            BestTeamScore = TeamScorer.CalculateScore(BestTeam, new());
-
-            BestOverallFitness = (double)GABestChromFitness;
-            _renderDuringGenerating = true;
-        }
-
+        _renderDuringGenerating = RecordGenerationResult(geneticAlgorithm.BestChromosome);
         GenerationsRan++;
 
+        // always update the chart, even on generations that don't otherwise trigger a page
+        // re-render - this is what gives the "live" fitness graph while the GA is running
         if (_chart is not null)
         {
             _chart.AppendDataAsync([new()
@@ -699,6 +659,45 @@
         }
 
         StateHasChanged();
+    }
+
+    // updates GABestChromFitness/UniqueTeamsSorted/BestTeam bookkeeping for this generation's
+    // best chromosome; returns true if it's a new overall-best team (used to decide whether the
+    // page itself needs a full re-render, separately from the chart which always updates)
+    bool RecordGenerationResult(PokemonTeamChromosome bestChromosome)
+    {
+        PokemonTeam generatedTeam = bestChromosome.GetTeam();
+        SortGeneratedTeam(ref generatedTeam);
+
+        GABestChromFitness = bestChromosome.Fitness.GetValueOrDefault();
+
+        // HashSet lookup instead of scanning UniqueTeamsSorted with IsSameTeam: that scan grows
+        // linearly with every unique team found so far and is paid on every single generation,
+        // which visibly slowed the page down the longer a run went on.
+        if (_uniqueTeamSignatures.Add(generatedTeam.GetCompositionKey()))
+        {
+            int insertIndex = UniqueTeamsSorted.FindIndex(tuple => tuple.Item1 <= GABestChromFitness);
+
+            if (insertIndex == -1)
+            {
+                UniqueTeamsSorted.Add(new Tuple<double, PokemonTeam>(GABestChromFitness, generatedTeam));
+            }
+            else
+            {
+                UniqueTeamsSorted.Insert(insertIndex, new Tuple<double, PokemonTeam>(GABestChromFitness, generatedTeam));
+            }
+        }
+
+        if (GABestChromFitness <= BestOverallFitness)
+            return false;
+
+        BestTeam = generatedTeam;
+
+        // calculate the objective score for each param (ignoring input weightings)
+        BestTeamScore = TeamScorer.CalculateScore(BestTeam, new());
+
+        BestOverallFitness = GABestChromFitness;
+        return true;
     }
 
     private void SortGeneratedTeam(ref PokemonTeam generatedTeam)

@@ -369,91 +369,35 @@ namespace PokemonDataModel
 
             foreach (Type type in LoadedTypes)
             {
-                // get lists of type name to check effectivenesses
-                // don't need full type details, just the names
                 TypeRelations tr = type.DamageRelations;
-                var noDamageTo = tr.NoDamageTo;
-                var noDamageFrom = tr.NoDamageFrom;
-                var halfDamageTo = tr.HalfDamageTo;
-                var halfDamageFrom = tr.HalfDamageFrom;
-                var doubleDamageTo = tr.DoubleDamageTo;
-                var doubleDamageFrom = tr.DoubleDamageFrom;
 
-                // immune types
-                foreach (var namedType in noDamageTo)
-                {
-                    if (Multipliers.Attack.ContainsKey(namedType.Name))
-                    {
-                        Multipliers.Attack[namedType.Name] = Math.Max(
-                            Multipliers.Attack[namedType.Name],
-                            0
-                        );
-                    }
-                    else
-                    {
-                        Multipliers.Attack[namedType.Name] = 0;
-                    }
-                }
-                foreach (var namedType in noDamageFrom)
+                TypeEffectiveness.ApplyOffensiveRelations(Multipliers.Attack, tr);
+
+                // defensive side is unique to a Pokemon's own types (movesets don't have one), and
+                // combines multiplicatively rather than taking the max, since a dual-type Pokemon's
+                // resistances/weaknesses stack (e.g. 4x weak when both types are weak to the same type)
+                foreach (var namedType in tr.NoDamageFrom)
                 {
                     // always set this to 0
                     Multipliers.Defense[namedType.Name] = 0;
                 }
-
-                // resistant types
-                foreach (var namedType in halfDamageTo)
+                foreach (var namedType in tr.HalfDamageFrom)
                 {
-                    if (Multipliers.Attack.ContainsKey(namedType.Name))
-                    {
-                        Multipliers.Attack[namedType.Name] = Math.Max(
-                            Multipliers.Attack[namedType.Name],
-                            0.5
-                        );
-                    }
-                    else
-                    {
-                        Multipliers.Attack[namedType.Name] = 0.5;
-                    }
+                    Multipliers.Defense[namedType.Name] = Multipliers.Defense.TryGetValue(
+                        namedType.Name,
+                        out double existingHalf
+                    )
+                        ? existingHalf * 0.5
+                        : 0.5;
                 }
-                foreach (var namedType in halfDamageFrom)
+                foreach (var namedType in tr.DoubleDamageFrom)
                 {
-                    if (Multipliers.Defense.ContainsKey(namedType.Name))
-                    {
-                        Multipliers.Defense[namedType.Name] =
-                            Multipliers.Defense[namedType.Name] * 0.5;
-                    }
-                    else
-                    {
-                        Multipliers.Defense[namedType.Name] = 0.5;
-                    }
-                }
-
-                // super effective types
-                foreach (var namedType in doubleDamageTo)
-                {
-                    if (Multipliers.Attack.ContainsKey(namedType.Name))
-                    {
-                        Multipliers.Attack[namedType.Name] = Math.Max(
-                            Multipliers.Attack[namedType.Name],
-                            2.0
-                        );
-                    }
-                    else
-                    {
-                        Multipliers.Attack[namedType.Name] = 2.0;
-                    }
-                }
-                foreach (var namedType in doubleDamageFrom)
-                {
-                    if (Multipliers.Defense.ContainsKey(namedType.Name))
-                    {
-                        Multipliers.Defense[namedType.Name] =
-                            Multipliers.Defense[namedType.Name] * 2.0;
-                    }
-                    else
-                    {
-                        Multipliers.Defense[namedType.Name] = 2.0;
-                    }
+                    Multipliers.Defense[namedType.Name] = Multipliers.Defense.TryGetValue(
+                        namedType.Name,
+                        out double existingDouble
+                    )
+                        ? existingDouble * 2.0
+                        : 2.0;
                 }
             }
 

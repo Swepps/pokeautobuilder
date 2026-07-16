@@ -92,6 +92,14 @@ namespace PokemonDataModel
             return true;
         }
 
+        // order-independent identity for this team's composition (sorted Pokemon IDs). Two teams
+        // with the same composition always produce the same key, regardless of slot order, so this
+        // can back a HashSet-based dedupe check instead of comparing every pair with IsSameTeam.
+        public string GetCompositionKey()
+        {
+            return string.Join(",", Pokemon.Where(p => p is not null).Select(p => p!.Id).OrderBy(id => id));
+        }
+
         public int CountMegaPokemon()
         {
             return Pokemon.Count(p => p != null && p.IsMega);

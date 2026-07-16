@@ -23,9 +23,6 @@ namespace Autobuilder
 
         public int Length => m_length;
 
-        // pokemon chromosome vars
-        static Random Random = new Random();
-
         private readonly PokemonBox _box;
         private readonly PokemonTeam _lockedMembers;
 

@@ -119,35 +119,12 @@
         }
     }
 
-    public bool MultipleMegasSelected
-    {
-        get
-        {
-            int megaCount = 0;
-            foreach (var card in cards)
-            {
-                if (card.Pokemon is not null
-                && card.Pokemon.IsMega) megaCount++;
-            }
+    // reads from Session.Team (kept in sync with the cards by PokemonSearchBoxUpdatedAsync on
+    // every selection change) rather than scanning the PokemonSearchBox components directly, so
+    // this validity rule lives on the domain model and can be unit tested without a component tree
+    public bool MultipleMegasSelected => Session.Team.CountMegaPokemon() > 1;
 
-            return megaCount > 1;
-        }
-    }
-
-    public bool MultipleGmaxSelected
-    {
-        get
-        {
-            int gmaxCount = 0;
-            foreach (var card in cards)
-            {
-                if (card.Pokemon is not null
-                && card.Pokemon.IsGmax) gmaxCount++;
-            }
-
-            return gmaxCount > 1;
-        }
-    }
+    public bool MultipleGmaxSelected => Session.Team.CountGmaxPokemon() > 1;
 
     public async void OnClickAddTeamToStorage()
     {
@@ -181,18 +158,9 @@
             StateHasChanged();
     }
 
-    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString, CancellationToken token)
+    protected Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString, CancellationToken token)
     {
-        if (_searchLocation is not null)
-        {
-            IEnumerable<IPokemonSearchable> list = await _searchLocation.GetListAsync();
-            if (String.IsNullOrEmpty(searchString))
-                return list;
-
-            return list.Where((p) => p.Name.ToLower().Contains(searchString.ToLower()));
-        }
-
-        return Enumerable.Empty<SmartPokemonEntry>();
+        return _searchLocation.SearchAsync(searchString);
     }
 
     protected async Task PokemonSearchBoxUpdatedAsync(PokemonSearchBox card)
