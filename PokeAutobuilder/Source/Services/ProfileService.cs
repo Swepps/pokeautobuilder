@@ -1,5 +1,5 @@
 using ApexCharts;
-using AutoBuilder;
+using Autobuilder;
 using Blazored.LocalStorage;
 using PokeApiNet;
 using PokemonDataModel;
@@ -37,7 +37,7 @@ namespace PokeAutobuilder.Source.Services
         private readonly PersistedState<List<PokeApiNet.Type>> _allTypes;
         private readonly PersistedState<PokemonStorage> _pokemonStorage;
         private readonly PersistedState<List<PokemonTeam>> _teamStorage;
-        private readonly PersistedState<AutoBuilderWeightings> _autoBuilderParams;
+        private readonly PersistedState<AutobuilderWeightings> _autobuilderParams;
 
         public ProfileService(
             ILocalStorageService localStorageService,
@@ -67,10 +67,10 @@ namespace PokeAutobuilder.Source.Services
             _teamStorage = new(TEAM_STORAGE_KEY, [], Load<List<PokemonTeam>>, Save);
             _teamStorage.OnChanged += () => OnTeamStorageChange?.Invoke();
 
-            _autoBuilderParams = new(
+            _autobuilderParams = new(
                 AUTOBUILDER_PARAMS,
                 new(
-                    AutoBuilderWeightings.MakeDefaultTypeWeightings(),
+                    AutobuilderWeightings.MakeDefaultTypeWeightings(),
                     resistanceAll: 0.5,
                     resistanceBalance: 0.5,
                     resistanceAmount: 0.5,
@@ -92,7 +92,7 @@ namespace PokeAutobuilder.Source.Services
                     baseStatSpDef: 0.5,
                     baseStatSpe: 0.5
                 ),
-                Load<AutoBuilderWeightings>,
+                Load<AutobuilderWeightings>,
                 Save
             );
         }
@@ -159,10 +159,10 @@ namespace PokeAutobuilder.Source.Services
             set => _teamStorage.Set(value);
         }
 
-        public AutoBuilderWeightings AutoBuilderParams
+        public AutobuilderWeightings AutobuilderParams
         {
-            get => _autoBuilderParams.Value;
-            set => _autoBuilderParams.Set(value);
+            get => _autobuilderParams.Value;
+            set => _autobuilderParams.Set(value);
         }
 
         public async Task LoadProfileStorage()
@@ -214,7 +214,7 @@ namespace PokeAutobuilder.Source.Services
                 await _teamStorage.LoadAsync();
 
                 // load autobuilder params
-                await _autoBuilderParams.LoadAsync();
+                await _autobuilderParams.LoadAsync();
             }
             catch (Exception ex)
             {
@@ -342,7 +342,7 @@ namespace PokeAutobuilder.Source.Services
             return removed;
         }
 
-        public Task SetAutoBuilderParamsAsync(AutoBuilderWeightings weightings) =>
-            _autoBuilderParams.SetAsync(weightings);
+        public Task SetAutobuilderParamsAsync(AutobuilderWeightings weightings) =>
+            _autobuilderParams.SetAsync(weightings);
     }
 }

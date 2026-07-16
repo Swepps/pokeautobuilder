@@ -1,4 +1,4 @@
-﻿@using AutoBuilder
+﻿@using Autobuilder
 @using PokeAutobuilder.Shared.Cards
 @using PokeAutobuilder.Source.Services
 @using PokemonDataModel
@@ -392,7 +392,7 @@
     private PokemonTeamGeneticAlgorithm GeneticAlgorithm = new PokemonTeamGeneticAlgorithm();
     private PokemonTeam BestTeam = new PokemonTeam();
     private List<Tuple<double, PokemonTeam>> UniqueTeamsSorted = new();
-    private AutoBuilderWeightings? BestTeamScore;
+    private AutobuilderWeightings? BestTeamScore;
     private bool _renderDuringGenerating = true;
 
     private int _teamSize = 6;
@@ -436,7 +436,7 @@
     private double GABestChromFitness = 0;
     private double BestOverallFitness = 0;
 
-    public AutoBuilderWeightings GenerationParameters = new();
+    public AutobuilderWeightings GenerationParameters = new();
 
     private class GenerationDataPoint
     {
@@ -501,7 +501,7 @@
                 NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
 
             // load the parameters from the profile
-            GenerationParameters = Profile.AutoBuilderParams;
+            GenerationParameters = Profile.AutobuilderParams;
 
             // set generation ran callback event
             GeneticAlgorithm.GenerationRan += HandleGenerationRan;
@@ -513,7 +513,7 @@
     private ValueTask OnLocationChanging(LocationChangingContext context)
     {
         GeneticAlgorithm.Stop();
-        _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
+        _ = Profile.SetAutobuilderParamsAsync(GenerationParameters);
         return ValueTask.CompletedTask;
     }
 
@@ -524,7 +524,7 @@
             SelectedBox = Profile.PokemonStorage.Boxes.FirstOrDefault();
         }
 
-        GenerationParameters = Profile.AutoBuilderParams;
+        GenerationParameters = Profile.AutobuilderParams;
 
         return base.OnParametersSetAsync();
     }
@@ -551,9 +551,9 @@
         }
 
         // save the params into local storage
-        _ = Profile.SetAutoBuilderParamsAsync(GenerationParameters);
+        _ = Profile.SetAutobuilderParamsAsync(GenerationParameters);
 
-        AutoBuilderWeightings weightingsCopy = new(GenerationParameters);
+        AutobuilderWeightings weightingsCopy = new(GenerationParameters);
         weightingsCopy.AllowMultipleMegas = Profile.AllowMultipleMegas;
         weightingsCopy.AllowMultipleGmax = Profile.AllowMultipleGmax;
 
@@ -600,7 +600,7 @@
     public async Task OnClickLoadIntoEditorAsync()
     {
         await Session.SetTeamAsync(BestTeam);
-        await Profile.SetAutoBuilderParamsAsync(GenerationParameters);
+        await Profile.SetAutobuilderParamsAsync(GenerationParameters);
 
         NavigationManager.NavigateTo("/");
     }

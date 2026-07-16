@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using AutoBuilder;
+using Autobuilder;
 using PokemonDataModel;
 using Xunit;
 using Xunit.Abstractions;
@@ -82,7 +82,7 @@ namespace PokeAutobuilderTests
         public void BenchmarkCalculateScore()
         {
             PokemonTeam team = MakeRealisticTeam();
-            AutoBuilderWeightings weightings = new();
+            AutobuilderWeightings weightings = new();
 
             const int warmupIterations = 1_000;
             const int measuredIterations = 100_000;

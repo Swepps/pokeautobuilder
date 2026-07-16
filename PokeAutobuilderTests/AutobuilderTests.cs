@@ -1,4 +1,4 @@
-using AutoBuilder;
+using Autobuilder;
 using Moq.Protected;
 using Moq;
 using PokeApiNet;
@@ -13,13 +13,13 @@ namespace PokeAutobuilderTests
 {
     using Type = PokeApiNet.Type;
 
-    public class AutoBuilderTests : IAsyncLifetime
+    public class AutobuilderTests : IAsyncLifetime
     {
         private readonly TypeChart typeChart = new();
         private PokeApiService? apiService;
         private readonly ITestOutputHelper output;
 
-        public AutoBuilderTests(ITestOutputHelper output)
+        public AutobuilderTests(ITestOutputHelper output)
         {
             this.output = output;
         }
@@ -48,7 +48,7 @@ namespace PokeAutobuilderTests
             box.Pokemon.Add((await apiService.GetPokemonAsync("kyogre"))!);
 
             PokemonTeamGeneticAlgorithm GA = new();
-            AutoBuilderWeightings weightings = new();
+            AutobuilderWeightings weightings = new();
 
             PokemonTeam BestTeam = new();
             GA.GenerationRan += (g) => 
@@ -98,7 +98,7 @@ namespace PokeAutobuilderTests
             box.Pokemon.Add(gliscor);
 
             PokemonTeamGeneticAlgorithm GA = new();
-            AutoBuilderWeightings weightings = new();
+            AutobuilderWeightings weightings = new();
 
             PokemonTeam bestTeam = new();
             double? bestScore = 0;
@@ -170,7 +170,7 @@ namespace PokeAutobuilderTests
             box.Pokemon.Add(gliscor);
 
             PokemonTeamGeneticAlgorithm GA = new();
-            AutoBuilderWeightings weightings = new();
+            AutobuilderWeightings weightings = new();
 
             PokemonTeam bestTeam = new();
             double? bestScore = 0;
@@ -246,7 +246,7 @@ namespace PokeAutobuilderTests
             box.Pokemon.Add(gliscor);
 
             PokemonTeamGeneticAlgorithm GA = new();
-            AutoBuilderWeightings weightings = new();
+            AutobuilderWeightings weightings = new();
 
             PokemonTeam bestTeam = new();
             double? bestScore = 0;

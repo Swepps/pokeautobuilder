@@ -4,7 +4,7 @@ using Xunit;
 
 namespace PokeAutobuilderTests
 {
-    // Regenerates AutoBuilderTests/Fixtures/sample-box.json - a real Pokemon box for manual/browser
+    // Regenerates AutobuilderTests/Fixtures/sample-box.json - a real Pokemon box for manual/browser
     // testing, so testing a change doesn't require clicking through the search-box + dialog flow
     // for each Pokemon. The output matches the exact shape the app's own storage page "Upload a
     // Pokemon box" button expects (a single PokemonBox, see JsonValidator.TryValidatePokemonBoxJson

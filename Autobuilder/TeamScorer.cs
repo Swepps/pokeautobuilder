@@ -3,20 +3,20 @@ using PokeApiNet;
 using PokemonDataModel;
 using Utility;
 
-namespace AutoBuilder
+namespace Autobuilder
 {
     // Scores how good a team is against a set of weightings - the fitness function at the heart of
     // the genetic algorithm.
     public class TeamScorer
     {
         // The main juice of the team building. this is what decides how good a team is
-        public static AutoBuilderWeightings CalculateScore(
+        public static AutobuilderWeightings CalculateScore(
             PokemonTeam team,
-            AutoBuilderWeightings weightings
+            AutobuilderWeightings weightings
         )
         {
             // use another list of weightings to get the individual score from each parameter
-            AutoBuilderWeightings result = new(
+            AutobuilderWeightings result = new(
                 weightings.Types,
                 resistanceAll: 0.0,
                 resistanceBalance: 0.0,
@@ -241,7 +241,7 @@ namespace AutoBuilder
         // Aah GCSE maths... this seems much easier than I thought it was when I was 15
         private static double CalculateStandardDeviation(
             Dictionary<string, int> typeDictionary,
-            AutoBuilderWeightings weightings
+            AutobuilderWeightings weightings
         )
         {
             double totalTypes = weightings.Types.Where((t) => t.Value).Count();
@@ -266,8 +266,8 @@ namespace AutoBuilder
 
         private static void CalculateStatsScore(
             PokemonTeam team,
-            AutoBuilderWeightings weightings,
-            AutoBuilderWeightings score
+            AutobuilderWeightings weightings,
+            AutobuilderWeightings score
         )
         {
             Dictionary<string, int> statTotals = new Dictionary<string, int>();
@@ -324,7 +324,7 @@ namespace AutoBuilder
 
         private static double CalculateCoverageScore(
             PokemonTeam team,
-            AutoBuilderWeightings weightings
+            AutobuilderWeightings weightings
         )
         {
             double coverageScore = 0;
@@ -385,7 +385,7 @@ namespace AutoBuilder
 
         private static double CalculateResistancesScore(
             PokemonTeam team,
-            AutoBuilderWeightings weightings
+            AutobuilderWeightings weightings
         )
         {
             double resistancesScore = 0;

@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AutoBuilder\AutoBuilder.csproj" />
+    <ProjectReference Include="..\Autobuilder\Autobuilder.csproj" />
     <ProjectReference Include="..\PokemonDataModel\PokemonDataModel.csproj" />
     <ProjectReference Include="..\Utility\Utility.csproj" />
   </ItemGroup>

@@ -13,7 +13,7 @@
 @inject ApexCharts.IApexChartService ApexChartService;
 
 
-<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@ProfileService.IsDarkMode" Theme="AutoBuilderTheme" />
+<MudThemeProvider @ref="_themeProvider" @bind-IsDarkMode="@ProfileService.IsDarkMode" Theme="AutobuilderTheme" />
 <MudPopoverProvider />
 <MudDialogProvider FullWidth="true"
                    MaxWidth="MaxWidth.ExtraExtraLarge" />
@@ -81,7 +81,7 @@
 
     public List<ILazyPokemonList> SearchLocations { get; } = new();
 
-    MudTheme AutoBuilderTheme = new MudTheme()
+    MudTheme AutobuilderTheme = new MudTheme()
         {
             PaletteLight = new PaletteLight()
             {

@@ -1,4 +1,4 @@
-using AutoBuilder;
+using Autobuilder;
 using Moq.Protected;
 using Moq;
 using PokeApiNet;

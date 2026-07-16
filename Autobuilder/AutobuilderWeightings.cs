@@ -1,10 +1,10 @@
 using Utility;
 
-namespace AutoBuilder
+namespace Autobuilder
 {
     // contains doubles that represent the importance of each parameter for team generation
     // all doubles are between 0 and 1.0
-    public class AutoBuilderWeightings(
+    public class AutobuilderWeightings(
         Dictionary<string, bool> typeWeightings,
         double resistanceAll = 1.0,
         double resistanceBalance = 1.0,
@@ -68,11 +68,11 @@ namespace AutoBuilder
         public bool AllowMultipleMegas { get; set; } = allowMultipleMegas;
         public bool AllowMultipleGmax { get; set; } = allowMultipleGmax;
 
-        public AutoBuilderWeightings()
+        public AutobuilderWeightings()
             : this(MakeDefaultTypeWeightings()) { }
 
         // copy constructor
-        public AutoBuilderWeightings(AutoBuilderWeightings clone)
+        public AutobuilderWeightings(AutobuilderWeightings clone)
             : this(
                 clone.Types,
                 resistanceAll: clone.ResistanceAll,

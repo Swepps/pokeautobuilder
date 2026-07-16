@@ -1,13 +1,13 @@
 ﻿using GeneticSharp;
 using PokemonDataModel;
 
-namespace AutoBuilder
+namespace Autobuilder
 {
     public class PokemonTeamFitness : IFitness
     {
-        private readonly AutoBuilderWeightings _weightings;
+        private readonly AutobuilderWeightings _weightings;
 
-        public PokemonTeamFitness(AutoBuilderWeightings weightings)
+        public PokemonTeamFitness(AutobuilderWeightings weightings)
         {
             _weightings = weightings;
         }
