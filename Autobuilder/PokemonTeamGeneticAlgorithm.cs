@@ -1,4 +1,4 @@
-﻿using GeneticSharp;
+using GeneticSharp;
 using PokemonDataModel;
 
 namespace Autobuilder
@@ -6,12 +6,12 @@ namespace Autobuilder
     public class PokemonTeamGeneticAlgorithm
     {
         GeneticAlgorithm? _ga;
-        Timer? _timer;
+        CancellationTokenSource? _cts;
         public event Action<PokemonTeamGeneticAlgorithm>? GenerationRan;
         public PokemonTeamFitness? Fitness { get; private set; }
         public PokemonTeamChromosome? BestChromosome => _ga != null ? _ga.BestChromosome as PokemonTeamChromosome : null;
         public int GenerationsNumber => _ga != null ? _ga.GenerationsNumber : 0;
-        public bool IsRunning => _timer != null;
+        public bool IsRunning => _cts != null;
 
         public void Initialize(int populationsize, PokemonBox box, PokemonTeam lockedMembers, AutobuilderWeightings weightings)
         {
@@ -31,24 +31,26 @@ namespace Autobuilder
             _ga.MutationProbability = 0.2f;
         }
 
-        readonly object _lock = new();
-
         public void RunInBackground()
         {
-            lock (_lock)
-            {
-                if (IsRunning)
-                    return;
+            if (IsRunning)
+                return;
 
-                // There is no way to use a new thread on WebAssembly right now, so we use a timer
-                // to run one generation per tick, letting the UI thread stay responsive in between.
-                _timer = new Timer(new TimerCallback(_ =>
-                {
-                    lock (_lock)
-                    {
-                        RunOneGeneration();
-                    }
-                }), null, 0, 1);
+            _cts = new CancellationTokenSource();
+
+            // WebAssembly has no real background thread to hand this off to (and even the newer
+            // WasmEnableThreads support needs cross-origin isolation headers our GitHub Pages host
+            // can't set), so this just runs one generation at a time on the UI thread, yielding
+            // back to the browser's event loop between each so it stays responsive.
+            _ = RunLoopAsync(_cts.Token);
+        }
+
+        async Task RunLoopAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                RunOneGeneration();
+                await Task.Delay(1);
             }
         }
 
@@ -79,14 +81,9 @@ namespace Autobuilder
 
         public void Stop()
         {
-            lock (_lock)
-            {
-                if (IsRunning && _timer is not null)
-                {
-                    _timer.Dispose();
-                    _timer = null;
-                }
-            }
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
         }
     }
 }
