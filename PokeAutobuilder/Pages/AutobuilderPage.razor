@@ -622,20 +622,6 @@
         StateHasChanged();
     }
 
-    protected async Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString, CancellationToken token)
-    {
-        if (SelectedBox is not null)
-        {
-            IEnumerable<IPokemonSearchable> list = await SelectedBox.GetListAsync();
-            if (String.IsNullOrEmpty(searchString))
-                return list;
-
-            return list.Where((p) => p.Name.ToLower().Contains(searchString.ToLower()));
-        }
-
-        return Enumerable.Empty<SmartPokemonEntry>();
-    }
-
     // called after each generation is completed
     void HandleGenerationRan(PokemonTeamGeneticAlgorithm geneticAlgorithm)
     {
