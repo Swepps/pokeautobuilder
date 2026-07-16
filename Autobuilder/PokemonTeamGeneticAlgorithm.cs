@@ -19,10 +19,18 @@ namespace Autobuilder
             Fitness = new PokemonTeamFitness(weightings);
             var chromosome = new PokemonTeamChromosome(box, lockedMembers);
 
-            // This operators are classic genetic algorithm operators that lead to a good solution on TSP,
-            // but you can try others combinations and see what result you get.
-            var crossover = new OrderedCrossover();
-            var mutation = new ReverseSequenceMutation();
+            // OrderedCrossover and ReverseSequenceMutation are classic TSP operators built for
+            // permutation encodings (every gene value appears exactly once, order matters).
+            // A team isn't a permutation - genes are drawn independently from a much larger box
+            // and team order doesn't affect score - so those operators don't fit:
+            // ReverseSequenceMutation only reorders positions, which never changes the resulting
+            // team, so it could never introduce a Pokemon that wasn't in the initial population.
+            // UniformCrossover recombines genes per-slot without assuming a permutation, and
+            // UniformMutation(allGenesMutable: true) uses PokemonTeamChromosome.GenerateGene to
+            // swap in a fresh random Pokemon per slot, which is what actually injects new genetic
+            // material generation over generation.
+            var crossover = new UniformCrossover();
+            var mutation = new UniformMutation(true);
             var selection = new RouletteWheelSelection();
             var population = new Population(populationsize, populationsize, chromosome);
 
