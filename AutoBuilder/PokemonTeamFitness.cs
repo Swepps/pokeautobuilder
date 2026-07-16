@@ -19,7 +19,7 @@ namespace AutoBuilder
 
             PokemonTeam team = pokemonTeamChromosome.GetTeam();
 
-            pokemonTeamChromosome.WeightingScores = AutoBuilder.CalculateScore(team, _weightings);
+            pokemonTeamChromosome.WeightingScores = TeamScorer.CalculateScore(team, _weightings);
 
             double fitness = pokemonTeamChromosome.WeightingScores.SumWeightings();
 

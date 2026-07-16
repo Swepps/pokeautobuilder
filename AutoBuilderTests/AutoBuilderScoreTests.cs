@@ -5,7 +5,7 @@ using Xunit;
 
 namespace PokeAutobuilderTests
 {
-    // Tests for AutoBuilder.CalculateScore (AutoBuilder/AutoBuilder.cs) - the scoring heart of the
+    // Tests for TeamScorer.CalculateScore (AutoBuilder/TeamScorer.cs) - the scoring heart of the
     // genetic algorithm. Fully offline: uses TestFixtures.MakeScoringPokemon to inject exact
     // Defense/Attack/move-coverage values directly, sidestepping SmartPokemon's own type-chart
     // resolution (that's covered separately by SmartPokemonMultiplierTests) so these tests are
@@ -75,7 +75,7 @@ namespace PokeAutobuilderTests
             PokemonTeam team = new();
             AutoBuilderWeightings weightings = new(); // all defaults "on"
 
-            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+            AutoBuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
 
             Assert.Equal(0.0, result.SumWeightings());
         }
@@ -91,7 +91,7 @@ namespace PokeAutobuilderTests
 
             AutoBuilderWeightings weightings = ZeroedWeightings(baseStatTotal: 1.0, baseStatHp: 1.0);
 
-            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+            AutoBuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
 
             Assert.Equal(300 / 600.0, result.BaseStatHp);
             // the other stat scores shouldn't have been touched since their weightings are 0
@@ -107,7 +107,7 @@ namespace PokeAutobuilderTests
 
             AutoBuilderWeightings weightings = ZeroedWeightings(resistanceAll: 1.0);
 
-            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+            AutoBuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
 
             Assert.Equal(1.0, result.ResistanceAll, precision: 10);
         }
@@ -124,7 +124,7 @@ namespace PokeAutobuilderTests
 
             AutoBuilderWeightings weightings = ZeroedWeightings(resistanceAll: 1.0);
 
-            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+            AutoBuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
 
             double expected = 1.0 - (1.0 / Globals.AllTypes.Count);
             Assert.Equal(expected, result.ResistanceAll, precision: 10);
@@ -138,7 +138,7 @@ namespace PokeAutobuilderTests
 
             AutoBuilderWeightings weightings = ZeroedWeightings(weaknessAmount: 1.0);
 
-            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+            AutoBuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
 
             Assert.Equal(1.0, result.WeaknessAmount, precision: 10);
         }
@@ -154,8 +154,8 @@ namespace PokeAutobuilderTests
 
             AutoBuilderWeightings weightings = ZeroedWeightings(weaknessAmount: 1.0);
 
-            AutoBuilderWeightings fewResult = AutoBuilder.AutoBuilder.CalculateScore(MakeTeam(fewMon), weightings);
-            AutoBuilderWeightings manyResult = AutoBuilder.AutoBuilder.CalculateScore(MakeTeam(manyMon), weightings);
+            AutoBuilderWeightings fewResult = TeamScorer.CalculateScore(MakeTeam(fewMon), weightings);
+            AutoBuilderWeightings manyResult = TeamScorer.CalculateScore(MakeTeam(manyMon), weightings);
 
             Assert.True(fewResult.WeaknessAmount < 1.0);
             Assert.True(manyResult.WeaknessAmount < fewResult.WeaknessAmount);
@@ -180,8 +180,8 @@ namespace PokeAutobuilderTests
 
             AutoBuilderWeightings weightings = ZeroedWeightings(resistanceBalance: 1.0);
 
-            AutoBuilderWeightings evenResult = AutoBuilder.AutoBuilder.CalculateScore(MakeTeam(evenMon), weightings);
-            AutoBuilderWeightings concentratedResult = AutoBuilder.AutoBuilder.CalculateScore(
+            AutoBuilderWeightings evenResult = TeamScorer.CalculateScore(MakeTeam(evenMon), weightings);
+            AutoBuilderWeightings concentratedResult = TeamScorer.CalculateScore(
                 MakeTeam(concentratedMon),
                 weightings
             );
@@ -204,11 +204,11 @@ namespace PokeAutobuilderTests
 
             AutoBuilderWeightings weightings = ZeroedWeightings(moveSetAll: 1.0);
 
-            AutoBuilderWeightings fullResult = AutoBuilder.AutoBuilder.CalculateScore(
+            AutoBuilderWeightings fullResult = TeamScorer.CalculateScore(
                 MakeTeam(fullCoverageMon),
                 weightings
             );
-            AutoBuilderWeightings partialResult = AutoBuilder.AutoBuilder.CalculateScore(
+            AutoBuilderWeightings partialResult = TeamScorer.CalculateScore(
                 MakeTeam(partialCoverageMon),
                 weightings
             );
@@ -238,7 +238,7 @@ namespace PokeAutobuilderTests
 
             AutoBuilderWeightings weightings = ZeroedWeightings(coverageOnOffensive: 1.0);
 
-            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+            AutoBuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
 
             // countCoverage = 2 STAB types (fire, water) + 1 move-covered type (grass) = 3
             // offensiveFactor = (100 + 50) / (0.66 * (50 + 50 + 50)) = 150 / 99
@@ -272,7 +272,7 @@ namespace PokeAutobuilderTests
 
             AutoBuilderWeightings weightings = ZeroedWeightings(resistancesOnDefensive: 1.0);
 
-            AutoBuilderWeightings result = AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+            AutoBuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
 
             // countResistances = (1/0.5 - 1) + (1/0.25 - 1) + (1/2.0 - 1) = 1.0 + 3.0 - 0.5 = 3.5
             // (types not in the Defense dict are neutral and contribute 0, per the comment in

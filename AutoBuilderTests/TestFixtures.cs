@@ -146,7 +146,7 @@ namespace PokeAutobuilderTests
         // Builds a SmartPokemon with no real type-chart resolution at all (Types is empty, so
         // UpdateMultipliers has nothing to compute) and lets the caller inject exact
         // Defense/Attack/move-coverage multipliers directly. Use this for tests that care about
-        // team-level scoring math (AutoBuilder.CalculateScore) rather than SmartPokemon's own
+        // team-level scoring math (TeamScorer.CalculateScore) rather than SmartPokemon's own
         // type-effectiveness logic - it sidesteps DataModelCache entirely.
         public static SmartPokemon MakeScoringPokemon(
             string name,

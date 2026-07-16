@@ -668,7 +668,7 @@
             BestTeam = GeneratedTeam;
 
             // calculate the objective score for each param (ignoring input weightings)
-            BestTeamScore = AutoBuilder.CalculateScore(BestTeam, new());
+            BestTeamScore = TeamScorer.CalculateScore(BestTeam, new());
 
             BestOverallFitness = (double)GABestChromFitness;
             _renderDuringGenerating = true;

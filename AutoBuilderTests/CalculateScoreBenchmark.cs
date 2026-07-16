@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 namespace PokeAutobuilderTests
 {
     // Throwaway benchmark for the PokemonTeam type-coverage counting hot path in
-    // AutoBuilder.CalculateScore (the genetic algorithm's fitness function, called once per
+    // TeamScorer.CalculateScore (the genetic algorithm's fitness function, called once per
     // chromosome per generation). Not a correctness test - run with:
     //   dotnet test --filter "FullyQualifiedName~CalculateScoreBenchmark"
     public class CalculateScoreBenchmark
@@ -89,13 +89,13 @@ namespace PokeAutobuilderTests
 
             for (int i = 0; i < warmupIterations; i++)
             {
-                AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+                TeamScorer.CalculateScore(team, weightings);
             }
 
             Stopwatch sw = Stopwatch.StartNew();
             for (int i = 0; i < measuredIterations; i++)
             {
-                AutoBuilder.AutoBuilder.CalculateScore(team, weightings);
+                TeamScorer.CalculateScore(team, weightings);
             }
             sw.Stop();
 
