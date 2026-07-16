@@ -49,8 +49,7 @@ namespace PokemonDataModel
 
         public SmartPokemon GetRandomPokemon()
         {
-            Random rand = new();
-            SmartPokemon randPokemon = Pokemon[rand.Next(0, Pokemon.Count)];
+            SmartPokemon randPokemon = Pokemon[Random.Shared.Next(0, Pokemon.Count)];
             return randPokemon;
         }
 
@@ -68,9 +67,8 @@ namespace PokemonDataModel
             }
 
             // generate the random members and stick into an array for later
-            Random rand = new();
             int numOfRandMembers = PokemonTeam.MaxTeamSize - lockedMembers.CountPokemon();
-            List<SmartPokemon> randomMembers = Pokemon.OrderBy(p => rand.Next()).Take(numOfRandMembers).ToList();
+            List<SmartPokemon> randomMembers = Pokemon.OrderBy(p => Random.Shared.Next()).Take(numOfRandMembers).ToList();
 
             // create a new team using lockedMembers and random members
             PokemonTeam newTeam = new();

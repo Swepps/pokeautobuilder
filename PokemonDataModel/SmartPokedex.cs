@@ -69,8 +69,7 @@ namespace PokemonDataModel
 
         public SmartPokemonEntry? RandomPokemon()
         {
-            Random rand = new Random();
-            return this[rand.Next(Count)];
+            return this[Random.Shared.Next(Count)];
         }
 
         public async Task<IEnumerable<IPokemonSearchable>> GetListAsync()
