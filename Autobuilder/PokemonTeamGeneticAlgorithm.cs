@@ -31,25 +31,24 @@ namespace Autobuilder
             _ga.MutationProbability = 0.2f;
         }
 
+        readonly object _lock = new();
+
         public void RunInBackground()
         {
-            if (!IsRunning)
+            lock (_lock)
             {
-                // As is there no way to use a new thread on WebAssembly right now, we wil use a timer
-                // to start a new generation each 1 microsecond. This allows it to run in the background
-                // so the UI thread can be updated. STINKY!!
+                if (IsRunning)
+                    return;
+
+                // There is no way to use a new thread on WebAssembly right now, so we use a timer
+                // to run one generation per tick, letting the UI thread stay responsive in between.
                 _timer = new Timer(new TimerCallback(_ =>
                 {
-                    if (_ga is null)
-                        return;
-
-                    _ga.Termination = new GenerationNumberTermination(_ga.GenerationsNumber + 1);
-                    if (_ga.GenerationsNumber > 0)
-                        _ga.Resume();
-                    else
-                        _ga.Start();
-                    GenerationRan?.Invoke(this);
-                }), null, 0, 1);                
+                    lock (_lock)
+                    {
+                        RunOneGeneration();
+                    }
+                }), null, 0, 1);
             }
         }
 
@@ -61,21 +60,32 @@ namespace Autobuilder
                 if (_ga is null)
                     return;
 
-                _ga.Termination = new GenerationNumberTermination(_ga.GenerationsNumber + 1);
-                if (_ga.GenerationsNumber > 0)
-                    _ga.Resume();
-                else
-                    _ga.Start();
-                GenerationRan?.Invoke(this);
+                RunOneGeneration();
             }
+        }
+
+        void RunOneGeneration()
+        {
+            if (_ga is null)
+                return;
+
+            _ga.Termination = new GenerationNumberTermination(_ga.GenerationsNumber + 1);
+            if (_ga.GenerationsNumber > 0)
+                _ga.Resume();
+            else
+                _ga.Start();
+            GenerationRan?.Invoke(this);
         }
 
         public void Stop()
         {
-            if (IsRunning && _timer is not null)
+            lock (_lock)
             {
-                _timer.Dispose();
-                _timer = null;
+                if (IsRunning && _timer is not null)
+                {
+                    _timer.Dispose();
+                    _timer = null;
+                }
             }
         }
     }
