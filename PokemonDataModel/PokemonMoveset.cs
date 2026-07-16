@@ -56,7 +56,7 @@ namespace PokemonDataModel
         public int CountMoves()
         {
             int count = 0;
-            for (int i = 0; i < MaxMovesetSize; i++)
+            for (int i = 0; i < Math.Min(MaxMovesetSize, _moves.Count); i++)
             {
                 Move? m = _moves[i];
                 if (m != null) count++;
@@ -64,14 +64,15 @@ namespace PokemonDataModel
             return count;
         }
 
-        public async Task SetAt(int index, Move? move)
+        public async Task SetAt(int index, Move? move, PokeApiService apiService)
         {
 			if (index >= 0 && index < MaxMovesetSize)
 			{
+				await EnsureMovesPopulatedAsync(apiService);
                 _moves[index] = move;
                 MoveNames[index] = move?.Name;
 				_multipliersNeedUpdating = true;
-				await UpdateAttackMultipliers();
+				await UpdateAttackMultipliers(apiService);
 			}
 		}
 
@@ -99,18 +100,13 @@ namespace PokemonDataModel
 			}
 		}
 
-        public async Task UpdateAttackMultipliers()
+        private async Task EnsureMovesPopulatedAsync(PokeApiService apiService)
         {
-			if (!_multipliersNeedUpdating)
-				return;
-
-			_multipliersNeedUpdating = false;
-
 			// load in move details
 			if (MoveNames.Count > _moves.Count)
 			{
 				_moves.Clear();
-				foreach (string? name in MoveNames) 
+				foreach (string? name in MoveNames)
 				{
 					if (name is null)
 					{
@@ -118,9 +114,19 @@ namespace PokemonDataModel
 						continue;
 					}
 
-					_moves.Add(await PokeApiService.Instance!.GetMoveAsync(name));
+					_moves.Add(await apiService.GetMoveAsync(name));
 				}
 			}
+		}
+
+        public async Task UpdateAttackMultipliers(PokeApiService apiService)
+        {
+			if (!_multipliersNeedUpdating)
+				return;
+
+			_multipliersNeedUpdating = false;
+
+			await EnsureMovesPopulatedAsync(apiService);
 
             AttackMultipliers.Clear();
 
@@ -129,7 +135,7 @@ namespace PokemonDataModel
                 if (move is null || move.DamageClass.Name == "status")
                     continue;
 
-				Type? type = await PokeApiService.Instance!.GetTypeAsync(move.Type.Name);
+				Type? type = await apiService.GetTypeAsync(move.Type.Name);
                 if (type is null)
                     continue;
 

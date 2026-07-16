@@ -1,12 +1,5 @@
-﻿using Accord;
-using Accord.IO;
-using AutoBuilder;
 using Blazored.SessionStorage;
-using PokeApiNet;
 using PokemonDataModel;
-using Utility;
-using static MudBlazor.Colors;
-using static PokeAutobuilder.Pages.TeamBuilderPage;
 
 namespace PokeAutobuilder.Source.Services
 {
@@ -18,55 +11,51 @@ namespace PokeAutobuilder.Source.Services
 
         // global variables
         private static readonly string POKEMON_TEAM_KEY = "pokemon_team";
-        private static readonly string AUTOBUILDER_PARAMS = "autobuilder_params";
         private static readonly string SEARCH_LOCATION = "search_location";
 
-        // the session team should always contain 6 members
-        private PokemonTeam _pokemonTeam = new();
+        private readonly PersistedState<PokemonTeam> _team;
+        private readonly PersistedState<string> _searchLocation;
+
         public PokemonTeam Team
         {
-            get => _pokemonTeam;
-            set { _ = SetTeamAsync(value); }
+            get => _team.Value;
+            set => _team.Set(NormalizeTeamSize(value));
         }
 
-        private string _searchLocation = "National Pokédex";
         public string SearchLocation
         {
-            get => _searchLocation;
-            set { _ = SetSearchLocationAsync(value); }
+            get => _searchLocation.Value;
+            set => _searchLocation.Set(value);
         }
 
         public SessionService(ISessionStorageService sessionStorageService)
         {
             _sessionStorageService = sessionStorageService;
+
+            _team = new(POKEMON_TEAM_KEY, new(), Load<PokemonTeam>, Save);
+            _team.OnChanged += () => OnTeamChange?.Invoke();
+
+            _searchLocation = new(SEARCH_LOCATION, "National Pokédex", Load<string>, Save);
         }
+
+        private async Task<T?> Load<T>(string key) =>
+            await _sessionStorageService.GetItemAsync<T>(key);
+
+        private async Task Save<T>(string key, T value) =>
+            await _sessionStorageService.SetItemAsync(key, value);
 
         public async Task LoadSessionStorage()
         {
-            var taskPokemonTeam = _sessionStorageService.GetItemAsync<PokemonTeam>(
-                POKEMON_TEAM_KEY
-            );
-            var taskAutobuilderParams = _sessionStorageService.GetItemAsync<AutoBuilderWeightings>(
-                AUTOBUILDER_PARAMS
-            );
-            var taskSearchLocation = _sessionStorageService.GetItemAsync<string>(SEARCH_LOCATION);
+            await Task.WhenAll(_team.LoadAsync(), _searchLocation.LoadAsync());
 
-            await Task.WhenAll(
-                taskPokemonTeam.AsTask(),
-                taskAutobuilderParams.AsTask(),
-                taskSearchLocation.AsTask()
-            );
-
-            _pokemonTeam = taskPokemonTeam.Result ?? new();
-            if (_pokemonTeam.Pokemon.Count == 0)
+            if (_team.Value.Pokemon.Count == 0)
             {
                 // initialize with an empty team of 6
                 for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
                 {
-                    _pokemonTeam.Pokemon.Add(null);
+                    _team.Value.Pokemon.Add(null);
                 }
             }
-            _searchLocation = taskSearchLocation.Result ?? "National Pokédex";
         }
 
         public async Task ClearSessionDataAsync()
@@ -74,25 +63,9 @@ namespace PokeAutobuilder.Source.Services
             await _sessionStorageService.ClearAsync();
         }
 
-        public async Task UpdatePokemonTeamAsync()
-        {
-            await SetTeamAsync(Team);
-        }
+        public Task UpdatePokemonTeamAsync() => SetTeamAsync(Team);
 
-        public async Task SetTeamAsync(PokemonTeam team)
-        {
-            _pokemonTeam = team;
-            // ensure the team has the correct number of Pokemon
-            if (_pokemonTeam.Pokemon.Count < PokemonTeam.MaxTeamSize)
-            {
-                for (int i = _pokemonTeam.Pokemon.Count; i < PokemonTeam.MaxTeamSize; i++)
-                {
-                    _pokemonTeam.Pokemon.Add(null);
-                }
-            }
-            OnTeamChange?.Invoke();
-            await _sessionStorageService.SetItemAsync(POKEMON_TEAM_KEY, team);
-        }
+        public Task SetTeamAsync(PokemonTeam team) => _team.SetAsync(NormalizeTeamSize(team));
 
         public async Task SetTeamPokemonAsync(int index, SmartPokemon? pokemon)
         {
@@ -103,10 +76,17 @@ namespace PokeAutobuilder.Source.Services
             await SetTeamAsync(Team);
         }
 
-        public async Task SetSearchLocationAsync(string searchLocation)
+        public Task SetSearchLocationAsync(string searchLocation) =>
+            _searchLocation.SetAsync(searchLocation);
+
+        private static PokemonTeam NormalizeTeamSize(PokemonTeam team)
         {
-            _searchLocation = searchLocation;
-            await _sessionStorageService.SetItemAsync(SEARCH_LOCATION, searchLocation);
+            // ensure the team has the correct number of Pokemon
+            for (int i = team.Pokemon.Count; i < PokemonTeam.MaxTeamSize; i++)
+            {
+                team.Pokemon.Add(null);
+            }
+            return team;
         }
     }
 }

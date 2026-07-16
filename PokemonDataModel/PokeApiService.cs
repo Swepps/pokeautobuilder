@@ -7,14 +7,13 @@ namespace PokemonDataModel
 
     public class PokeApiService
     {
-        public static PokeApiService? Instance { get; private set; }
-
         private readonly PokeApiClient ApiClient;
+        private readonly TypeChart _typeChart;
 
-        public PokeApiService(HttpClient httpClient)
+        public PokeApiService(HttpClient httpClient, TypeChart typeChart)
         {
             ApiClient = new PokeApiClient(httpClient);
-            Instance = this;
+            _typeChart = typeChart;
         }
 
         // -- API access functions --
@@ -59,7 +58,7 @@ namespace PokemonDataModel
 
             if (nationalDex is not null)
             {
-                SmartPokedex smNatDex = new SmartPokedex("National Pokédex", nationalDex);
+                SmartPokedex smNatDex = new SmartPokedex(this, "National Pokédex", nationalDex);
                 return smNatDex;
             }
 
@@ -144,7 +143,7 @@ namespace PokemonDataModel
             try
             {
                 Pokemon pokemon = await ApiClient.GetResourceAsync<Pokemon>(pokemonName);
-                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon);
+                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon, this, _typeChart);
 
                 return smartPokemon;
             }
@@ -160,7 +159,7 @@ namespace PokemonDataModel
             try
             {
                 Pokemon pokemon = await ApiClient.GetResourceAsync<Pokemon>(pokedexId);
-                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon);
+                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon, this, _typeChart);
 
                 return smartPokemon;
             }
@@ -205,7 +204,7 @@ namespace PokemonDataModel
         {
             try
             {
-                PokemonSpecies species = await pokemon.GetSpeciesAsync();
+                PokemonSpecies species = await pokemon.GetSpeciesAsync(this);
 
                 // a species id only resolves to its *default* variety, so walking the chain by id loses
                 // the current form entirely (e.g. marowak-alola -> id 105 -> plain Kanto marowak).
@@ -341,7 +340,7 @@ namespace PokemonDataModel
             List<SmartPokemon> result = [];
             try
             {
-                PokemonSpecies species = await pokemon.GetSpeciesAsync();
+                PokemonSpecies species = await pokemon.GetSpeciesAsync(this);
                 EvolutionChain chain = await ApiClient.GetResourceAsync(species.EvolutionChain);
 
                 ChainLink? chainLink = FindPokemonChainLink(chain.Chain, species.Name);
@@ -377,7 +376,7 @@ namespace PokemonDataModel
         {
             try
             {
-                PokemonSpecies species = await pokemon.GetSpeciesAsync();
+                PokemonSpecies species = await pokemon.GetSpeciesAsync(this);
                 EvolutionChain chain = await ApiClient.GetResourceAsync(species.EvolutionChain);
 
                 ChainLink? chainLink = FindPokemonChainLink(chain.Chain, species.Name);

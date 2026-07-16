@@ -2,6 +2,8 @@
 @using PokeAutobuilder.Shared.Cards
 @using PokeAutobuilder.Shared
 
+@inject PokeApiService PokeApiService
+
 <MudDialog>
     <DialogContent>
         <MudGrid>
@@ -64,7 +66,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        _evolutions = await PokeApiService.Instance!.GetNextEvolutions(Pokemon!);
+        _evolutions = await PokeApiService.GetNextEvolutions(Pokemon!);
         if (_evolutions.Count == 0)
         {
             _noEvolutions = true;

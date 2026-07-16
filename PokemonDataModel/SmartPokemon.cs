@@ -7,24 +7,6 @@ namespace PokemonDataModel
 {
     using Type = PokeApiNet.Type;
 
-    public class Multipliers
-    {
-        public Dictionary<string, double> Defense;
-        public Dictionary<string, double> Attack;
-
-        public Multipliers()
-        {
-            Defense = new Dictionary<string, double>();
-            Attack = new Dictionary<string, double>();
-        }
-
-        public void Clear()
-        {
-            Defense.Clear();
-            Attack.Clear();
-        }
-    }
-
     public class SmartPokemon : Pokemon, IPokemonSearchable
     {
         public PokemonAbility? SelectedAbility { get; set; }
@@ -62,24 +44,33 @@ namespace PokemonDataModel
             get { return Name.Split('-').Contains("gmax"); }
         }
 
-        public static async Task<SmartPokemon> BuildSmartPokemonAsync(Pokemon basePokemon)
+        public static async Task<SmartPokemon> BuildSmartPokemonAsync(
+            Pokemon basePokemon,
+            PokeApiService apiService,
+            TypeChart typeChart
+        )
         {
             PokemonSpecies? species =
-                await PokeApiService.Instance!.GetPokemonSpeciesAsync(basePokemon.Species.Name)
+                await apiService.GetPokemonSpeciesAsync(basePokemon.Species.Name)
                 ?? throw new Exception(
                     "Could not load species information from " + basePokemon.Name
                 );
 
             Generation? generation =
-                await PokeApiService.Instance!.GetGenerationAsync(species)
+                await apiService.GetGenerationAsync(species)
                 ?? throw new Exception(
                     "Could not load generation information from " + species.Name
                 );
 
-            return new SmartPokemon(basePokemon, species, generation);
+            return new SmartPokemon(basePokemon, species, generation, typeChart);
         }
 
-        public SmartPokemon(Pokemon pokemon, PokemonSpecies loadedSpecies, Generation generation)
+        public SmartPokemon(
+            Pokemon pokemon,
+            PokemonSpecies loadedSpecies,
+            Generation generation,
+            TypeChart typeChart
+        )
         {
             // build our own copy constructor since we can't cast
             Id = pokemon.Id;
@@ -105,18 +96,12 @@ namespace PokemonDataModel
             _loadedSpecies = loadedSpecies;
             _generation = generation;
 
-            // get the loaded types
-            LoadedTypes = new();
-            foreach (PokemonType t in Types)
-            {
-                LoadedTypes.Add(DataModelCache.LoadedTypes.First(lt => lt.Name == t.Type.Name));
-            }
-
             // smart variables that make this pokemon class more useful
             SelectedAbility = Abilities.FirstOrDefault();
             SelectedMoves = new PokemonMoveset();
+            LoadedTypes = new();
             Multipliers = new Multipliers();
-            UpdateMultipliers(); // needs to be done before lists can be generated but after ability is selected
+            InitializeTypes(typeChart); // needs to be done before lists can be generated but after ability is selected
             Resistances = GetDefenseResistList();
             Weaknesses = GetDefenseWeakList();
             STABCoverage = GetSTABCoverageList();
@@ -179,57 +164,72 @@ namespace PokemonDataModel
             this.STABCoverage = STABCoverage;
             this.MoveCoverage = MoveCoverage;
 
-            // get the loaded types
+            // types/multipliers stay empty here - the JSON constructor is invoked by
+            // System.Text.Json during deserialization, which can't supply a TypeChart.
+            // SmartPokemonJsonConverter (registered on every persistence path) calls
+            // InitializeTypes immediately after deserializing, so callers never see an
+            // uninitialized instance.
             LoadedTypes = new();
-            foreach (PokemonType t in this.Types)
+            Multipliers = new Multipliers();
+        }
+
+        // Resolves this pokemon's type names into full Type objects (with damage relations) via
+        // the given chart and computes the type-effectiveness multipliers. Re-callable with a
+        // different chart (e.g. a different generation's type effectiveness).
+        public void InitializeTypes(TypeChart typeChart)
+        {
+            LoadedTypes.Clear();
+            foreach (PokemonType t in Types)
             {
-                LoadedTypes.Add(DataModelCache.LoadedTypes.First(lt => lt.Name == t.Type.Name));
+                LoadedTypes.Add(typeChart.Resolve(t.Type.Name));
             }
 
-            Multipliers = new Multipliers();
             UpdateMultipliers();
         }
 
-        public async Task<PokemonSpecies> GetSpeciesAsync()
+        public async Task<PokemonSpecies> GetSpeciesAsync(PokeApiService apiService)
         {
             if (_loadedSpecies is null)
-                await LoadFromAPI();
+                await LoadFromAPI(apiService);
 
             return _loadedSpecies!;
         }
 
-        public async Task<Generation> GetGenerationAsync()
+        public async Task<Generation> GetGenerationAsync(PokeApiService apiService)
         {
             if (_generation is null)
-                await LoadFromAPI();
+                await LoadFromAPI(apiService);
 
             return _generation!;
         }
 
-        public async Task<List<PokemonMove>> GetMovesAsync()
+        public async Task<List<PokemonMove>> GetMovesAsync(PokeApiService apiService)
         {
             if (Moves is null || Moves.Count == 0)
-                await LoadFromAPI();
+                await LoadFromAPI(apiService);
 
             return Moves!;
         }
 
-        public async Task LoadFromAPI()
+        public async Task LoadFromAPI(PokeApiService apiService)
         {
             _loadedSpecies =
-                await PokeApiService.Instance!.GetPokemonSpeciesAsync(Species.Name)
+                await apiService.GetPokemonSpeciesAsync(Species.Name)
                 ?? throw new Exception("Could not load species information from " + Name);
             _generation =
-                await PokeApiService.Instance!.GetGenerationAsync(_loadedSpecies)
+                await apiService.GetGenerationAsync(_loadedSpecies)
                 ?? throw new Exception(
                     "Could not load generation information from " + Species.Name
                 );
-            Moves = await PokeApiService.Instance!.GetPokemonMovesAsync(this);
+            Moves = await apiService.GetPokemonMovesAsync(this);
         }
 
-        public async Task<List<PokemonMove>> SearchAvailableMoves(string searchTerm)
+        public async Task<List<PokemonMove>> SearchAvailableMoves(
+            string searchTerm,
+            PokeApiService apiService
+        )
         {
-            List<PokemonMove> results = await GetMovesAsync();
+            List<PokemonMove> results = await GetMovesAsync(apiService);
             results = results
                 .Where(move => move.Move.Name.Contains(searchTerm))
                 .OrderBy(move => move.Move.Name)
@@ -237,7 +237,7 @@ namespace PokemonDataModel
             return results;
         }
 
-        public async Task<PokemonMove?> GetSelectedMoveResource(int index)
+        public async Task<PokemonMove?> GetSelectedMoveResource(int index, PokeApiService apiService)
         {
             if (index < 0 || index >= PokemonMoveset.MaxMovesetSize)
                 return null;
@@ -245,7 +245,7 @@ namespace PokemonDataModel
                 return null;
 
             string? moveName = SelectedMoves.GetMoveNames()[index]!;
-            List<PokemonMove> moves = await GetMovesAsync();
+            List<PokemonMove> moves = await GetMovesAsync(apiService);
             return moves.Find(m => m.Move.Name == moveName);
         }
 
@@ -292,11 +292,11 @@ namespace PokemonDataModel
             return false;
         }
 
-        public async Task<bool> SelectMoveAsync(int index, Move? move)
+        public async Task<bool> SelectMoveAsync(int index, Move? move, PokeApiService apiService)
         {
             if (index >= 0 && index < PokemonMoveset.MaxMovesetSize)
             {
-                await SelectedMoves.SetAt(index, move);
+                await SelectedMoves.SetAt(index, move, apiService);
                 return true;
             }
             return false;
@@ -459,181 +459,7 @@ namespace PokemonDataModel
 
             if (SelectedAbility is not null)
             {
-                // now we've got multipliers for the types we need to check for any abilties which affect them
-                switch (SelectedAbility.Ability.Name)
-                {
-                    // Dry Skin makes a pokemon immune to water attacks
-                    case "dry-skin":
-                        Multipliers.Defense["water"] = 0;
-                        break;
-
-                    // Earth Eater makes a pokemon immune to ground attacks
-                    case "earth-eater":
-                        Multipliers.Defense["ground"] = 0;
-                        break;
-
-                    // Filter reduces super effective attacks by 25%
-                    case "filter":
-                        foreach (KeyValuePair<string, double> kvp in Multipliers.Defense)
-                        {
-                            if (kvp.Value >= 2.0)
-                            {
-                                Multipliers.Defense[kvp.Key] = kvp.Value * 0.75;
-                            }
-                        }
-                        break;
-
-                    // Flash Fire makes a pokemon immune to fire attacks
-                    case "flash-fire":
-                        Multipliers.Defense["fire"] = 0;
-                        break;
-
-                    // Fluffy makes a pokemon take double damage from fire attacks
-                    case "fluffy":
-                        if (Multipliers.Defense.ContainsKey("fire"))
-                        {
-                            Multipliers.Defense["fire"] = Multipliers.Defense["fire"] * 2.0;
-                        }
-                        else
-                        {
-                            Multipliers.Defense["fire"] = 2.0;
-                        }
-                        break;
-
-                    // heatproof makes a pokemon take half damage from fire attacks
-                    case "heatproof":
-                        if (Multipliers.Defense.ContainsKey("fire"))
-                        {
-                            Multipliers.Defense["fire"] = Multipliers.Defense["fire"] * 0.5;
-                        }
-                        else
-                        {
-                            Multipliers.Defense["fire"] = 0.5;
-                        }
-                        break;
-
-                    // Levitate makes a pokemon immune to ground attacks
-                    case "levitate":
-                        Multipliers.Defense["ground"] = 0;
-                        break;
-
-                    // Lightning rod makes a pokemon immune to electric attacks
-                    case "lightning-rod":
-                        Multipliers.Defense["electric"] = 0;
-                        break;
-
-                    // Motor Drive makes a pokemon immune to electric attacks
-                    case "motor-drive":
-                        Multipliers.Defense["electric"] = 0;
-                        break;
-
-                    // Prism Armor reduces super effective attacks by 25%
-                    case "prism-armor":
-                        foreach (KeyValuePair<string, double> kvp in Multipliers.Defense)
-                        {
-                            if (kvp.Value >= 2.0)
-                            {
-                                Multipliers.Defense[kvp.Key] = kvp.Value * 0.75;
-                            }
-                        }
-                        break;
-
-                    // purifying sale makes a pokemon take half damage from ghost attacks
-                    case "purifying-salt":
-                        if (Multipliers.Defense.ContainsKey("ghost"))
-                        {
-                            Multipliers.Defense["ghost"] = Multipliers.Defense["ghost"] * 0.5;
-                        }
-                        else
-                        {
-                            Multipliers.Defense["ghost"] = 0.5;
-                        }
-                        break;
-
-                    // Sap Sipper makes a pokemon immune to grass attacks
-                    case "sap-sipper":
-                        Multipliers.Defense["grass"] = 0;
-                        break;
-
-                    // Solid Rock reduces super effective attacks by 25%
-                    case "solid-rock":
-                        foreach (KeyValuePair<string, double> kvp in Multipliers.Defense)
-                        {
-                            if (kvp.Value >= 2.0)
-                            {
-                                Multipliers.Defense[kvp.Key] = kvp.Value * 0.75;
-                            }
-                        }
-                        break;
-
-                    // Storm drain makes a pokemon immune to water attacks
-                    case "storm-drain":
-                        Multipliers.Defense["water"] = 0;
-                        break;
-
-                    // thick fat makes a pokemon take half damage from fire and ice attacks
-                    case "thick-fat":
-                        if (Multipliers.Defense.ContainsKey("fire"))
-                        {
-                            Multipliers.Defense["fire"] = Multipliers.Defense["fire"] * 0.5;
-                        }
-                        else
-                        {
-                            Multipliers.Defense["fire"] = 0.5;
-                        }
-                        if (Multipliers.Defense.ContainsKey("ice"))
-                        {
-                            Multipliers.Defense["ice"] = Multipliers.Defense["ice"] * 0.5;
-                        }
-                        else
-                        {
-                            Multipliers.Defense["ice"] = 0.5;
-                        }
-                        break;
-
-                    // Volt absorb makes a pokemon immune to electric attacks
-                    case "volt-absorb":
-                        Multipliers.Defense["electric"] = 0;
-                        break;
-
-                    // water absorb makes a pokemon immune to water attacks
-                    case "water-absorb":
-                        Multipliers.Defense["water"] = 0;
-                        break;
-
-                    // water bubble makes a pokemon take half damage from fire attacks
-                    case "water-bubble":
-                        if (Multipliers.Defense.ContainsKey("fire"))
-                        {
-                            Multipliers.Defense["fire"] = Multipliers.Defense["fire"] * 0.5;
-                        }
-                        else
-                        {
-                            Multipliers.Defense["fire"] = 0.5;
-                        }
-                        break;
-
-                    // Well-baked body makes a pokemon immune to fire attacks
-                    case "well-baked-body":
-                        Multipliers.Defense["fire"] = 0;
-                        break;
-
-                    // wonder guard makes a pokemon immune to all types which aren't super-effective
-                    case "wonder-guard":
-                        foreach (string type in Globals.AllTypes)
-                        {
-                            if (Multipliers.Defense.ContainsKey(type))
-                            {
-                                if (Multipliers.Defense[type] <= 1.0)
-                                    Multipliers.Defense[type] = 0;
-                            }
-                            else
-                            {
-                                Multipliers.Defense[type] = 0;
-                            }
-                        }
-                        break;
-                }
+                AbilityEffects.Apply(SelectedAbility.Ability.Name, Multipliers);
             }
         }
 
@@ -709,9 +535,11 @@ namespace PokemonDataModel
             return varieties;
         }
 
-        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync()
+        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync(
+            PokeApiService apiService
+        )
         {
-            PokemonSpecies species = await GetSpeciesAsync();
+            PokemonSpecies species = await GetSpeciesAsync(apiService);
 
             List<NamedApiResource<Pokemon>> varieties = [];
 

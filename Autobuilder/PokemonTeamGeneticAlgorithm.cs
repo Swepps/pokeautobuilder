@@ -1,7 +1,7 @@
 ﻿using GeneticSharp;
 using PokemonDataModel;
 
-namespace AutoBuilder
+namespace Autobuilder
 {
     public class PokemonTeamGeneticAlgorithm
     {
@@ -13,7 +13,7 @@ namespace AutoBuilder
         public int GenerationsNumber => _ga != null ? _ga.GenerationsNumber : 0;
         public bool IsRunning => _timer != null;
 
-        public void Initialize(int populationsize, PokemonBox box, PokemonTeam lockedMembers, AutoBuilderWeightings weightings)
+        public void Initialize(int populationsize, PokemonBox box, PokemonTeam lockedMembers, AutobuilderWeightings weightings)
         {
             Stop();
             Fitness = new PokemonTeamFitness(weightings);

@@ -182,7 +182,7 @@
     {
         if (PokemonSearchValue is not null)
         {
-            _pokemonSearchValueVarieties = (await PokemonSearchValue.GetAllVarietiesAsync()).ToList();
+            _pokemonSearchValueVarieties = (await PokemonSearchValue.GetAllVarietiesAsync(PokeApiService)).ToList();
             await SearchPokemon(_pokemonSearchValueVarieties[0].Name);
         }
         else
@@ -223,7 +223,7 @@
             _pokemonSearchValue = new SmartPokemonEntry(_pokemon.Id, _pokemon.Species);
             _pokemonFormName = _pokemon.Name;
             _pokemonSearchValueVarieties.Clear();
-            PokemonSpecies species = await _pokemon.GetSpeciesAsync();
+            PokemonSpecies species = await _pokemon.GetSpeciesAsync(PokeApiService);
             foreach (PokemonSpeciesVariety variety in species.Varieties)
             {
                 _pokemonSearchValueVarieties.Add(variety.Pokemon);

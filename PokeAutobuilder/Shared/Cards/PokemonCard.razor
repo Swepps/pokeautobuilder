@@ -1,4 +1,5 @@
 ﻿@inject IDialogService DialogService
+@inject PokeApiService PokeApiService
 
 @using PokeApiNet
 @using PokeAutobuilder.Source.Services;
@@ -47,7 +48,7 @@ else
         _generation = null;
         if (Pokemon is not null)
         {
-            _generation = await Pokemon.GetGenerationAsync();
+            _generation = await Pokemon.GetGenerationAsync(PokeApiService);
             StateHasChanged();
         }
     }

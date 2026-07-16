@@ -1,13 +1,13 @@
 ﻿using GeneticSharp;
 using PokemonDataModel;
 
-namespace AutoBuilder
+namespace Autobuilder
 {
     public class PokemonTeamFitness : IFitness
     {
-        private readonly AutoBuilderWeightings _weightings;
+        private readonly AutobuilderWeightings _weightings;
 
-        public PokemonTeamFitness(AutoBuilderWeightings weightings)
+        public PokemonTeamFitness(AutobuilderWeightings weightings)
         {
             _weightings = weightings;
         }
@@ -19,7 +19,7 @@ namespace AutoBuilder
 
             PokemonTeam team = pokemonTeamChromosome.GetTeam();
 
-            pokemonTeamChromosome.WeightingScores = AutoBuilder.CalculateScore(team, _weightings);
+            pokemonTeamChromosome.WeightingScores = TeamScorer.CalculateScore(team, _weightings);
 
             double fitness = pokemonTeamChromosome.WeightingScores.SumWeightings();
 

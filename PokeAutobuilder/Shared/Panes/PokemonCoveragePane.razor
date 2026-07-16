@@ -1,6 +1,8 @@
 ﻿@using PokemonDataModel
 @using Utility
 
+@inject PokeApiService PokeApiService
+
 @if (Pokemon is not null)
 {
 	<div class="d-flex flex-column align-center justify-center">
@@ -46,7 +48,7 @@
 	protected override async Task OnParametersSetAsync()
 	{
 		if (Pokemon is not null)
-			await Pokemon.SelectedMoves.UpdateAttackMultipliers();
+			await Pokemon.SelectedMoves.UpdateAttackMultipliers(PokeApiService);
 
 		base.OnParametersSet();
 	}

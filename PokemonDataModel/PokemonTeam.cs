@@ -185,6 +185,61 @@ namespace PokemonDataModel
 			return coverage;
 		}
 
+        // Bulk equivalent of calling CountWeaknesses/CountResistances/CountSTABCoverage/
+        // CountMoveCoverage once per type: those each re-scan every Pokemon on the team per type
+        // (O(types x team size), 4 times over), which is the fitness function's hottest loop since
+        // it runs once per chromosome per generation. This scans the team once and reads each
+        // Pokemon's own (small) multiplier dictionaries instead, rather than checking every type
+        // against every Pokemon.
+        public (
+            Dictionary<string, int> Weaknesses,
+            Dictionary<string, int> Resistances,
+            Dictionary<string, int> STABCoverage,
+            Dictionary<string, int> MoveCoverage
+        ) CountTypeCoverage()
+        {
+            Dictionary<string, int> weaknesses = [];
+            Dictionary<string, int> resistances = [];
+            Dictionary<string, int> stabCoverage = [];
+            Dictionary<string, int> moveCoverage = [];
+
+            foreach (string type in Globals.AllTypes)
+            {
+                weaknesses[type] = 0;
+                resistances[type] = 0;
+                stabCoverage[type] = 0;
+                moveCoverage[type] = 0;
+            }
+
+            foreach (SmartPokemon? p in Pokemon)
+            {
+                if (p is null)
+                    continue;
+
+                foreach (KeyValuePair<string, double> kvp in p.Multipliers.Defense)
+                {
+                    if (kvp.Value > 1.0 && weaknesses.TryGetValue(kvp.Key, out int wCount))
+                        weaknesses[kvp.Key] = wCount + 1;
+                    else if (kvp.Value < 1.0 && resistances.TryGetValue(kvp.Key, out int rCount))
+                        resistances[kvp.Key] = rCount + 1;
+                }
+
+                foreach (KeyValuePair<string, double> kvp in p.Multipliers.Attack)
+                {
+                    if (kvp.Value >= 2.0 && stabCoverage.TryGetValue(kvp.Key, out int sCount))
+                        stabCoverage[kvp.Key] = sCount + 1;
+                }
+
+                foreach (KeyValuePair<string, double> kvp in p.SelectedMoves.AttackMultipliers)
+                {
+                    if (kvp.Value >= 2.0 && moveCoverage.TryGetValue(kvp.Key, out int mCount))
+                        moveCoverage[kvp.Key] = mCount + 1;
+                }
+            }
+
+            return (weaknesses, resistances, stabCoverage, moveCoverage);
+        }
+
 		public void SortById()
         {
             // now empty this team and refill with sorted list

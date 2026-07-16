@@ -1,93 +1,32 @@
 ﻿using PokeApiNet;
 using System.Text.Json.Serialization;
-using Utility;
 
 namespace PokemonDataModel
 {
-    // this class stores a single pokedex entry which is typically a single pokemon
-    // however there are some pokemon with multiple varieties (e.g. rotom) which is
-    // not stored in the pokedex so we can use this class to get each variety
-
-    public class SmartPokemonEntry : IPokemonSearchable
-    {
-        [JsonPropertyName("id")]
-        public int Id { get; set; }
-        [JsonIgnore]
-        public string Name {
-            get => SpeciesResource.Name;
-            set => SpeciesResource.Name = value;
-        }
-
-        [JsonPropertyName("species_resource")]
-        public NamedApiResource<PokemonSpecies> SpeciesResource { get; set; }
-
-        [JsonIgnore]
-        private PokemonSpecies? Species;
-
-        [JsonConstructor]
-        public SmartPokemonEntry(int Id, NamedApiResource<PokemonSpecies> SpeciesResource) 
-        {
-            this.Id = Id;
-            this.SpeciesResource = SpeciesResource;
-        }
-
-        public async Task<PokemonSpecies> GetSpecies()
-        {
-            Species ??= await PokeApiService.Instance!.GetPokemonSpeciesAsync(SpeciesResource.Name);
-
-            return Species ?? throw new Exception($"Could not load pokemon species: {SpeciesResource.Name}");
-		}
-
-        public override string ToString()
-        {
-            return StringUtils.PrettifyString(SpeciesResource.Name);
-        }
-
-        IEnumerable<NamedApiResource<Pokemon>> IPokemonSearchable.GetAllVarieties()
-        {
-            if (Species is null) return [];
-
-            List<NamedApiResource<Pokemon>> varieties = [];
-
-            foreach (PokemonSpeciesVariety variety in Species!.Varieties)
-            {
-                varieties.Add(variety.Pokemon);
-            }
-
-            return varieties;
-        }
-
-        public async Task<IEnumerable<NamedApiResource<Pokemon>>> GetAllVarietiesAsync()
-        {
-            if (Species == null) await GetSpecies();
-
-            List<NamedApiResource<Pokemon>> varieties = [];
-
-            foreach (PokemonSpeciesVariety variety in Species!.Varieties)
-            {
-                varieties.Add(variety.Pokemon);
-            }
-
-            return varieties;
-        }
-    }
-
     // an observable collection of SmartPokemonEntry objects which is used as a binding
     // for the pokedex combobox
     public class SmartPokedex : List<SmartPokemonEntry>, ILazyPokemonList
     {
-        public SmartPokedex(string name, NamedApiResource<Pokedex> pokedexResource) 
-        { 
-            Name = name; 
+        // SmartPokedex is never persisted (unlike PokemonBox, its sibling ILazyPokemonList
+        // implementer) - it's rebuilt fresh every session from MainLayout, which always has DI
+        // access - so it can take PokeApiService via constructor injection rather than needing it
+        // threaded through GetListAsync as a parameter (which would force a signature change on
+        // the shared ILazyPokemonList interface, including PokemonBox which doesn't need it).
+        public SmartPokedex(PokeApiService apiService, string name, NamedApiResource<Pokedex> pokedexResource)
+        {
+            _apiService = apiService;
+            Name = name;
             PokedexResource = pokedexResource;
         }
-        public SmartPokedex(string name, NamedApiResource<VersionGroup> versionGroupResource)
+        public SmartPokedex(PokeApiService apiService, string name, NamedApiResource<VersionGroup> versionGroupResource)
         {
+            _apiService = apiService;
             Name = name;
             VersionGroupResource = versionGroupResource;
         }
-        public SmartPokedex(string name, Pokedex pokedex) 
+        public SmartPokedex(PokeApiService apiService, string name, Pokedex pokedex)
         {
+            _apiService = apiService;
             Name = name;
             AddPokedex(pokedex);
         }
@@ -95,6 +34,7 @@ namespace PokemonDataModel
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        private readonly PokeApiService _apiService;
         private readonly NamedApiResource<Pokedex>? PokedexResource;
         private readonly NamedApiResource<VersionGroup>? VersionGroupResource;
 
@@ -139,7 +79,7 @@ namespace PokemonDataModel
             {
                 if (PokedexResource is not null)
                 {
-                    Pokedex? fetchedDex = await PokeApiService.Instance!.GetPokedexAsync(PokedexResource);
+                    Pokedex? fetchedDex = await _apiService.GetPokedexAsync(PokedexResource);
                     if (fetchedDex is not null)
                     {
                         AddPokedex(fetchedDex);
@@ -147,12 +87,12 @@ namespace PokemonDataModel
                 }
                 else if (VersionGroupResource is not null)
                 {
-                    VersionGroup group = await PokeApiService.Instance!.GetVersionGroupAsync(VersionGroupResource);
+                    VersionGroup group = await _apiService.GetVersionGroupAsync(VersionGroupResource);
 
                     List<Task<Pokedex?>> pokedexTasks = [];
                     foreach (var pokedex in group.Pokedexes)
                     {
-                        pokedexTasks.Add(PokeApiService.Instance.GetPokedexAsync(pokedex));
+                        pokedexTasks.Add(_apiService.GetPokedexAsync(pokedex));
                     }
                     await Task.WhenAll(pokedexTasks);
 

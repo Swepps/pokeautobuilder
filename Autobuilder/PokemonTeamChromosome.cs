@@ -2,7 +2,7 @@
 using PokemonDataModel;
 using System.Diagnostics;
 
-namespace AutoBuilder
+namespace Autobuilder
 {
     // basically this is the ChromosomeBase class but I needed to override some functions
     // in order for the locking of team members to work so it now implements everything
@@ -19,7 +19,7 @@ namespace AutoBuilder
 
         public double? Fitness { get; set; }
 
-        public AutoBuilderWeightings? WeightingScores;
+        public AutobuilderWeightings? WeightingScores;
 
         public int Length => m_length;
 

@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AutoBuilder\AutoBuilder.csproj" />
+    <ProjectReference Include="..\Autobuilder\Autobuilder.csproj" />
   </ItemGroup>
 
 </Project>
