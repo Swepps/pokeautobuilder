@@ -17,8 +17,9 @@ namespace PokeAutobuilderTests
         [Fact]
         public async Task GenerateSampleBox()
         {
-            PokeApiService apiService = new(new HttpClient());
-            await TestFixtures.EnsureRealTypesLoadedAsync(apiService);
+            TypeChart typeChart = new();
+            PokeApiService apiService = new(new HttpClient(), typeChart);
+            await TestFixtures.EnsureRealTypesLoadedAsync(apiService, typeChart);
             string[] names = ["pikachu", "charizard", "blastoise", "venusaur", "snorlax", "gengar"];
 
             List<SmartPokemon> pokemon = [];

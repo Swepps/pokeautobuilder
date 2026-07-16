@@ -15,6 +15,7 @@ namespace PokeAutobuilderTests
 
     public class PokeApiServiceTests : IAsyncLifetime
     {
+        private readonly TypeChart typeChart = new();
         private PokeApiService? apiService;
 
         public Task DisposeAsync()
@@ -24,8 +25,8 @@ namespace PokeAutobuilderTests
 
         public async Task InitializeAsync()
         {
-            apiService = new PokeApiService(new HttpClient());
-            await TestFixtures.EnsureRealTypesLoadedAsync(apiService);
+            apiService = new PokeApiService(new HttpClient(), typeChart);
+            await TestFixtures.EnsureRealTypesLoadedAsync(apiService, typeChart);
         }
 
         [Fact]
@@ -162,6 +163,7 @@ namespace PokeAutobuilderTests
 
     public class AutoBuilderTests : IAsyncLifetime
     {
+        private readonly TypeChart typeChart = new();
         private PokeApiService? apiService;
         private readonly ITestOutputHelper output;
 
@@ -177,8 +179,8 @@ namespace PokeAutobuilderTests
 
         public async Task InitializeAsync()
         {
-            apiService = new PokeApiService(new HttpClient());
-            await TestFixtures.EnsureRealTypesLoadedAsync(apiService);
+            apiService = new PokeApiService(new HttpClient(), typeChart);
+            await TestFixtures.EnsureRealTypesLoadedAsync(apiService, typeChart);
         }
 
         [Fact]

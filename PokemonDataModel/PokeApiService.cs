@@ -8,10 +8,12 @@ namespace PokemonDataModel
     public class PokeApiService
     {
         private readonly PokeApiClient ApiClient;
+        private readonly TypeChart _typeChart;
 
-        public PokeApiService(HttpClient httpClient)
+        public PokeApiService(HttpClient httpClient, TypeChart typeChart)
         {
             ApiClient = new PokeApiClient(httpClient);
+            _typeChart = typeChart;
         }
 
         // -- API access functions --
@@ -141,7 +143,7 @@ namespace PokemonDataModel
             try
             {
                 Pokemon pokemon = await ApiClient.GetResourceAsync<Pokemon>(pokemonName);
-                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon, this);
+                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon, this, _typeChart);
 
                 return smartPokemon;
             }
@@ -157,7 +159,7 @@ namespace PokemonDataModel
             try
             {
                 Pokemon pokemon = await ApiClient.GetResourceAsync<Pokemon>(pokedexId);
-                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon, this);
+                SmartPokemon smartPokemon = await SmartPokemon.BuildSmartPokemonAsync(pokemon, this, _typeChart);
 
                 return smartPokemon;
             }

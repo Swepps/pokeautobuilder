@@ -7,37 +7,26 @@ namespace PokeAutobuilderTests
     using Type = PokeApiNet.Type;
 
     // Builds SmartPokemon instances entirely offline (no PokeApiService calls), so business-logic
-    // tests don't depend on network access or PokeAPI's actual data.
+    // tests don't depend on network access or PokeAPI's actual data. Each test class owns its own
+    // TypeChart instance and passes it in - no process-wide shared state between test classes.
     internal static class TestFixtures
     {
-        // DataModelCache.LoadedTypes is a single process-wide cache shared by every test class, and
-        // the network-backed tests use "do we already have all the real types" to decide whether to
-        // fetch them. MakeType below adds synthetic types to that same cache, so this must check for
-        // (and only add) the specific real types that are missing rather than relying on emptiness -
-        // otherwise a test class that runs first and adds a couple of fake types would make the
-        // "already loaded" check look satisfied and the real network-backed tests would never
-        // actually fetch real type data.
-        public static async Task EnsureRealTypesLoadedAsync(PokeApiService apiService)
+        public static async Task EnsureRealTypesLoadedAsync(
+            PokeApiService apiService,
+            TypeChart typeChart
+        )
         {
-            if (Globals.AllTypes.All(name => DataModelCache.LoadedTypes.Any(t => t.Name == name)))
+            if (!typeChart.IsEmpty)
             {
                 return;
             }
 
-            List<Type> realTypes = await apiService.GetAllTypesAsync();
-            foreach (Type type in realTypes)
-            {
-                if (!DataModelCache.LoadedTypes.Any(t => t.Name == type.Name))
-                {
-                    DataModelCache.LoadedTypes.Add(type);
-                }
-            }
+            typeChart.Populate(await apiService.GetAllTypesAsync());
         }
 
-        // Registers a fake type in DataModelCache.LoadedTypes so SmartPokemon can resolve it.
-        // Callers should use names that can't collide with the real type names the network-backed
-        // tests in this project load (see Utility.Globals.AllTypes), e.g. prefix with "test-".
+        // Registers a fake type in the given TypeChart so SmartPokemon can resolve it.
         public static Type MakeType(
+            TypeChart typeChart,
             string name,
             IEnumerable<string>? doubleDamageFrom = null,
             IEnumerable<string>? halfDamageFrom = null,
@@ -61,10 +50,7 @@ namespace PokeAutobuilderTests
                 },
             };
 
-            if (!DataModelCache.LoadedTypes.Any(t => t.Name == name))
-            {
-                DataModelCache.LoadedTypes.Add(type);
-            }
+            typeChart.Add(type);
 
             return type;
         }
@@ -76,8 +62,9 @@ namespace PokeAutobuilderTests
 
         // Builds a SmartPokemon with the given types/ability, exercising the real UpdateMultipliers
         // logic (type-effectiveness aggregation + ability overrides). Types must already be
-        // registered via MakeType.
+        // registered in the given chart via MakeType.
         public static SmartPokemon MakePokemon(
+            TypeChart typeChart,
             string name,
             IEnumerable<Type> types,
             string? abilityName = null,
@@ -122,7 +109,7 @@ namespace PokeAutobuilderTests
                 )
                 .ToList();
 
-            return new SmartPokemon(
+            SmartPokemon pokemon = new(
                 Id: 0,
                 Name: name,
                 BaseExperience: null,
@@ -148,6 +135,12 @@ namespace PokeAutobuilderTests
                 STABCoverage: [],
                 MoveCoverage: []
             );
+
+            // the JSON constructor leaves types/multipliers unresolved (in the app, the
+            // SmartPokemonJsonConverter does this immediately after deserializing)
+            pokemon.InitializeTypes(typeChart);
+
+            return pokemon;
         }
 
         // Builds a SmartPokemon with no real type-chart resolution at all (Types is empty, so
@@ -163,7 +156,9 @@ namespace PokeAutobuilderTests
             Dictionary<string, int>? baseStats = null
         )
         {
-            SmartPokemon pokemon = MakePokemon(name, types: [], abilityName: null, baseStats: baseStats);
+            // types are empty so the chart is never consulted - a throwaway empty one suffices,
+            // keeping scoring-test call sites free of chart plumbing they don't care about
+            SmartPokemon pokemon = MakePokemon(new TypeChart(), name, types: [], abilityName: null, baseStats: baseStats);
 
             if (defense is not null)
             {

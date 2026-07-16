@@ -19,6 +19,7 @@ namespace PokeAutobuilder.Source.Services
         private readonly ILocalStorageService _localStorageService;
         private readonly IApexChartService _apexChartService;
         private readonly PokeApiService _apiService;
+        private readonly TypeChart _typeChart;
 
         public event Action? OnStorageChange;
         public event Action? OnTeamStorageChange;
@@ -41,12 +42,14 @@ namespace PokeAutobuilder.Source.Services
         public ProfileService(
             ILocalStorageService localStorageService,
             IApexChartService apexChartService,
-            PokeApiService apiService
+            PokeApiService apiService,
+            TypeChart typeChart
         )
         {
             _localStorageService = localStorageService;
             _apexChartService = apexChartService;
             _apiService = apiService;
+            _typeChart = typeChart;
 
             _preferences = new(
                 PREFERENCES_KEY,
@@ -180,7 +183,9 @@ namespace PokeAutobuilder.Source.Services
                 {
                     AllTypes = await _apiService.GetAllTypesAsync();
                 }
-                DataModelCache.LoadedTypes = AllTypes;
+                // the chart must be populated before the box/team deserialization below -
+                // SmartPokemonJsonConverter resolves each pokemon's types against it mid-deserialize
+                _typeChart.Populate(AllTypes);
 
                 // load pokemon storage
                 if (profileStorageVersion <= 1.3)

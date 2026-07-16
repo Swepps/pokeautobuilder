@@ -64,7 +64,8 @@ namespace PokemonDataModel
 
         public static async Task<SmartPokemon> BuildSmartPokemonAsync(
             Pokemon basePokemon,
-            PokeApiService apiService
+            PokeApiService apiService,
+            TypeChart typeChart
         )
         {
             PokemonSpecies? species =
@@ -79,10 +80,15 @@ namespace PokemonDataModel
                     "Could not load generation information from " + species.Name
                 );
 
-            return new SmartPokemon(basePokemon, species, generation);
+            return new SmartPokemon(basePokemon, species, generation, typeChart);
         }
 
-        public SmartPokemon(Pokemon pokemon, PokemonSpecies loadedSpecies, Generation generation)
+        public SmartPokemon(
+            Pokemon pokemon,
+            PokemonSpecies loadedSpecies,
+            Generation generation,
+            TypeChart typeChart
+        )
         {
             // build our own copy constructor since we can't cast
             Id = pokemon.Id;
@@ -108,18 +114,12 @@ namespace PokemonDataModel
             _loadedSpecies = loadedSpecies;
             _generation = generation;
 
-            // get the loaded types
-            LoadedTypes = new();
-            foreach (PokemonType t in Types)
-            {
-                LoadedTypes.Add(DataModelCache.LoadedTypes.First(lt => lt.Name == t.Type.Name));
-            }
-
             // smart variables that make this pokemon class more useful
             SelectedAbility = Abilities.FirstOrDefault();
             SelectedMoves = new PokemonMoveset();
+            LoadedTypes = new();
             Multipliers = new Multipliers();
-            UpdateMultipliers(); // needs to be done before lists can be generated but after ability is selected
+            InitializeTypes(typeChart); // needs to be done before lists can be generated but after ability is selected
             Resistances = GetDefenseResistList();
             Weaknesses = GetDefenseWeakList();
             STABCoverage = GetSTABCoverageList();
@@ -182,14 +182,26 @@ namespace PokemonDataModel
             this.STABCoverage = STABCoverage;
             this.MoveCoverage = MoveCoverage;
 
-            // get the loaded types
+            // types/multipliers stay empty here - the JSON constructor is invoked by
+            // System.Text.Json during deserialization, which can't supply a TypeChart.
+            // SmartPokemonJsonConverter (registered on every persistence path) calls
+            // InitializeTypes immediately after deserializing, so callers never see an
+            // uninitialized instance.
             LoadedTypes = new();
-            foreach (PokemonType t in this.Types)
+            Multipliers = new Multipliers();
+        }
+
+        // Resolves this pokemon's type names into full Type objects (with damage relations) via
+        // the given chart and computes the type-effectiveness multipliers. Re-callable with a
+        // different chart (e.g. a different generation's type effectiveness).
+        public void InitializeTypes(TypeChart typeChart)
+        {
+            LoadedTypes.Clear();
+            foreach (PokemonType t in Types)
             {
-                LoadedTypes.Add(DataModelCache.LoadedTypes.First(lt => lt.Name == t.Type.Name));
+                LoadedTypes.Add(typeChart.Resolve(t.Type.Name));
             }
 
-            Multipliers = new Multipliers();
             UpdateMultipliers();
         }
 

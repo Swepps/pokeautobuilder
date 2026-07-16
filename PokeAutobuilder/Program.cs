@@ -1,5 +1,7 @@
 using Blazored.LocalStorage;
+using Blazored.LocalStorage.StorageOptions;
 using Blazored.SessionStorage;
+using Blazored.SessionStorage.StorageOptions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
@@ -45,6 +47,24 @@ builder.Services.AddApexCharts(e =>
 });
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddBlazoredSessionStorage();
+// singleton (not scoped): the options-pattern Configure<TypeChart> below resolves it from the
+// root provider, which DI scope validation forbids for scoped services. In Blazor WASM the two
+// lifetimes are equivalent anyway (one scope per app instance).
+builder.Services.AddSingleton<TypeChart>();
+// deserialized SmartPokemon must have their types/multipliers resolved against the TypeChart -
+// the converter does this inside the deserialization boundary for every persistence path
+builder.Services
+    .AddOptions<LocalStorageOptions>()
+    .Configure<TypeChart>(
+        (options, typeChart) =>
+            options.JsonSerializerOptions.Converters.Add(new SmartPokemonJsonConverter(typeChart))
+    );
+builder.Services
+    .AddOptions<SessionStorageOptions>()
+    .Configure<TypeChart>(
+        (options, typeChart) =>
+            options.JsonSerializerOptions.Converters.Add(new SmartPokemonJsonConverter(typeChart))
+    );
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddHttpClient<PokeApiService>();
