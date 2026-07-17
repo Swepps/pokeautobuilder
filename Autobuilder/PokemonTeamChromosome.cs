@@ -37,12 +37,45 @@ namespace Autobuilder
             _box = box;
             _lockedMembers = lockedMembers;
 
-            PokemonTeam randomTeam = _box.GetRandomTeam();
-
+            // fill locked slots first and count their members as used, so a random pick can
+            // never duplicate a locked member elsewhere in the team
+            var used = new HashSet<SmartPokemon>(ReferenceEqualityComparer.Instance);
             for (int i = 0; i < length; i++)
             {
-                ReplaceGene(i, new Gene(randomTeam.Pokemon[i]));
+                if (_lockedMembers.Pokemon[i] is SmartPokemon locked)
+                {
+                    m_genes[i] = new Gene(locked);
+                    used.Add(locked);
+                }
             }
+
+            PokemonTeam randomTeam = _box.GetRandomTeam();
+            int next = 0;
+            for (int i = 0; i < length; i++)
+            {
+                if (_lockedMembers.Pokemon[i] is not null)
+                    continue;
+
+                SmartPokemon? pick = null;
+                while (next < randomTeam.Pokemon.Count)
+                {
+                    SmartPokemon? candidate = randomTeam.Pokemon[next++];
+                    if (candidate is not null && !used.Contains(candidate))
+                    {
+                        pick = candidate;
+                        break;
+                    }
+                }
+                pick ??= BoxSampler.GetRandomPokemonExcluding(_box, used) ?? _box.GetRandomPokemon();
+
+                m_genes[i] = new Gene(pick);
+                used.Add(pick);
+            }
+        }
+
+        public bool IsGeneLocked(int geneIndex)
+        {
+            return _lockedMembers.Pokemon[geneIndex] is not null;
         }
 
         public Gene GenerateGene(int geneIndex)
