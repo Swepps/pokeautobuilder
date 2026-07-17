@@ -109,6 +109,69 @@ namespace Autobuilder
             return result;
         }
 
+        // Groups the flat per-category scores into named groups for display (see
+        // TeamScoreBreakdown). Always scores against default (all-1.0) weightings, so this is the
+        // team's objective score independent of whatever weight sliders a user has configured.
+        public static TeamScoreBreakdown CalculateBreakdown(PokemonTeam team)
+        {
+            AutobuilderWeightings scores = CalculateScore(team, new AutobuilderWeightings());
+
+            List<ScoreGroup> groups =
+            [
+                new(
+                    "STAB Coverage",
+                    [
+                        new("All Types", "Has STAB coverage against every enabled type", scores.StabAll),
+                        new("Balance", "STAB coverage is evenly spread across types", scores.StabBalance),
+                        new("Amount", "Has a high amount of total STAB coverage", scores.StabAmount),
+                    ]
+                ),
+                new(
+                    "Move Coverage",
+                    [
+                        new("All Types", "Has move coverage against every enabled type", scores.MoveSetAll),
+                        new("Balance", "Move coverage is evenly spread across types", scores.MoveSetBalance),
+                        new("Amount", "Has a high amount of total move coverage", scores.MoveSetAmount),
+                    ]
+                ),
+                new(
+                    "Resistances",
+                    [
+                        new("All Types", "Resists every enabled type with at least one team member", scores.ResistanceAll),
+                        new("Balance", "Resistances are evenly spread across types", scores.ResistanceBalance),
+                        new("Amount", "Has a high amount of total type resistances", scores.ResistanceAmount),
+                    ]
+                ),
+                new(
+                    "Weaknesses",
+                    [
+                        new("Balance", "Weaknesses are evenly spread across types", scores.WeaknessBalance),
+                        new("Amount", "Has a low amount of total type weaknesses", scores.WeaknessAmount),
+                    ]
+                ),
+                new(
+                    "Synergy",
+                    [
+                        new("Offensive Coverage", "Offensive Pokémon have good type coverage", scores.CoverageOnOffensive),
+                        new("Defensive Resistances", "Defensive Pokémon have good type resistances", scores.ResistancesOnDefensive),
+                    ]
+                ),
+                new(
+                    "Stat Spread",
+                    [
+                        new("HP", "Team's combined HP base stat", scores.BaseStatHp),
+                        new("Attack", "Team's combined Attack base stat", scores.BaseStatAtt),
+                        new("Sp. Attack", "Team's combined Special Attack base stat", scores.BaseStatSpAtt),
+                        new("Defense", "Team's combined Defense base stat", scores.BaseStatDef),
+                        new("Sp. Defense", "Team's combined Special Defense base stat", scores.BaseStatSpDef),
+                        new("Speed", "Team's combined Speed base stat", scores.BaseStatSpe),
+                    ]
+                ),
+            ];
+
+            return new TeamScoreBreakdown(groups, scores.SumWeightings());
+        }
+
         // Aah GCSE maths... this seems much easier than I thought it was when I was 15
         private static double CalculateStandardDeviation(
             Dictionary<string, int> typeDictionary,

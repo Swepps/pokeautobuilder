@@ -4,17 +4,24 @@
 @using Type = PokeApiNet.Type
 
 <MudPaper Style="background: var(--mud-palette-background)" Elevation="4">
-	<MudGrid Class="pa-4" Justify="Justify.Center">
-		<MudItem xs="12" sm="12" md="6" lg="6">
-			<MudStack>
+	<MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true">
+		<MudTabPanel Text="Score">
+			<MudStack Class="pa-4">
+				<TeamScorePane Team="@Team" />
+			</MudStack>
+		</MudTabPanel>
+		<MudTabPanel Text="Coverage">
+			<MudStack Class="pa-4">
 				<PokemonTeamDefensePane Team="@Team" />
 				<PokemonTeamCoveragePane Team="@Team" />
 			</MudStack>
-		</MudItem>
-		<MudItem xs="12" sm="12" md="6" lg="6">
-			<PokemonTeamStatsChartPane Team="@Team"/>
-		</MudItem>
-	</MudGrid>
+		</MudTabPanel>
+		<MudTabPanel Text="Stats">
+			<MudStack Class="pa-4">
+				<PokemonTeamStatsChartPane Team="@Team"/>
+			</MudStack>
+		</MudTabPanel>
+	</MudTabs>
 </MudPaper>
 
 @code {

@@ -92,21 +92,18 @@
                                          InlineLabel="true"
                                             Tooltip="Importance of a team with at least one Pokémon with STAB coverage against each type"
                                             @bind-Value="GenerationParameters.StabAll"
-                                            Score="BestTeamScore?.StabAll"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Balance"
                                          InlineLabel="true"
                                             Tooltip="Importance of a balanced amount of STAB coverage."
                                             @bind-Value="GenerationParameters.StabBalance"
-                                            Score="BestTeamScore?.StabBalance"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Amount"
                                          InlineLabel="true"
                                             Tooltip="Importance of a higher amount of STAB coverage."
                                             @bind-Value="GenerationParameters.StabAmount"
-                                            Score="BestTeamScore?.StabAmount"
                                             Disabled="Generating" />
 
                         <MudDivider Class="mb-2" DividerType="DividerType.Inset" />
@@ -117,21 +114,18 @@
                                          InlineLabel="true"
                                             Tooltip="Importance of a team with at least one Pokémon with move coverage against each type"
                                             @bind-Value="GenerationParameters.MoveSetAll"
-                                            Score="BestTeamScore?.MoveSetAll"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Balance"
                                          InlineLabel="true"
                                             Tooltip="Importance of a balanced amount of move coverage"
                                             @bind-Value="GenerationParameters.MoveSetBalance"
-                                            Score="BestTeamScore?.MoveSetBalance"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Amount"
                                          InlineLabel="true"
                                             Tooltip="Importance of a higher amount of move coverage"
                                             @bind-Value="GenerationParameters.MoveSetAmount"
-                                            Score="BestTeamScore?.MoveSetAmount"
                                             Disabled="Generating" />
 
                     </div>
@@ -171,14 +165,12 @@
                                          InlineLabel="true"
                                             Tooltip="Importance of a balanced number of type weaknesses"
                                             @bind-Value="GenerationParameters.WeaknessBalance"
-                                            Score="BestTeamScore?.WeaknessBalance"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Amount"
                                          InlineLabel="true"
                                             Tooltip="Importance of a lower amount of type weaknesses"
                                             @bind-Value="GenerationParameters.WeaknessAmount"
-                                            Score="BestTeamScore?.WeaknessAmount"
                                             Disabled="Generating" />
 
                     </div>
@@ -192,13 +184,11 @@
                         <WeightingSlider Name="Good Coverage On Offensive Pokémon"
                                             Tooltip="Importance of good coverage on offensive Pokémon - e.g. a Pokémon with good offensive stats should have STAB coverage against more types"
                                             @bind-Value="GenerationParameters.CoverageOnOffensive"
-                                            Score="BestTeamScore?.CoverageOnOffensive"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Good Resistances On Defensive Pokémon"
                                             Tooltip="Importance of good resistances on defensive Pokémon - e.g. a Pokémon with good defensive stats should also be resistant to more types"
                                             @bind-Value="GenerationParameters.ResistancesOnDefensive"
-                                            Score="BestTeamScore?.ResistancesOnDefensive"
                                             Disabled="Generating" />
                     </div>
 
@@ -212,44 +202,37 @@
                                          Size="Size.Medium"
                                          Tooltip="The overall importance of base stats"
                                          @bind-Value="GenerationParameters.BaseStatTotal"
-                                         Score="BestTeamScore?.BaseStatTotal"
                                          Disabled="Generating" />
 
                         <WeightingSlider Name="HP"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the HP base stat"
                                          @bind-Value="GenerationParameters.BaseStatHp"
-                                         Score="BestTeamScore?.BaseStatHp"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Attack"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Attack base stat"
                                          @bind-Value="GenerationParameters.BaseStatAtt"
-                                         Score="BestTeamScore?.BaseStatAtt"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Sp. Attack"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Special Attack base stat"
                                          @bind-Value="GenerationParameters.BaseStatSpAtt"
-                                         Score="BestTeamScore?.BaseStatSpAtt"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Defense"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Defense base stat"
                                          @bind-Value="GenerationParameters.BaseStatDef"
-                                         Score="BestTeamScore?.BaseStatDef"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Sp. Defense"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Special Defense base stat"
                                          @bind-Value="GenerationParameters.BaseStatSpDef"
-                                         Score="BestTeamScore?.BaseStatSpDef"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Speed"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Speed base stat"
                                          @bind-Value="GenerationParameters.BaseStatSpe"
-                                         Score="BestTeamScore?.BaseStatSpe"
                                          Disabled="Generating" />
 
                     </div>
@@ -302,13 +285,12 @@
                 }
             </MudGrid>
         </MudItem>
-        @* Commented out the stats for now cos they're laggy *@
-@*         @if (!BestTeam.IsEmpty)
+        @if (!BestTeam.IsEmpty)
         {
             <MudItem xs="12">
                 <StatsTeamPanel Team="BestTeam" />
             </MudItem>
-        } *@
+        }
     </MudGrid>
 
     <div class="mud-width-full d-flex justify-center">
@@ -429,7 +411,6 @@
     // how many of the run's best teams to keep in the "Alternate Teams" panel - tied to
     // population size so a bigger search keeps proportionally more alternates
     private int MaxAlternateTeams => Math.Max(1, PopulationSize / 10);
-    private AutobuilderWeightings? BestTeamScore;
     private bool _renderDuringGenerating = true;
 
     private int _teamSize = 6;
@@ -656,7 +637,6 @@
     public async Task OnClickResetAsync()
     {
         BestTeam.Pokemon.Clear();
-        BestTeamScore = null;
         UniqueTeamsSorted.Clear();
         _uniqueTeamSignatures.Clear();
         _testedCompositions.Clear();
@@ -775,9 +755,6 @@
         PokemonTeam bestTeam = bestChromosome.GetTeam();
         SortGeneratedTeam(ref bestTeam);
         BestTeam = bestTeam;
-
-        // calculate the objective score for each param (ignoring input weightings)
-        BestTeamScore = TeamScorer.CalculateScore(BestTeam, new());
 
         BestOverallFitness = bestFitness;
         return true;

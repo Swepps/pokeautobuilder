@@ -1,0 +1,108 @@
+@using Autobuilder
+@using PokemonDataModel
+
+@if (Team is not null && _breakdown is not null)
+{
+	<MudStack Spacing="4">
+		<MudPaper Class="pa-4 d-flex flex-column align-center" Style="background: var(--mud-palette-background)" Elevation="0">
+			<MudText Typo="Typo.h6">Team Score</MudText>
+			<MudText Typo="Typo.h4">@($"{_breakdown.TotalScore:0.0} / {_breakdown.MaxScore:0}")</MudText>
+			<MudChip T="string" Color="@_bandColor" Size="Size.Small">@_bandLabel</MudChip>
+		</MudPaper>
+
+		<div class="mud-width-full" style="min-height: 280px;">
+			<ApexCharts.ApexChart TItem="RadarPoint" Options="_options">
+				<ApexCharts.ApexPointSeries TItem="RadarPoint"
+											 Items="_radarPoints"
+											 Name="Score"
+											 XValue="@(p => p.Name)"
+											 YValue="@(p => (decimal)p.Value)"
+											 SeriesType="ApexCharts.SeriesType.Line" />
+			</ApexCharts.ApexChart>
+		</div>
+
+		@foreach (ScoreGroup group in _breakdown.Groups)
+		{
+			<div>
+				<MudText Typo="Typo.subtitle2" Class="mb-1">@group.Name</MudText>
+				<MudStack Spacing="1">
+					@foreach (ScoreCategory category in group.Categories)
+					{
+						<MudTooltip Text="@GetCategoryTooltip(category)" Placement="Placement.Top" RootClass="mud-width-full">
+							<MudGrid>
+								<MudItem xs="3">
+									<MudText Typo="Typo.caption">@category.Name</MudText>
+								</MudItem>
+								<MudItem xs="9">
+									<MudProgressLinear Color="Color.Tertiary" Size="Size.Small" Value="@(category.DisplayScore * 100)" Max="100">
+										<MudText Typo="Typo.caption">@($"{category.DisplayScore * 100:0.0}%")</MudText>
+									</MudProgressLinear>
+								</MudItem>
+							</MudGrid>
+						</MudTooltip>
+					}
+				</MudStack>
+			</div>
+		}
+	</MudStack>
+}
+
+@code {
+	[Parameter]
+	public PokemonTeam? Team { get; set; }
+
+	private TeamScoreBreakdown? _breakdown;
+	private List<RadarPoint> _radarPoints = [];
+	private string _bandLabel = "";
+	private Color _bandColor = Color.Default;
+
+	private class RadarPoint
+	{
+		public string Name = string.Empty;
+		public double Value;
+	}
+
+	private readonly ApexCharts.ApexChartOptions<RadarPoint> _options = new()
+	{
+		Chart = new ApexCharts.Chart()
+		{
+			Type = ApexCharts.ChartType.Radar,
+			Toolbar = new ApexCharts.Toolbar { Show = false },
+			Background = "transparent",
+			FontFamily = "var(--mud-typography-subtitle1-family);",
+			Width = "100%",
+			Height = "100%",
+		},
+		Yaxis = [ new ApexCharts.YAxis { Min = 0, Max = 100, Show = false } ],
+	};
+
+	protected override void OnParametersSet()
+	{
+		if (Team is null)
+		{
+			_breakdown = null;
+			return;
+		}
+
+		_breakdown = TeamScorer.CalculateBreakdown(Team);
+		_radarPoints = _breakdown.Groups
+			.Select(g => new RadarPoint { Name = g.Name, Value = g.AverageScore * 100 })
+			.ToList();
+
+		(_bandLabel, _bandColor) = GetBand(_breakdown.TotalScore / _breakdown.MaxScore);
+	}
+
+	private static (string, Color) GetBand(double fraction)
+	{
+		if (fraction < 0.42) return ("Poor", Color.Error);
+		if (fraction < 0.58) return ("Fair", Color.Warning);
+		if (fraction < 0.74) return ("Good", Color.Info);
+		if (fraction < 0.87) return ("Great", Color.Success);
+		return ("Excellent", Color.Success);
+	}
+
+	private static string GetCategoryTooltip(ScoreCategory category) =>
+		category.Score > 1.0
+			? $"{category.Description} ({category.Score * 100:0.0}%)"
+			: category.Description;
+}
