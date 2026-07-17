@@ -1,8 +1,9 @@
 ﻿@using PokemonDataModel
 @using Utility
 
-<MudPaper Class="mud-width-full pa-2 overflow-x-auto">
-	<MudText Typo="Typo.h6" Align="Align.Center">Type Defense</MudText>
+<MudPaper Class="mud-width-full pa-2 overflow-x-auto" Elevation="0" Style="background: transparent;">
+	<MudText Typo="Typo.subtitle1" Align="Align.Left" Style="font-weight: 600;">Type Defense</MudText>
+	<MudDivider Class="mb-2" />
 	<MudSimpleTable Style="width: 100%;" Dense="true" Elevation="0">
 		<thead>
 			<tr>
@@ -11,7 +12,7 @@
 					<th class="mx-0 mt-2 px-0 py-2" style="text-align: center;">
 						@if (!string.IsNullOrEmpty(h))
 						{
-							<img src="@StringUtils.TypeImgFromName(h)" Alt="@h" title="@h" style="width: 90%;" />
+							<img src="@StringUtils.TypeImgFromName(h)" Alt="@h" title="@h" style="width: clamp(16px, 90%, 28px);" />
 						}
 					</th>
 				}
@@ -29,7 +30,7 @@
 								<div class="d-flex flex-column flex-grow-1 align-end gap-1">
 									@for (int i = 0; i < result; i++)
 									{
-										<MudPaper Class="my-0 " Style="@GetRowColour(row[0])" Width="100%" Height="4px" />
+										<MudPaper Class="my-0 " Style="@GetRowColour(row[0])" Width="100%" Height="4px" Elevation="0" />
 									}
 								</div>
 							}

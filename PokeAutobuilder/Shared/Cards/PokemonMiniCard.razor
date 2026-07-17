@@ -1,34 +1,18 @@
-﻿@inject ProfileService Profile
+@inject ProfileService Profile
 @inject IDialogService DialogService
 
 @using PokeAutobuilder.Source.Services
 @using PokemonDataModel
 @using Utility
 
-<MudTooltip Text="@Pokemon!.ToString()">
-	<MudButton Class="ma-2" Color="Color.Surface" OnClick="OnClickCard" Variant="@Variant">
-		<MudImage
-			Src="@(String.IsNullOrEmpty(Pokemon!.Sprites.FrontDefault) ? Pokemon!.Sprites.Other.OfficialArtwork.FrontDefault : Pokemon!.Sprites.FrontDefault)"
-				  Style="width: 50px; height: 50px; image-rendering: pixelated;" />
-	</MudButton>
-</MudTooltip>
-
-<style>
-	.mud-button
-	{
-		min-width: 50px;
-		transition: none!important;
-	}
-
-	.mud-button-outlined
-	{
-		padding: 4px !important;
-	}
-
-	.mud-button-filled {
-		padding: 5px !important;
-	}
-</style>
+<div class="poke-mini-card">
+	<MudTooltip Text="@Pokemon!.ToString()">
+		<MudButton Class="ma-2 poke-mini-card-btn" Color="Color.Surface" OnClick="OnClickCard" Variant="@Variant">
+			<MudImage Class="poke-mini-card-sprite"
+				Src="@(String.IsNullOrEmpty(Pokemon!.Sprites.FrontDefault) ? Pokemon!.Sprites.Other.OfficialArtwork.FrontDefault : Pokemon!.Sprites.FrontDefault)" />
+		</MudButton>
+	</MudTooltip>
+</div>
 
 @code {
 	[Parameter]

@@ -46,7 +46,7 @@
             <MudExpansionPanels>
                 <MudExpansionPanel Text="Generation Settings" Expanded="true">
 
-                    <MudStack>
+                    <MudStack Style="max-width: 520px;">
                         <MudSlider Disabled="Generating" Min="3" Max="6" Step="1" @bind-Value="@TeamSize" Variant="Variant.Filled" TickMarks="true">Team Size</MudSlider>
                         <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10" />
                         <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
@@ -62,7 +62,7 @@
                     <div class="mt-1 mb-1">
                         @foreach (string t in Globals.AllTypes)
                         {
-                            <MudButton OnClick="() => OnClickType(t)" Style="height: 40px; min-width: 40px" Class="pa-0" Disabled="Generating">
+                            <MudButton OnClick="() => OnClickType(t)" Style="height: 48px; min-width: 48px" Class="pa-0" Disabled="Generating">
                                 <MudTooltip Text="@StringUtils.PrettifyString(t)" RootClass="d-flex">
                                     @if (Generating)
                                     {
@@ -85,28 +85,25 @@
 
                     <MudText Typo="Typo.subtitle1">Attack</MudText>
 
-                    <div class="px-4 mt-1">
+                    <div class="px-4 mt-1" style="max-width: 560px;">
                         <MudText Typo="Typo.subtitle2">STAB Coverage</MudText>
                         <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of STAB coverage</MudText>
                         <WeightingSlider Name="All Types"
                                          InlineLabel="true"
                                             Tooltip="Importance of a team with at least one Pokémon with STAB coverage against each type"
                                             @bind-Value="GenerationParameters.StabAll"
-                                            Score="BestTeamScore?.StabAll"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Balance"
                                          InlineLabel="true"
                                             Tooltip="Importance of a balanced amount of STAB coverage."
                                             @bind-Value="GenerationParameters.StabBalance"
-                                            Score="BestTeamScore?.StabBalance"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Amount"
                                          InlineLabel="true"
                                             Tooltip="Importance of a higher amount of STAB coverage."
                                             @bind-Value="GenerationParameters.StabAmount"
-                                            Score="BestTeamScore?.StabAmount"
                                             Disabled="Generating" />
 
                         <MudDivider Class="mb-2" DividerType="DividerType.Inset" />
@@ -117,21 +114,18 @@
                                          InlineLabel="true"
                                             Tooltip="Importance of a team with at least one Pokémon with move coverage against each type"
                                             @bind-Value="GenerationParameters.MoveSetAll"
-                                            Score="BestTeamScore?.MoveSetAll"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Balance"
                                          InlineLabel="true"
                                             Tooltip="Importance of a balanced amount of move coverage"
                                             @bind-Value="GenerationParameters.MoveSetBalance"
-                                            Score="BestTeamScore?.MoveSetBalance"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Amount"
                                          InlineLabel="true"
                                             Tooltip="Importance of a higher amount of move coverage"
                                             @bind-Value="GenerationParameters.MoveSetAmount"
-                                            Score="BestTeamScore?.MoveSetAmount"
                                             Disabled="Generating" />
 
                     </div>
@@ -140,7 +134,7 @@
 
                     <MudText Typo="Typo.subtitle1">Defense</MudText>
 
-                    <div class="px-4">
+                    <div class="px-4" style="max-width: 560px;">
                         <MudText Typo="Typo.subtitle2">Resistances</MudText>
                         <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of type resistances</MudText>
 
@@ -171,14 +165,12 @@
                                          InlineLabel="true"
                                             Tooltip="Importance of a balanced number of type weaknesses"
                                             @bind-Value="GenerationParameters.WeaknessBalance"
-                                            Score="BestTeamScore?.WeaknessBalance"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Amount"
                                          InlineLabel="true"
                                             Tooltip="Importance of a lower amount of type weaknesses"
                                             @bind-Value="GenerationParameters.WeaknessAmount"
-                                            Score="BestTeamScore?.WeaknessAmount"
                                             Disabled="Generating" />
 
                     </div>
@@ -188,17 +180,15 @@
                     <MudText Typo="Typo.subtitle1">Miscellaneous</MudText>
                     <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of other misc. attributes</MudText>
 
-                    <div class="px-4">
+                    <div class="px-4" style="max-width: 560px;">
                         <WeightingSlider Name="Good Coverage On Offensive Pokémon"
                                             Tooltip="Importance of good coverage on offensive Pokémon - e.g. a Pokémon with good offensive stats should have STAB coverage against more types"
                                             @bind-Value="GenerationParameters.CoverageOnOffensive"
-                                            Score="BestTeamScore?.CoverageOnOffensive"
                                             Disabled="Generating" />
 
                         <WeightingSlider Name="Good Resistances On Defensive Pokémon"
                                             Tooltip="Importance of good resistances on defensive Pokémon - e.g. a Pokémon with good defensive stats should also be resistant to more types"
                                             @bind-Value="GenerationParameters.ResistancesOnDefensive"
-                                            Score="BestTeamScore?.ResistancesOnDefensive"
                                             Disabled="Generating" />
                     </div>
 
@@ -207,49 +197,42 @@
                     <MudText Typo="Typo.subtitle1">Stat Weightings</MudText>
                     <MudText Typo="Typo.caption">Use the sliders to adjust the importance of base statistics</MudText>
 
-                    <div class="px-4">
+                    <div class="px-4" style="max-width: 560px;">
                         <WeightingSlider Name="Base Stats"
                                          Size="Size.Medium"
                                          Tooltip="The overall importance of base stats"
                                          @bind-Value="GenerationParameters.BaseStatTotal"
-                                         Score="BestTeamScore?.BaseStatTotal"
                                          Disabled="Generating" />
 
                         <WeightingSlider Name="HP"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the HP base stat"
                                          @bind-Value="GenerationParameters.BaseStatHp"
-                                         Score="BestTeamScore?.BaseStatHp"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Attack"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Attack base stat"
                                          @bind-Value="GenerationParameters.BaseStatAtt"
-                                         Score="BestTeamScore?.BaseStatAtt"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Sp. Attack"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Special Attack base stat"
                                          @bind-Value="GenerationParameters.BaseStatSpAtt"
-                                         Score="BestTeamScore?.BaseStatSpAtt"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Defense"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Defense base stat"
                                          @bind-Value="GenerationParameters.BaseStatDef"
-                                         Score="BestTeamScore?.BaseStatDef"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Sp. Defense"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Special Defense base stat"
                                          @bind-Value="GenerationParameters.BaseStatSpDef"
-                                         Score="BestTeamScore?.BaseStatSpDef"
                                          Disabled="Generating" />
                         <WeightingSlider Name="Speed"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Speed base stat"
                                          @bind-Value="GenerationParameters.BaseStatSpe"
-                                         Score="BestTeamScore?.BaseStatSpe"
                                          Disabled="Generating" />
 
                     </div>
@@ -262,7 +245,25 @@
 
     </MudGrid>
 
-    <MudDivider DividerType="DividerType.FullWidth" />    
+    <MudDivider DividerType="DividerType.FullWidth" />
+
+    <div class="mud-width-full d-flex flex-column flex-sm-row justify-center gap-3">
+        @if (Generating)
+        {
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" Size="Size.Large" OnClick="OnClickStop">Stop</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerateAsync" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
+        }
+        <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickResetAsync">Reset</MudButton>
+        <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Size="Size.Large" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
+    </div>
+
+    @if (Generating)
+    {
+        <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
+    }
 
     <MudGrid Class="mb-2">
         <MudItem xs="12">
@@ -302,57 +303,44 @@
                 }
             </MudGrid>
         </MudItem>
-        @* Commented out the stats for now cos they're laggy *@
-@*         @if (!BestTeam.IsEmpty)
+        @if (!BestTeam.IsEmpty && !Generating)
         {
             <MudItem xs="12">
                 <StatsTeamPanel Team="BestTeam" />
             </MudItem>
-        } *@
+        }
+        else if (!BestTeam.IsEmpty && Generating)
+        {
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Align="Align.Center" Class="mud-width-full">Team stats will appear once generation finishes</MudText>
+            </MudItem>
+        }
     </MudGrid>
-
-    <div class="mud-width-full d-flex justify-center">
-        <MudStack Row="true">
-            @if (Generating)
-            {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" Size="Size.Large" OnClick="OnClickStop">Stop</MudButton>
-            }
-            else
-            {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerateAsync" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
-            }
-            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickResetAsync">Reset</MudButton>
-            <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Size="Size.Large" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
-        </MudStack>
-    </div>
-
-    @if (Generating)
-    {
-        <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
-    }
 
     <MudExpansionPanels MultiExpansion="true" hidden="@(UniqueTeamsSorted.Count <= 0)">
         <MudExpansionPanel Text="Generation Graph" Expanded="true">
-            <ApexCharts.ApexChart @ref="_chart"
-                                  TItem="GenerationDataPoint"
-                                  Title=""
-                                  Options="_options"
-                                  XAxisType="ApexCharts.XAxisType.Numeric">
-                <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                            Name="Highest Fitness"
-                                            XValue="@(e => e.GenerationNumber)"
-                                            YValue="@(e => (int)Math.Round(BestOverallFitness * 1000))"
-                                            SeriesType="ApexCharts.SeriesType.Line"
-                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
+            <div class="mud-width-full" style="min-height: 350px;">
+                <ApexCharts.ApexChart @ref="_chart"
+                                      TItem="GenerationDataPoint"
+                                      Title=""
+                                      Options="_options"
+                                      XAxisType="ApexCharts.XAxisType.Numeric">
+                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                Name="Highest Fitness"
+                                                XValue="@(e => e.GenerationNumber)"
+                                                YValue="@(e => (int)Math.Round(BestOverallFitness * 1000))"
+                                                SeriesType="ApexCharts.SeriesType.Line"
+                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
 
-                <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                            Name="Average Fitness"
-                                            XValue="@(e => e.GenerationNumber)"
-                                            YValue="@(e => (int)Math.Round(e.AverageFitness))"
-                                            SeriesType="ApexCharts.SeriesType.Line"
-                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#7fd67f", DashSpace = 2, Width = 2 })" />
+                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                Name="Average Fitness"
+                                                XValue="@(e => e.GenerationNumber)"
+                                                YValue="@(e => (int)Math.Round(e.AverageFitness))"
+                                                SeriesType="ApexCharts.SeriesType.Line"
+                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#7fd67f", DashSpace = 2, Width = 2 })" />
 
-            </ApexCharts.ApexChart>
+                </ApexCharts.ApexChart>
+            </div>
         </MudExpansionPanel>
 
         <MudExpansionPanel Text="Search Coverage" Expanded="true">
@@ -365,18 +353,20 @@
                 }
             </MudText>
 
-            <ApexCharts.ApexChart @ref="_coverageChart"
-                                  TItem="GenerationDataPoint"
-                                  Title=""
-                                  Options="_coverageOptions"
-                                  XAxisType="ApexCharts.XAxisType.Numeric">
-                <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                            Name="Distinct Teams Tested"
-                                            XValue="@(e => e.GenerationNumber)"
-                                            YValue="@(e => e.TestedCombinations)"
-                                            SeriesType="ApexCharts.SeriesType.Line"
-                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#7fc8ff", DashSpace = 0, Width = 3 })" />
-            </ApexCharts.ApexChart>
+            <div class="mud-width-full" style="min-height: 350px;">
+                <ApexCharts.ApexChart @ref="_coverageChart"
+                                      TItem="GenerationDataPoint"
+                                      Title=""
+                                      Options="_coverageOptions"
+                                      XAxisType="ApexCharts.XAxisType.Numeric">
+                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                Name="Distinct Teams Tested"
+                                                XValue="@(e => e.GenerationNumber)"
+                                                YValue="@(e => e.TestedCombinations)"
+                                                SeriesType="ApexCharts.SeriesType.Line"
+                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#7fc8ff", DashSpace = 0, Width = 3 })" />
+                </ApexCharts.ApexChart>
+            </div>
         </MudExpansionPanel>
 
         <MudExpansionPanel Text="Alternate Teams" Expanded="false">
@@ -429,7 +419,6 @@
     // how many of the run's best teams to keep in the "Alternate Teams" panel - tied to
     // population size so a bigger search keeps proportionally more alternates
     private int MaxAlternateTeams => Math.Max(1, PopulationSize / 10);
-    private AutobuilderWeightings? BestTeamScore;
     private bool _renderDuringGenerating = true;
 
     private int _teamSize = 6;
@@ -656,7 +645,6 @@
     public async Task OnClickResetAsync()
     {
         BestTeam.Pokemon.Clear();
-        BestTeamScore = null;
         UniqueTeamsSorted.Clear();
         _uniqueTeamSignatures.Clear();
         _testedCompositions.Clear();
@@ -775,9 +763,6 @@
         PokemonTeam bestTeam = bestChromosome.GetTeam();
         SortGeneratedTeam(ref bestTeam);
         BestTeam = bestTeam;
-
-        // calculate the objective score for each param (ignoring input weightings)
-        BestTeamScore = TeamScorer.CalculateScore(BestTeam, new());
 
         BestOverallFitness = bestFitness;
         return true;

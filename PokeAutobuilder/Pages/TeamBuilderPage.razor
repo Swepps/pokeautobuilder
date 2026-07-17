@@ -69,16 +69,16 @@
         <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: More than one Gigantamax Pokémon have been added to the team</MudText>
     }
     <MudDivider DividerType="DividerType.FullWidth" />
-    <div style="width: 100%; text-align: center;">
-        @if (!Session.Team.IsEmpty)
-        {
-            <StatsTeamPanel Team="Session.Team"/>
-        }
-        else
-        {
+    @if (!Session.Team.IsEmpty)
+    {
+        <StatsTeamPanel Team="Session.Team"/>
+    }
+    else
+    {
+        <div style="width: 100%; text-align: center;">
             <MudText Typo="Typo.caption">Add at least one Pokémon to your team to see stats.</MudText>
-        }
-    </div>
+        </div>
+    }
 </MudStack>
 <PageFooter />
 
