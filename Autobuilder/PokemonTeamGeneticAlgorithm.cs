@@ -1,5 +1,6 @@
 using GeneticSharp;
 using PokemonDataModel;
+using System.Linq;
 
 namespace Autobuilder
 {
@@ -10,6 +11,15 @@ namespace Autobuilder
         public event Action<PokemonTeamGeneticAlgorithm>? GenerationRan;
         public PokemonTeamFitness? Fitness { get; private set; }
         public PokemonTeamChromosome? BestChromosome => _ga != null ? _ga.BestChromosome as PokemonTeamChromosome : null;
+
+        // the full, fitness-evaluated population for the generation that just finished - lets
+        // callers compute population-wide metrics (average fitness, distinct compositions seen)
+        // instead of only ever seeing the single best chromosome
+        public IReadOnlyList<PokemonTeamChromosome> CurrentPopulation =>
+            _ga != null
+                ? _ga.Population.CurrentGeneration.Chromosomes.OfType<PokemonTeamChromosome>().ToList()
+                : Array.Empty<PokemonTeamChromosome>();
+
         public int GenerationsNumber => _ga != null ? _ga.GenerationsNumber : 0;
         public bool IsRunning => _cts != null;
 
@@ -19,24 +29,27 @@ namespace Autobuilder
             Fitness = new PokemonTeamFitness(weightings);
             var chromosome = new PokemonTeamChromosome(box, lockedMembers);
 
-            // OrderedCrossover and ReverseSequenceMutation are classic TSP operators built for
-            // permutation encodings (every gene value appears exactly once, order matters).
-            // A team isn't a permutation - genes are drawn independently from a much larger box
-            // and team order doesn't affect score - so those operators don't fit:
-            // ReverseSequenceMutation only reorders positions, which never changes the resulting
-            // team, so it could never introduce a Pokemon that wasn't in the initial population.
-            // UniformCrossover recombines genes per-slot without assuming a permutation, and
-            // UniformMutation(allGenesMutable: true) uses PokemonTeamChromosome.GenerateGene to
-            // swap in a fresh random Pokemon per slot, which is what actually injects new genetic
-            // material generation over generation.
-            var crossover = new UniformCrossover();
-            var mutation = new UniformMutation(true);
-            var selection = new RouletteWheelSelection();
+            // Domain-specific operators (see each class for the full rationale):
+            // - PokemonTeamCrossover/PokemonTeamMutation treat a team as a *set* of box members
+            //   and never produce duplicate-carrying teams, which the fitness function scores 0.
+            //   The mutation is also what injects box members absent from the initial population.
+            // - TournamentSelection picks by rank, not raw fitness. All viable teams score in a
+            //   narrow band (roughly 13-15), so fitness-proportionate selection (roulette wheel)
+            //   gives the best team barely more reproduction chance than a mediocre one and the
+            //   search degenerates into random drift.
+            // - GenerationElitistReinsertion guarantees the best teams found so far stay in the
+            //   breeding population every generation.
+            var crossover = new PokemonTeamCrossover(box);
+            var mutation = new PokemonTeamMutation(box);
+            var selection = new TournamentSelection(2);
+            var reinsertion = new GenerationElitistReinsertion();
             var population = new Population(populationsize, populationsize, chromosome);
 
-            _ga = new GeneticAlgorithm(population, Fitness, selection, crossover, mutation);
-            //_ga.CrossoverProbability = 1.0f;
-            _ga.MutationProbability = 0.2f;
+            _ga = new GeneticAlgorithm(population, Fitness, selection, crossover, mutation)
+            {
+                Reinsertion = reinsertion,
+                MutationProbability = 0.2f,
+            };
         }
 
         public void RunInBackground()
