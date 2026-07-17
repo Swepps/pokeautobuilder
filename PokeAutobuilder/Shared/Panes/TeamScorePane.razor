@@ -24,10 +24,14 @@
 			</MudItem>
 		</MudGrid>
 
-		@foreach (ScoreGroup group in _breakdown.Groups)
+		@foreach (var (group, index) in _breakdown.Groups.Select((g, i) => (g, i)))
 		{
+			@if (index > 0)
+			{
+				<MudDivider Class="my-2" />
+			}
 			<div>
-				<MudText Typo="Typo.subtitle2" Class="mb-1">@group.Name</MudText>
+				<MudText Typo="Typo.subtitle1" Align="Align.Left" Class="mt-1 mb-2" Style="font-weight: 600;">@group.Name</MudText>
 				<MudStack Spacing="1">
 					@foreach (ScoreCategory category in group.Categories)
 					{

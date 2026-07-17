@@ -245,7 +245,27 @@
 
     </MudGrid>
 
-    <MudDivider DividerType="DividerType.FullWidth" />    
+    <MudDivider DividerType="DividerType.FullWidth" />
+
+    <div class="mud-width-full d-flex justify-center">
+        <MudStack Row="true">
+            @if (Generating)
+            {
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" Size="Size.Large" OnClick="OnClickStop">Stop</MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerateAsync" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
+            }
+            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickResetAsync">Reset</MudButton>
+            <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Size="Size.Large" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
+        </MudStack>
+    </div>
+
+    @if (Generating)
+    {
+        <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
+    }
 
     <MudGrid Class="mb-2">
         <MudItem xs="12">
@@ -299,48 +319,30 @@
         }
     </MudGrid>
 
-    <div class="mud-width-full d-flex justify-center">
-        <MudStack Row="true">
-            @if (Generating)
-            {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" Size="Size.Large" OnClick="OnClickStop">Stop</MudButton>
-            }
-            else
-            {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerateAsync" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
-            }
-            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickResetAsync">Reset</MudButton>
-            <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Size="Size.Large" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
-        </MudStack>
-    </div>
-
-    @if (Generating)
-    {
-        <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
-    }
-
     <MudExpansionPanels MultiExpansion="true" hidden="@(UniqueTeamsSorted.Count <= 0)">
         <MudExpansionPanel Text="Generation Graph" Expanded="true">
-            <ApexCharts.ApexChart @ref="_chart"
-                                  TItem="GenerationDataPoint"
-                                  Title=""
-                                  Options="_options"
-                                  XAxisType="ApexCharts.XAxisType.Numeric">
-                <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                            Name="Highest Fitness"
-                                            XValue="@(e => e.GenerationNumber)"
-                                            YValue="@(e => (int)Math.Round(BestOverallFitness * 1000))"
-                                            SeriesType="ApexCharts.SeriesType.Line"
-                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
+            <div class="mud-width-full" style="min-height: 350px;">
+                <ApexCharts.ApexChart @ref="_chart"
+                                      TItem="GenerationDataPoint"
+                                      Title=""
+                                      Options="_options"
+                                      XAxisType="ApexCharts.XAxisType.Numeric">
+                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                Name="Highest Fitness"
+                                                XValue="@(e => e.GenerationNumber)"
+                                                YValue="@(e => (int)Math.Round(BestOverallFitness * 1000))"
+                                                SeriesType="ApexCharts.SeriesType.Line"
+                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
 
-                <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                            Name="Average Fitness"
-                                            XValue="@(e => e.GenerationNumber)"
-                                            YValue="@(e => (int)Math.Round(e.AverageFitness))"
-                                            SeriesType="ApexCharts.SeriesType.Line"
-                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#7fd67f", DashSpace = 2, Width = 2 })" />
+                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                Name="Average Fitness"
+                                                XValue="@(e => e.GenerationNumber)"
+                                                YValue="@(e => (int)Math.Round(e.AverageFitness))"
+                                                SeriesType="ApexCharts.SeriesType.Line"
+                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#7fd67f", DashSpace = 2, Width = 2 })" />
 
-            </ApexCharts.ApexChart>
+                </ApexCharts.ApexChart>
+            </div>
         </MudExpansionPanel>
 
         <MudExpansionPanel Text="Search Coverage" Expanded="true">
@@ -353,18 +355,20 @@
                 }
             </MudText>
 
-            <ApexCharts.ApexChart @ref="_coverageChart"
-                                  TItem="GenerationDataPoint"
-                                  Title=""
-                                  Options="_coverageOptions"
-                                  XAxisType="ApexCharts.XAxisType.Numeric">
-                <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                            Name="Distinct Teams Tested"
-                                            XValue="@(e => e.GenerationNumber)"
-                                            YValue="@(e => e.TestedCombinations)"
-                                            SeriesType="ApexCharts.SeriesType.Line"
-                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#7fc8ff", DashSpace = 0, Width = 3 })" />
-            </ApexCharts.ApexChart>
+            <div class="mud-width-full" style="min-height: 350px;">
+                <ApexCharts.ApexChart @ref="_coverageChart"
+                                      TItem="GenerationDataPoint"
+                                      Title=""
+                                      Options="_coverageOptions"
+                                      XAxisType="ApexCharts.XAxisType.Numeric">
+                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                Name="Distinct Teams Tested"
+                                                XValue="@(e => e.GenerationNumber)"
+                                                YValue="@(e => e.TestedCombinations)"
+                                                SeriesType="ApexCharts.SeriesType.Line"
+                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#7fc8ff", DashSpace = 0, Width = 3 })" />
+                </ApexCharts.ApexChart>
+            </div>
         </MudExpansionPanel>
 
         <MudExpansionPanel Text="Alternate Teams" Expanded="false">
