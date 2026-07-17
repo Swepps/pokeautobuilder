@@ -5,9 +5,6 @@
 
 <MudPaper Style="background: var(--mud-palette-background)" Elevation="4">
 	<MudGrid Class="pa-4" Justify="Justify.Center">
-		<MudItem xs="12">
-			<TeamScorePane Team="@Team" />
-		</MudItem>
 		<MudItem xs="12" sm="12" md="6" lg="6">
 			<MudStack>
 				<PokemonTeamDefensePane Team="@Team" />
@@ -16,6 +13,9 @@
 		</MudItem>
 		<MudItem xs="12" sm="12" md="6" lg="6">
 			<PokemonTeamStatsChartPane Team="@Team"/>
+		</MudItem>
+		<MudItem xs="12">
+			<TeamScorePane Team="@Team" />
 		</MudItem>
 	</MudGrid>
 </MudPaper>
