@@ -22,6 +22,35 @@ body[b-smiuu6b02y] {
     width: 100%;
     padding: 0.5em;
 }
+/* /Shared/Cards/PokemonMiniCard.razor.rz.scp.css */
+/* Scoped replacement for a former global <style> block that overrode .mud-button
+   app-wide (min-width + transition) whenever a mini card was on screen. */
+.poke-mini-card[b-9b2y6e513d] {
+	display: inline-block;
+}
+
+.poke-mini-card[b-9b2y6e513d]  .poke-mini-card-btn {
+	min-width: 50px;
+	padding: 5px;
+	transition: none;
+}
+
+.poke-mini-card[b-9b2y6e513d]  .mud-button-outlined.poke-mini-card-btn {
+	padding: 4px;
+}
+
+.poke-mini-card[b-9b2y6e513d]  .poke-mini-card-sprite {
+	width: 50px;
+	height: 50px;
+	image-rendering: pixelated;
+}
+
+@media (min-width: 960px) {
+	.poke-mini-card[b-9b2y6e513d]  .poke-mini-card-sprite {
+		width: 72px;
+		height: 72px;
+	}
+}
 /* /Shared/MainLayout.razor.rz.scp.css */
 .page[b-j7339zpfrp] {
     position: relative;
@@ -175,17 +204,4 @@ main[b-j7339zpfrp] {
 /* /Shared/PreferencesDialog.razor.rz.scp.css */
 .preferences-dialog-content[b-en241o7a6z] {
     overflow-y: scroll;
-}
-/* /Shared/StatsTeamPanel.razor.rz.scp.css */
-.table-header[b-5yukosz1dc]
-{
-    text-align: center;
-}
-
-.table-header img[b-5yukosz1dc] {
-    width: 90%;
-}
-
-.table-row[b-5yukosz1dc] {
-    width: 5%;
 }
