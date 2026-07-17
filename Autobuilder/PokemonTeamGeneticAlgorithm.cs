@@ -1,5 +1,6 @@
 using GeneticSharp;
 using PokemonDataModel;
+using System.Linq;
 
 namespace Autobuilder
 {
@@ -10,6 +11,15 @@ namespace Autobuilder
         public event Action<PokemonTeamGeneticAlgorithm>? GenerationRan;
         public PokemonTeamFitness? Fitness { get; private set; }
         public PokemonTeamChromosome? BestChromosome => _ga != null ? _ga.BestChromosome as PokemonTeamChromosome : null;
+
+        // the full, fitness-evaluated population for the generation that just finished - lets
+        // callers compute population-wide metrics (average fitness, distinct compositions seen)
+        // instead of only ever seeing the single best chromosome
+        public IReadOnlyList<PokemonTeamChromosome> CurrentPopulation =>
+            _ga != null
+                ? _ga.Population.CurrentGeneration.Chromosomes.OfType<PokemonTeamChromosome>().ToList()
+                : Array.Empty<PokemonTeamChromosome>();
+
         public int GenerationsNumber => _ga != null ? _ga.GenerationsNumber : 0;
         public bool IsRunning => _cts != null;
 

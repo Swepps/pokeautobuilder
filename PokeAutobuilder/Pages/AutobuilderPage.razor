@@ -346,17 +346,44 @@
                                             Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
 
                 <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                            Name="Fitness"
+                                            Name="Average Fitness"
                                             XValue="@(e => e.GenerationNumber)"
-                                            YValue="@(e => (int)Math.Round(e.Fitness))"
+                                            YValue="@(e => (int)Math.Round(e.AverageFitness))"
                                             SeriesType="ApexCharts.SeriesType.Line"
-                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#b8b8b8", DashSpace = 4, Width = 2 })" />
-
+                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#7fd67f", DashSpace = 2, Width = 2 })" />
 
             </ApexCharts.ApexChart>
         </MudExpansionPanel>
 
+        <MudExpansionPanel Text="Search Coverage" Expanded="true">
+
+            <MudText Typo="Typo.body2" Class="mb-2">
+                @_testedCompositions.Count.ToString("N0") of @TotalPossibleTeams.ToString("N0") possible teams tested
+                @if (TotalPossibleTeams > 0)
+                {
+                    <text>(@((100.0 * _testedCompositions.Count / TotalPossibleTeams).ToString("0.###"))%)</text>
+                }
+            </MudText>
+
+            <ApexCharts.ApexChart @ref="_coverageChart"
+                                  TItem="GenerationDataPoint"
+                                  Title=""
+                                  Options="_coverageOptions"
+                                  XAxisType="ApexCharts.XAxisType.Numeric">
+                <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                            Name="Distinct Teams Tested"
+                                            XValue="@(e => e.GenerationNumber)"
+                                            YValue="@(e => e.TestedCombinations)"
+                                            SeriesType="ApexCharts.SeriesType.Line"
+                                            Stroke="@(new ApexCharts.SeriesStroke {Color="#7fc8ff", DashSpace = 0, Width = 3 })" />
+            </ApexCharts.ApexChart>
+        </MudExpansionPanel>
+
         <MudExpansionPanel Text="Alternate Teams" Expanded="false">
+
+            <MudText Typo="Typo.caption" Class="mb-2">
+                Best @UniqueTeamsSorted.Count distinct teams found across the whole run (top @(Math.Max(1, PopulationSize / 10)) tracked)
+            </MudText>
 
             @foreach ((double fitness, PokemonTeam team) in UniqueTeamsSorted)
             {
@@ -393,6 +420,15 @@
     private PokemonTeam BestTeam = new PokemonTeam();
     private List<Tuple<double, PokemonTeam>> UniqueTeamsSorted = new();
     private readonly HashSet<string> _uniqueTeamSignatures = new();
+
+    // every distinct team composition the GA has evaluated across the whole run, valid or not -
+    // backs the "Search Coverage" chart/readout
+    private readonly HashSet<string> _testedCompositions = new();
+    private long TotalPossibleTeams = 0;
+
+    // how many of the run's best teams to keep in the "Alternate Teams" panel - tied to
+    // population size so a bigger search keeps proportionally more alternates
+    private int MaxAlternateTeams => Math.Max(1, PopulationSize / 10);
     private AutobuilderWeightings? BestTeamScore;
     private bool _renderDuringGenerating = true;
 
@@ -434,7 +470,6 @@
     private int NumGenerations = 50;
     private int PopulationSize = 250;
 
-    private double GABestChromFitness = 0;
     private double BestOverallFitness = 0;
 
     public AutobuilderWeightings GenerationParameters = new();
@@ -442,10 +477,12 @@
     private class GenerationDataPoint
     {
         public int GenerationNumber;
-        public double Fitness;
+        public double AverageFitness;
+        public long TestedCombinations;
     }
 
     private ApexCharts.ApexChart<GenerationDataPoint>? _chart;
+    private ApexCharts.ApexChart<GenerationDataPoint>? _coverageChart;
 
     private ApexCharts.ApexChartOptions<GenerationDataPoint> _options = new()
     {
@@ -480,6 +517,26 @@
             {
                 Horizontal = true,
             }
+        },
+
+        Xaxis = new ApexCharts.XAxis()
+        {
+            DecimalsInFloat = 0,
+        }
+    };
+
+    private ApexCharts.ApexChartOptions<GenerationDataPoint> _coverageOptions = new()
+    {
+        Chart = new ApexCharts.Chart()
+        {
+            Toolbar = new ApexCharts.Toolbar
+            {
+                Show = false
+            },
+            Background = "transparent",
+            FontFamily = "var(--mud-typography-subtitle1-family);",
+            Width = "100%",
+            Height = "100%",
         },
 
         Xaxis = new ApexCharts.XAxis()
@@ -546,10 +603,15 @@
         BestOverallFitness = 0;
         UniqueTeamsSorted.Clear();
         _uniqueTeamSignatures.Clear();
+        _testedCompositions.Clear();
 
         if (_chart is not null)
         {
             await _chart.UpdateSeriesAsync(true);
+        }
+        if (_coverageChart is not null)
+        {
+            await _coverageChart.UpdateSeriesAsync(true);
         }
 
         // save the params into local storage
@@ -565,6 +627,13 @@
         {
             lockedMembers.Pokemon.Add(null);
         }
+
+        // total distinct team compositions reachable given the current box/locks - the
+        // denominator for the "Search Coverage" readout. Locked slots don't vary, so only the
+        // choice of unlocked members from the remaining pool contributes to the count.
+        int unlockedSlots = TeamSize - _lockedPokemon.Count;
+        int availablePool = (SelectedBox?.Pokemon.Count ?? 0) - _lockedPokemon.Count;
+        TotalPossibleTeams = BinomialCoefficient(availablePool, unlockedSlots);
 
         GeneticAlgorithm.Initialize(
             PopulationSize
@@ -590,9 +659,15 @@
         BestTeamScore = null;
         UniqueTeamsSorted.Clear();
         _uniqueTeamSignatures.Clear();
+        _testedCompositions.Clear();
+        TotalPossibleTeams = 0;
         if (_chart is not null)
         {
             await _chart.UpdateSeriesAsync(true);
+        }
+        if (_coverageChart is not null)
+        {
+            await _coverageChart.UpdateSeriesAsync(true);
         }
         GenerationsRan = 0;
         ProgressValue = 0;
@@ -631,17 +706,32 @@
         if (geneticAlgorithm.BestChromosome is null)
             return;
 
-        _renderDuringGenerating = RecordGenerationResult(geneticAlgorithm.BestChromosome);
+        IReadOnlyList<PokemonTeamChromosome> population = geneticAlgorithm.CurrentPopulation;
+
+        _renderDuringGenerating = RecordGenerationResult(geneticAlgorithm.BestChromosome, population);
         GenerationsRan++;
 
-        // always update the chart, even on generations that don't otherwise trigger a page
-        // re-render - this is what gives the "live" fitness graph while the GA is running
+        double averageFitness = population.Count > 0
+            ? population.Average(c => c.Fitness.GetValueOrDefault())
+            : 0;
+
+        // always update the charts, even on generations that don't otherwise trigger a page
+        // re-render - this is what gives the "live" graphs while the GA is running
         if (_chart is not null)
         {
             _chart.AppendDataAsync([new()
             {
                 GenerationNumber = GenerationsRan
-                , Fitness = GABestChromFitness * 1000
+                , AverageFitness = averageFitness * 1000
+            }]);
+        }
+
+        if (_coverageChart is not null)
+        {
+            _coverageChart.AppendDataAsync([new()
+            {
+                GenerationNumber = GenerationsRan
+                , TestedCombinations = _testedCompositions.Count
             }]);
         }
 
@@ -661,43 +751,92 @@
         StateHasChanged();
     }
 
-    // updates GABestChromFitness/UniqueTeamsSorted/BestTeam bookkeeping for this generation's
-    // best chromosome; returns true if it's a new overall-best team (used to decide whether the
-    // page itself needs a full re-render, separately from the chart which always updates)
-    bool RecordGenerationResult(PokemonTeamChromosome bestChromosome)
+    // updates BestTeam bookkeeping for this generation's best chromosome, and records the whole
+    // population against _testedCompositions/UniqueTeamsSorted; returns true if there's a new
+    // overall-best team (used to decide whether the page itself needs a full re-render,
+    // separately from the chart which always updates)
+    bool RecordGenerationResult(PokemonTeamChromosome bestChromosome, IReadOnlyList<PokemonTeamChromosome> population)
     {
-        PokemonTeam generatedTeam = bestChromosome.GetTeam();
-        SortGeneratedTeam(ref generatedTeam);
+        double bestFitness = bestChromosome.Fitness.GetValueOrDefault();
 
-        GABestChromFitness = bestChromosome.Fitness.GetValueOrDefault();
-
-        // HashSet lookup instead of scanning UniqueTeamsSorted with IsSameTeam: that scan grows
-        // linearly with every unique team found so far and is paid on every single generation,
-        // which visibly slowed the page down the longer a run went on.
-        if (_uniqueTeamSignatures.Add(generatedTeam.GetCompositionKey()))
+        // every distinct composition the GA has evaluated this generation, valid or not - backs
+        // the "Search Coverage" chart/readout. Cheaper than GetTeam() per chromosome since it
+        // reads gene values directly instead of allocating a PokemonTeam/List for each one.
+        foreach (PokemonTeamChromosome chromosome in population)
         {
-            int insertIndex = UniqueTeamsSorted.FindIndex(tuple => tuple.Item1 <= GABestChromFitness);
-
-            if (insertIndex == -1)
-            {
-                UniqueTeamsSorted.Add(new Tuple<double, PokemonTeam>(GABestChromFitness, generatedTeam));
-            }
-            else
-            {
-                UniqueTeamsSorted.Insert(insertIndex, new Tuple<double, PokemonTeam>(GABestChromFitness, generatedTeam));
-            }
+            _testedCompositions.Add(chromosome.GetCompositionKey());
         }
 
-        if (GABestChromFitness <= BestOverallFitness)
+        RecordAlternateTeams(population);
+
+        if (bestFitness <= BestOverallFitness)
             return false;
 
-        BestTeam = generatedTeam;
+        PokemonTeam bestTeam = bestChromosome.GetTeam();
+        SortGeneratedTeam(ref bestTeam);
+        BestTeam = bestTeam;
 
         // calculate the objective score for each param (ignoring input weightings)
         BestTeamScore = TeamScorer.CalculateScore(BestTeam, new());
 
-        BestOverallFitness = GABestChromFitness;
+        BestOverallFitness = bestFitness;
         return true;
+    }
+
+    // keeps the best-scoring MaxAlternateTeams distinct teams seen across the *entire* run (not
+    // just each generation's single best), so the "Alternate Teams" panel has a meaningfully
+    // diverse set of good options even after the GA has converged on one dominant team
+    void RecordAlternateTeams(IReadOnlyList<PokemonTeamChromosome> population)
+    {
+        foreach (PokemonTeamChromosome chromosome in population)
+        {
+            if (chromosome.Fitness is not double fitness || fitness <= 0)
+                continue;
+
+            // skip anything that clearly can't make the cut before paying for GetTeam()'s
+            // allocation - most of a converged population fails this check every generation
+            if (UniqueTeamsSorted.Count >= MaxAlternateTeams && fitness <= UniqueTeamsSorted[^1].Item1)
+                continue;
+
+            string key = chromosome.GetCompositionKey();
+            if (_uniqueTeamSignatures.Contains(key))
+                continue;
+
+            PokemonTeam team = chromosome.GetTeam();
+            SortGeneratedTeam(ref team);
+
+            _uniqueTeamSignatures.Add(key);
+            int insertIndex = UniqueTeamsSorted.FindIndex(tuple => tuple.Item1 <= fitness);
+            if (insertIndex == -1)
+            {
+                UniqueTeamsSorted.Add(new Tuple<double, PokemonTeam>(fitness, team));
+            }
+            else
+            {
+                UniqueTeamsSorted.Insert(insertIndex, new Tuple<double, PokemonTeam>(fitness, team));
+            }
+
+            if (UniqueTeamsSorted.Count > MaxAlternateTeams)
+            {
+                Tuple<double, PokemonTeam> worst = UniqueTeamsSorted[^1];
+                UniqueTeamsSorted.RemoveAt(UniqueTeamsSorted.Count - 1);
+                _uniqueTeamSignatures.Remove(worst.Item2.GetCompositionKey());
+            }
+        }
+    }
+
+    private static long BinomialCoefficient(int n, int k)
+    {
+        if (k < 0 || k > n)
+            return 0;
+
+        k = Math.Min(k, n - k);
+        long result = 1;
+        for (int i = 0; i < k; i++)
+        {
+            result = result * (n - i) / (i + 1);
+        }
+        return result;
     }
 
     private void SortGeneratedTeam(ref PokemonTeam generatedTeam)

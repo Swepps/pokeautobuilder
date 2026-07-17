@@ -1,6 +1,7 @@
 ﻿using GeneticSharp;
 using PokemonDataModel;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Autobuilder
 {
@@ -128,6 +129,19 @@ namespace Autobuilder
             clone!.Score = Score;
 
             return clone;
+        }
+
+        // order-independent identity for this chromosome's composition (sorted Pokemon IDs),
+        // mirroring PokemonTeam.GetCompositionKey() without allocating a full PokemonTeam/List -
+        // used to track how many distinct compositions the GA has evaluated across a whole run
+        // without paying GetTeam()'s allocation cost for every chromosome in every generation
+        public string GetCompositionKey()
+        {
+            return string.Join(",", m_genes
+                .Select(g => g.Value as SmartPokemon)
+                .Where(p => p is not null)
+                .Select(p => p!.Id)
+                .OrderBy(id => id));
         }
 
         public PokemonTeam GetTeam()
