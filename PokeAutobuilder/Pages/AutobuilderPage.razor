@@ -46,7 +46,7 @@
             <MudExpansionPanels>
                 <MudExpansionPanel Text="Generation Settings" Expanded="true">
 
-                    <MudStack>
+                    <MudStack Style="max-width: 520px;">
                         <MudSlider Disabled="Generating" Min="3" Max="6" Step="1" @bind-Value="@TeamSize" Variant="Variant.Filled" TickMarks="true">Team Size</MudSlider>
                         <MudNumericField Disabled="Generating" @bind-Value="NumGenerations" Label="Generations" Variant="Variant.Text" Min="10" Max="200" Step="10" />
                         <MudNumericField Disabled="Generating" @bind-Value="PopulationSize" Label="Population Size" Variant="Variant.Text" Min="50" Max="1000" Step="50" />
@@ -62,7 +62,7 @@
                     <div class="mt-1 mb-1">
                         @foreach (string t in Globals.AllTypes)
                         {
-                            <MudButton OnClick="() => OnClickType(t)" Style="height: 40px; min-width: 40px" Class="pa-0" Disabled="Generating">
+                            <MudButton OnClick="() => OnClickType(t)" Style="height: 48px; min-width: 48px" Class="pa-0" Disabled="Generating">
                                 <MudTooltip Text="@StringUtils.PrettifyString(t)" RootClass="d-flex">
                                     @if (Generating)
                                     {
@@ -85,7 +85,7 @@
 
                     <MudText Typo="Typo.subtitle1">Attack</MudText>
 
-                    <div class="px-4 mt-1">
+                    <div class="px-4 mt-1" style="max-width: 560px;">
                         <MudText Typo="Typo.subtitle2">STAB Coverage</MudText>
                         <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of STAB coverage</MudText>
                         <WeightingSlider Name="All Types"
@@ -134,7 +134,7 @@
 
                     <MudText Typo="Typo.subtitle1">Defense</MudText>
 
-                    <div class="px-4">
+                    <div class="px-4" style="max-width: 560px;">
                         <MudText Typo="Typo.subtitle2">Resistances</MudText>
                         <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of type resistances</MudText>
 
@@ -180,7 +180,7 @@
                     <MudText Typo="Typo.subtitle1">Miscellaneous</MudText>
                     <MudText Typo="Typo.caption">Use the sliders to fine-tune the importance of other misc. attributes</MudText>
 
-                    <div class="px-4">
+                    <div class="px-4" style="max-width: 560px;">
                         <WeightingSlider Name="Good Coverage On Offensive Pokémon"
                                             Tooltip="Importance of good coverage on offensive Pokémon - e.g. a Pokémon with good offensive stats should have STAB coverage against more types"
                                             @bind-Value="GenerationParameters.CoverageOnOffensive"
@@ -197,7 +197,7 @@
                     <MudText Typo="Typo.subtitle1">Stat Weightings</MudText>
                     <MudText Typo="Typo.caption">Use the sliders to adjust the importance of base statistics</MudText>
 
-                    <div class="px-4">
+                    <div class="px-4" style="max-width: 560px;">
                         <WeightingSlider Name="Base Stats"
                                          Size="Size.Medium"
                                          Tooltip="The overall importance of base stats"
@@ -247,19 +247,17 @@
 
     <MudDivider DividerType="DividerType.FullWidth" />
 
-    <div class="mud-width-full d-flex justify-center">
-        <MudStack Row="true">
-            @if (Generating)
-            {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" Size="Size.Large" OnClick="OnClickStop">Stop</MudButton>
-            }
-            else
-            {
-                <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerateAsync" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
-            }
-            <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickResetAsync">Reset</MudButton>
-            <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Size="Size.Large" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
-        </MudStack>
+    <div class="mud-width-full d-flex flex-column flex-sm-row justify-center gap-3">
+        @if (Generating)
+        {
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Stop" Color="Color.Error" Size="Size.Large" OnClick="OnClickStop">Stop</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.PlayArrow" Color="Color.Success" Size="Size.Large" OnClick="OnClickGenerateAsync" Disabled="@(!CanStartAutoBuilding)">Generate</MudButton>
+        }
+        <MudButton Variant="Variant.Filled" Disabled="Generating" Color="Color.Warning" Size="Size.Large" OnClick="OnClickResetAsync">Reset</MudButton>
+        <MudButton Variant="Variant.Filled" Disabled="@(Generating || BestTeam.IsEmpty)" StartIcon="@Icons.Material.Filled.Upload" Color="Color.Secondary" Size="Size.Large" OnClick="OnClickLoadIntoEditorAsync">Load Into Editor</MudButton>
     </div>
 
     @if (Generating)

@@ -3,55 +3,50 @@
 
 @if (Team is not null && _breakdown is not null)
 {
-	<MudStack Spacing="4">
-		<MudGrid>
-			<MudItem xs="12" sm="3" Class="d-flex flex-column align-center justify-center">
+	<MudGrid Spacing="4">
+		<MudItem xs="12" md="5" lg="4">
+			<div class="d-flex flex-column align-center">
 				<MudText Typo="Typo.caption">Team Score</MudText>
-				<MudText Typo="Typo.subtitle1">@($"{_breakdown.TotalScore:0.0} / {_breakdown.MaxScore:0}")</MudText>
+				<MudText Typo="Typo.h5">@($"{_breakdown.TotalScore:0.0} / {_breakdown.MaxScore:0}")</MudText>
 				<MudChip T="string" Color="@_bandColor" Size="Size.Small">@_bandLabel</MudChip>
-			</MudItem>
-			<MudItem xs="12" sm="9">
-				<div class="mud-width-full" style="min-height: 280px;">
-					<ApexCharts.ApexChart TItem="RadarPoint" Options="_options">
-						<ApexCharts.ApexPointSeries TItem="RadarPoint"
-													 Items="_radarPoints"
-													 Name="Score"
-													 XValue="@(p => p.Name)"
-											 YValue="@(p => (decimal)p.Value)"
-											 SeriesType="ApexCharts.SeriesType.Radar" />
-					</ApexCharts.ApexChart>
-				</div>
-			</MudItem>
-		</MudGrid>
-
-		@foreach (var (group, index) in _breakdown.Groups.Select((g, i) => (g, i)))
-		{
-			@if (index > 0)
-			{
-				<MudDivider Class="my-2" />
-			}
-			<div>
-				<MudText Typo="Typo.subtitle1" Align="Align.Left" Class="mt-1 mb-2" Style="font-weight: 600;">@group.Name</MudText>
-				<MudStack Spacing="1">
-					@foreach (ScoreCategory category in group.Categories)
-					{
-						<MudTooltip Text="@GetCategoryTooltip(category)" Placement="Placement.Top" RootClass="mud-width-full">
-							<MudGrid>
-								<MudItem xs="3">
-									<MudText Typo="Typo.caption">@category.Name</MudText>
-								</MudItem>
-								<MudItem xs="9">
-									<MudProgressLinear Color="Color.Tertiary" Size="Size.Small" Value="@(category.DisplayScore * 100)" Max="100">
-										<MudText Typo="Typo.caption">@($"{category.DisplayScore * 100:0.0}%")</MudText>
-									</MudProgressLinear>
-								</MudItem>
-							</MudGrid>
-						</MudTooltip>
-					}
-				</MudStack>
 			</div>
-		}
-	</MudStack>
+			<div class="mx-auto" style="height: 320px; max-width: 420px;">
+				<ApexCharts.ApexChart TItem="RadarPoint" Options="_options">
+					<ApexCharts.ApexPointSeries TItem="RadarPoint"
+												 Items="_radarPoints"
+												 Name="Score"
+												 XValue="@(p => p.Name)"
+												 YValue="@(p => (decimal)p.Value)"
+												 SeriesType="ApexCharts.SeriesType.Radar" />
+				</ApexCharts.ApexChart>
+			</div>
+		</MudItem>
+		<MudItem xs="12" md="7" lg="8">
+			<MudGrid Spacing="3">
+				@foreach (ScoreGroup group in _breakdown.Groups)
+				{
+					<MudItem xs="12" sm="6">
+						<MudText Typo="Typo.subtitle1" Align="Align.Left" Style="font-weight: 600;">@group.Name</MudText>
+						<MudDivider Class="mb-2" />
+						<MudStack Spacing="2">
+							@foreach (ScoreCategory category in group.Categories)
+							{
+								<MudTooltip Text="@GetCategoryTooltip(category)" Placement="Placement.Top" RootClass="mud-width-full">
+									<div class="mud-width-full">
+										<div class="d-flex justify-space-between">
+											<MudText Typo="Typo.caption">@category.Name</MudText>
+											<MudText Typo="Typo.caption">@($"{category.DisplayScore * 100:0.0}%")</MudText>
+										</div>
+										<MudProgressLinear Color="Color.Tertiary" Rounded="true" Size="Size.Medium" Value="@(category.DisplayScore * 100)" Max="100" />
+									</div>
+								</MudTooltip>
+							}
+						</MudStack>
+					</MudItem>
+				}
+			</MudGrid>
+		</MudItem>
+	</MudGrid>
 }
 
 @code {
