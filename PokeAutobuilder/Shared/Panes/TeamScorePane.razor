@@ -4,22 +4,25 @@
 @if (Team is not null && _breakdown is not null)
 {
 	<MudStack Spacing="4">
-		<MudPaper Class="pa-4 d-flex flex-column align-center" Style="background: var(--mud-palette-background)" Elevation="0">
-			<MudText Typo="Typo.h6">Team Score</MudText>
-			<MudText Typo="Typo.h4">@($"{_breakdown.TotalScore:0.0} / {_breakdown.MaxScore:0}")</MudText>
-			<MudChip T="string" Color="@_bandColor" Size="Size.Small">@_bandLabel</MudChip>
-		</MudPaper>
-
-		<div class="mud-width-full" style="min-height: 280px;">
-			<ApexCharts.ApexChart TItem="RadarPoint" Options="_options">
-				<ApexCharts.ApexPointSeries TItem="RadarPoint"
-											 Items="_radarPoints"
-											 Name="Score"
-											 XValue="@(p => p.Name)"
+		<MudGrid>
+			<MudItem xs="12" sm="3" Class="d-flex flex-column align-center justify-center">
+				<MudText Typo="Typo.caption">Team Score</MudText>
+				<MudText Typo="Typo.subtitle1">@($"{_breakdown.TotalScore:0.0} / {_breakdown.MaxScore:0}")</MudText>
+				<MudChip T="string" Color="@_bandColor" Size="Size.Small">@_bandLabel</MudChip>
+			</MudItem>
+			<MudItem xs="12" sm="9">
+				<div class="mud-width-full" style="min-height: 280px;">
+					<ApexCharts.ApexChart TItem="RadarPoint" Options="_options">
+						<ApexCharts.ApexPointSeries TItem="RadarPoint"
+													 Items="_radarPoints"
+													 Name="Score"
+													 XValue="@(p => p.Name)"
 											 YValue="@(p => (decimal)p.Value)"
-											 SeriesType="ApexCharts.SeriesType.Line" />
-			</ApexCharts.ApexChart>
-		</div>
+											 SeriesType="ApexCharts.SeriesType.Radar" />
+					</ApexCharts.ApexChart>
+				</div>
+			</MudItem>
+		</MudGrid>
 
 		@foreach (ScoreGroup group in _breakdown.Groups)
 		{
@@ -68,6 +71,7 @@
 		{
 			Type = ApexCharts.ChartType.Radar,
 			Toolbar = new ApexCharts.Toolbar { Show = false },
+			Zoom = new ApexCharts.Zoom { Enabled = false },
 			Background = "transparent",
 			FontFamily = "var(--mud-typography-subtitle1-family);",
 			Width = "100%",

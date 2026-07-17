@@ -146,7 +146,7 @@ namespace Autobuilder
                     "Weaknesses",
                     [
                         new("Balance", "Weaknesses are evenly spread across types", scores.WeaknessBalance),
-                        new("Amount", "Has a low amount of total type weaknesses", scores.WeaknessAmount),
+                        new("Few Weaknesses", "Has a low amount of total type weaknesses - unlike the other bars on this page, this one is fuller the fewer weaknesses the team has", scores.WeaknessAmount),
                     ]
                 ),
                 new(

@@ -285,10 +285,16 @@
                 }
             </MudGrid>
         </MudItem>
-        @if (!BestTeam.IsEmpty)
+        @if (!BestTeam.IsEmpty && !Generating)
         {
             <MudItem xs="12">
                 <StatsTeamPanel Team="BestTeam" />
+            </MudItem>
+        }
+        else if (!BestTeam.IsEmpty && Generating)
+        {
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Align="Align.Center" Class="mud-width-full">Team stats will appear once generation finishes</MudText>
             </MudItem>
         }
     </MudGrid>
