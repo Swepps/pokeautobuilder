@@ -285,13 +285,26 @@
                     @if (p is not null)
                     {
                         <MudItem xs="4" md="2">
-                            <MudPaper Width="fit-content" Height="fit-content">
-                                @if (locked)
-                                {
-                                    <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
-                                }
-                                <PokemonMiniCard Pokemon="p" />
-                            </MudPaper>
+                            @if (!Generating && !BestTeam.IsEmpty)
+                            {
+                                <MudPaper Class="pa-2">
+                                    @if (locked)
+                                    {
+                                        <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
+                                    }
+                                    <PokemonCard Pokemon="p" />
+                                </MudPaper>
+                            }
+                            else
+                            {
+                                <MudPaper Width="fit-content" Height="fit-content">
+                                    @if (locked)
+                                    {
+                                        <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
+                                    }
+                                    <PokemonMiniCard Pokemon="p" />
+                                </MudPaper>
+                            }
                         </MudItem>
                     }
                     else
@@ -317,74 +330,79 @@
         }
     </MudGrid>
 
-    <MudExpansionPanels MultiExpansion="true" hidden="@(UniqueTeamsSorted.Count <= 0)">
-        <MudExpansionPanel Text="Generation Graph" Expanded="true">
-            <div class="mud-width-full" style="min-height: 350px;">
-                <ApexCharts.ApexChart @ref="_chart"
-                                      TItem="GenerationDataPoint"
-                                      Title=""
-                                      Options="_options"
-                                      XAxisType="ApexCharts.XAxisType.Numeric">
-                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                                Name="Highest Fitness"
-                                                XValue="@(e => e.GenerationNumber)"
-                                                YValue="@(e => (int)Math.Round(BestOverallFitness * 1000))"
-                                                SeriesType="ApexCharts.SeriesType.Line"
-                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
+    @if (UniqueTeamsSorted.Count > 0)
+    {
+        <MudExpansionPanels Class="mud-width-full">
+            <MudExpansionPanel Text="Other High-Scoring Teams Found This Run" Expanded="false">
 
-                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                                Name="Average Fitness"
-                                                XValue="@(e => e.GenerationNumber)"
-                                                YValue="@(e => (int)Math.Round(e.AverageFitness))"
-                                                SeriesType="ApexCharts.SeriesType.Line"
-                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#7fd67f", DashSpace = 2, Width = 2 })" />
+                <MudText Typo="Typo.caption" Class="mb-2">
+                    Best @UniqueTeamsSorted.Count distinct teams found across the whole run (top @(Math.Max(1, PopulationSize / 10)) tracked)
+                </MudText>
 
-                </ApexCharts.ApexChart>
-            </div>
-        </MudExpansionPanel>
-
-        <MudExpansionPanel Text="Search Coverage" Expanded="true">
-
-            <MudText Typo="Typo.body2" Class="mb-2">
-                @_testedCompositions.Count.ToString("N0") of @TotalPossibleTeams.ToString("N0") possible teams tested
-                @if (TotalPossibleTeams > 0)
+                @foreach ((double fitness, PokemonTeam team) in UniqueTeamsSorted)
                 {
-                    <text>(@((100.0 * _testedCompositions.Count / TotalPossibleTeams).ToString("0.###"))%)</text>
+                    <MudPaper Outlined="true" Class="ma-1" Style="background: var(--mud-palette-background); width: fit-content;">
+                        <MudText Typo="Typo.caption">Fitness = @((int)(fitness * 1000))</MudText>
+                        <PokemonTeamCard Team="team" />
+                    </MudPaper>
                 }
-            </MudText>
 
-            <div class="mud-width-full" style="min-height: 350px;">
-                <ApexCharts.ApexChart @ref="_coverageChart"
-                                      TItem="GenerationDataPoint"
-                                      Title=""
-                                      Options="_coverageOptions"
-                                      XAxisType="ApexCharts.XAxisType.Numeric">
-                    <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
-                                                Name="Distinct Teams Tested"
-                                                XValue="@(e => e.GenerationNumber)"
-                                                YValue="@(e => e.TestedCombinations)"
-                                                SeriesType="ApexCharts.SeriesType.Line"
-                                                Stroke="@(new ApexCharts.SeriesStroke {Color="#7fc8ff", DashSpace = 0, Width = 3 })" />
-                </ApexCharts.ApexChart>
-            </div>
-        </MudExpansionPanel>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
 
-        <MudExpansionPanel Text="Alternate Teams" Expanded="false">
+        <MudExpansionPanels MultiExpansion="true" Class="mud-width-full">
+            <MudExpansionPanel Text="Generation Graph" Expanded="true">
+                <div class="mud-width-full" style="min-height: 350px;">
+                    <ApexCharts.ApexChart @ref="_chart"
+                                          TItem="GenerationDataPoint"
+                                          Title=""
+                                          Options="_options"
+                                          XAxisType="ApexCharts.XAxisType.Numeric">
+                        <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                    Name="Highest Fitness"
+                                                    XValue="@(e => e.GenerationNumber)"
+                                                    YValue="@(e => (int)Math.Round(BestOverallFitness * 1000))"
+                                                    SeriesType="ApexCharts.SeriesType.Line"
+                                                    Stroke="@(new ApexCharts.SeriesStroke {Color="#ff7575", DashSpace = 0, Width = 3 })" />
 
-            <MudText Typo="Typo.caption" Class="mb-2">
-                Best @UniqueTeamsSorted.Count distinct teams found across the whole run (top @(Math.Max(1, PopulationSize / 10)) tracked)
-            </MudText>
+                        <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                    Name="Average Fitness"
+                                                    XValue="@(e => e.GenerationNumber)"
+                                                    YValue="@(e => (int)Math.Round(e.AverageFitness))"
+                                                    SeriesType="ApexCharts.SeriesType.Line"
+                                                    Stroke="@(new ApexCharts.SeriesStroke {Color="#7fd67f", DashSpace = 2, Width = 2 })" />
 
-            @foreach ((double fitness, PokemonTeam team) in UniqueTeamsSorted)
-            {
-                <MudPaper Outlined="true" Class="ma-1" Style="background: var(--mud-palette-background); width: fit-content;">
-                    <MudText Typo="Typo.caption">Fitness = @((int)(fitness * 1000))</MudText>
-                    <PokemonTeamCard Team="team" />
-                </MudPaper>
-            }
+                    </ApexCharts.ApexChart>
+                </div>
+            </MudExpansionPanel>
 
-        </MudExpansionPanel>
-    </MudExpansionPanels>
+            <MudExpansionPanel Text="Search Coverage" Expanded="true">
+
+                <MudText Typo="Typo.body2" Class="mb-2">
+                    @_testedCompositions.Count.ToString("N0") of @TotalPossibleTeams.ToString("N0") possible teams tested
+                    @if (TotalPossibleTeams > 0)
+                    {
+                        <text>(@((100.0 * _testedCompositions.Count / TotalPossibleTeams).ToString("0.###"))%)</text>
+                    }
+                </MudText>
+
+                <div class="mud-width-full" style="min-height: 350px;">
+                    <ApexCharts.ApexChart @ref="_coverageChart"
+                                          TItem="GenerationDataPoint"
+                                          Title=""
+                                          Options="_coverageOptions"
+                                          XAxisType="ApexCharts.XAxisType.Numeric">
+                        <ApexCharts.ApexPointSeries TItem="GenerationDataPoint"
+                                                    Name="Distinct Teams Tested"
+                                                    XValue="@(e => e.GenerationNumber)"
+                                                    YValue="@(e => e.TestedCombinations)"
+                                                    SeriesType="ApexCharts.SeriesType.Line"
+                                                    Stroke="@(new ApexCharts.SeriesStroke {Color="#7fc8ff", DashSpace = 0, Width = 3 })" />
+                    </ApexCharts.ApexChart>
+                </div>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    }
 
 </MudStack>
 
@@ -494,6 +512,7 @@
             {
                 Show = false
             },
+            Zoom = new ApexCharts.Zoom { Enabled = false },
             Background = "transparent",
             FontFamily = "var(--mud-typography-subtitle1-family);",
             Width = "100%",
@@ -522,6 +541,7 @@
             {
                 Show = false
             },
+            Zoom = new ApexCharts.Zoom { Enabled = false },
             Background = "transparent",
             FontFamily = "var(--mud-typography-subtitle1-family);",
             Width = "100%",
