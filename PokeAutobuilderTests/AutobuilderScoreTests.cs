@@ -260,6 +260,107 @@ namespace PokeAutobuilderTests
             Assert.True(concentratedResult.ResistanceBalance < evenResult.ResistanceBalance);
         }
 
+        // helper: a Pokemon whose STAB is super-effective against exactly the given types
+        private static SmartPokemon MakeStabMon(string name, IEnumerable<string> coveredTypes)
+        {
+            return TestFixtures.MakeScoringPokemon(
+                name,
+                attack: coveredTypes.ToDictionary(t => t, _ => 2.0)
+            );
+        }
+
+        [Fact]
+        public void StabBalance_UniformCoverageScoresOne_RegardlessOfMagnitude()
+        {
+            // two Pokemon each covering every type -> count 2 for every type (uniform)
+            var twoDeep = MakeTeam(
+                MakeStabMon("all-1", Globals.AllTypes),
+                MakeStabMon("all-2", Globals.AllTypes)
+            );
+            // three Pokemon each covering every type -> count 3 for every type (also uniform)
+            var threeDeep = MakeTeam(
+                MakeStabMon("all-3", Globals.AllTypes),
+                MakeStabMon("all-4", Globals.AllTypes),
+                MakeStabMon("all-5", Globals.AllTypes)
+            );
+
+            AutobuilderWeightings weightings = ZeroedWeightings(stabBalance: 1.0);
+
+            AutobuilderWeightings twoResult = TeamScorer.CalculateScore(twoDeep, weightings);
+            AutobuilderWeightings threeResult = TeamScorer.CalculateScore(threeDeep, weightings);
+
+            // both are perfectly even, and the score is scale-invariant so the differing
+            // magnitudes (2 vs 3 per type) don't change the result
+            Assert.Equal(1.0, twoResult.StabBalance, precision: 10);
+            Assert.Equal(1.0, threeResult.StabBalance, precision: 10);
+        }
+
+        [Fact]
+        public void StabBalance_AllOnOneTypeScoresZero()
+        {
+            var team = MakeTeam(MakeStabMon("one-type-mon", ["fire"]));
+
+            AutobuilderWeightings weightings = ZeroedWeightings(stabBalance: 1.0);
+
+            AutobuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
+
+            Assert.Equal(0.0, result.StabBalance, precision: 10);
+        }
+
+        [Fact]
+        public void StabBalance_NoCoverageScoresZero()
+        {
+            // a Pokemon with no super-effective STAB at all -> no coverage is maximally
+            // unbalanced, not "uniformly zero" (the old stddev version scored this 1.0)
+            var team = MakeTeam(TestFixtures.MakeScoringPokemon("no-coverage-mon"));
+
+            AutobuilderWeightings weightings = ZeroedWeightings(stabBalance: 1.0);
+
+            AutobuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
+
+            Assert.Equal(0.0, result.StabBalance, precision: 10);
+        }
+
+        [Fact]
+        public void StabBalance_CoveringOnlyThreeTypesScoresLow()
+        {
+            // the "all-Water" shape: STAB super-effective against only fire/ground/rock
+            var team = MakeTeam(MakeStabMon("water-mon", ["fire", "ground", "rock"]));
+
+            AutobuilderWeightings weightings = ZeroedWeightings(stabBalance: 1.0);
+
+            AutobuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
+
+            // for k evenly-covered types out of N the score is (k-1)/(N-1); here (3-1)/(18-1)
+            Assert.Equal(2.0 / 17.0, result.StabBalance, precision: 10);
+        }
+
+        [Fact]
+        public void StabBalance_OneTypeSlightlyUnderDipsJustBelowOne()
+        {
+            // three Pokemon covering every type, but the third skips ground -> ground has count
+            // 2 while every other type has count 3
+            var team = MakeTeam(
+                MakeStabMon("full-1", Globals.AllTypes),
+                MakeStabMon("full-2", Globals.AllTypes),
+                MakeStabMon("skips-ground", Globals.AllTypes.Where(t => t != "ground"))
+            );
+
+            AutobuilderWeightings weightings = ZeroedWeightings(stabBalance: 1.0);
+
+            AutobuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
+
+            // total = 17*3 + 2 = 53; only ground falls below the uniform 1/18 share
+            double uniform = 1.0 / 18.0;
+            double overlap = 17 * uniform + 2.0 / 53.0;
+            double expected = (overlap - uniform) / (1.0 - uniform);
+
+            Assert.Equal(expected, result.StabBalance, precision: 10);
+            // barely below a perfect score - a single type one short out of three
+            Assert.True(result.StabBalance < 1.0);
+            Assert.True(result.StabBalance > 0.97);
+        }
+
         [Fact]
         public void MoveSetAll_IsFullScoreOnlyWhenEveryTypeHasCoverage()
         {
