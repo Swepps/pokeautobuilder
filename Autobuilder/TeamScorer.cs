@@ -172,32 +172,6 @@ namespace Autobuilder
             return new TeamScoreBreakdown(groups, scores.SumWeightings());
         }
 
-        // Aah GCSE maths... this seems much easier than I thought it was when I was 15
-        private static double CalculateStandardDeviation(
-            Dictionary<string, int> typeDictionary,
-            AutobuilderWeightings weightings
-        )
-        {
-            double totalTypes = weightings.Types.Where((t) => t.Value).Count();
-            double mean = 0;
-            foreach (string type in Globals.AllTypes)
-            {
-                if (weightings.Types[type] && typeDictionary.TryGetValue(type, out int typeCount))
-                    mean += typeCount;
-            }
-            mean /= totalTypes;
-
-            double variance = 0;
-            foreach (string type in Globals.AllTypes)
-            {
-                if (weightings.Types[type] && typeDictionary.TryGetValue(type, out int typeCount))
-                    variance += Math.Pow(typeCount - mean, 2);
-            }
-            variance /= totalTypes;
-
-            return Math.Sqrt(variance);
-        }
-
         // "All" pattern: starts at full weight and loses an even share for every enabled type this
         // dictionary doesn't cover at all. Shared by ResistanceAll/StabAll/MoveSetAll.
         private static double CalculateAllTypesScore(
@@ -223,7 +197,14 @@ namespace Autobuilder
             return score;
         }
 
-        // "Balance" pattern: rewards an even spread across enabled types (low standard deviation).
+        // "Balance" pattern: rewards an even spread across enabled types by measuring how much a
+        // team's coverage overlaps a perfectly uniform distribution - the histogram-intersection
+        // Sum(min(p_i, 1/N)) of the coverage proportions p_i against the uniform 1/N. That overlap
+        // runs from 1/N (all coverage piled onto a single type) up to 1 (uniform), and is rescaled
+        // onto [0, 1] so the worst possible spread scores 0 and a perfectly even one scores 1.
+        // Because it works on proportions rather than raw counts it's scale-invariant: the same
+        // shape of coverage scores the same whatever the team size (the old standard-deviation
+        // version scored the identical shape differently just because the counts were bigger).
         // Shared by all four dimensions (Resistance/Weakness/Stab/MoveSet).
         private static double CalculateBalanceScore(
             Dictionary<string, int> typeCoverage,
@@ -231,8 +212,33 @@ namespace Autobuilder
             AutobuilderWeightings weightings
         )
         {
-            double standardDeviation = CalculateStandardDeviation(typeCoverage, weightings);
-            return (1.0 - (0.2 * standardDeviation)) * weighting;
+            double totalTypes = weightings.Types.Where((t) => t.Value).Count();
+
+            int total = 0;
+            foreach (string type in Globals.AllTypes)
+            {
+                if (weightings.Types[type] && typeCoverage.TryGetValue(type, out int count))
+                    total += count;
+            }
+
+            // no coverage at all is maximally unbalanced, not "uniformly zero"
+            if (total == 0)
+                return 0.0;
+            // with a single enabled type any coverage is trivially uniform (and the rescale below
+            // would divide by zero)
+            if (totalTypes <= 1)
+                return weighting;
+
+            double uniform = 1.0 / totalTypes;
+            double overlap = 0.0; // Sum(min(p_i, 1/N)) - maxes at 1 for a uniform spread
+            foreach (string type in Globals.AllTypes)
+            {
+                if (weightings.Types[type] && typeCoverage.TryGetValue(type, out int count))
+                    overlap += Math.Min(count / (double)total, uniform);
+            }
+
+            double balance = (overlap - uniform) / (1.0 - uniform);
+            return balance * weighting;
         }
 
         // "Amount" pattern: semi-logarithmic scale so more coverage approaches (but never reaches)
@@ -259,6 +265,23 @@ namespace Autobuilder
             return (invert ? curve : 1.0 - curve) * weighting;
         }
 
+        // "good" per-member base stat average that CalculateStatCurveScore treats as ~80% -
+        // chosen to line up with where PokemonStatsChartPane's colour bands turn from green
+        // ("good") towards teal ("great"), so a score in the 0.8 region reads the same way the
+        // stats chart does.
+        private const double GoodBaseStatPerPokemon = 100.0;
+
+        // Diminishing-returns curve for "more is better" stat averages: approaches but never
+        // reaches a perfect score, so a handful of exceptional Pokemon can't instantly max out
+        // the score, and there's no flat plateau once the underlying average passes some fixed
+        // threshold. This is a continuous cousin of the semi-log curve CalculateAmountScore uses
+        // for type-coverage counts - same "1 - r^x" shape, just over a continuous average
+        // instead of a discrete count.
+        private static double CalculateStatCurveScore(double average)
+        {
+            return 1.0 - Math.Pow(0.2, average / GoodBaseStatPerPokemon);
+        }
+
         private static void CalculateStatsScore(
             PokemonTeam team,
             AutobuilderWeightings weightings,
@@ -281,37 +304,40 @@ namespace Autobuilder
                 }
             }
 
+            int teamSize = team.CountPokemon();
+
             foreach (KeyValuePair<string, int> kvp in statTotals)
             {
+                double normalizedStat = CalculateStatCurveScore((double)kvp.Value / teamSize);
                 switch (kvp.Key)
                 {
                     case "hp":
                         score.BaseStatHp =
-                            (kvp.Value / 600.0) * weightings.BaseStatTotal * weightings.BaseStatHp;
+                            normalizedStat * weightings.BaseStatTotal * weightings.BaseStatHp;
                         break;
                     case "attack":
                         score.BaseStatAtt =
-                            (kvp.Value / 600.0) * weightings.BaseStatTotal * weightings.BaseStatAtt;
+                            normalizedStat * weightings.BaseStatTotal * weightings.BaseStatAtt;
                         break;
                     case "special-attack":
                         score.BaseStatSpAtt =
-                            (kvp.Value / 600.0)
+                            normalizedStat
                             * weightings.BaseStatTotal
                             * weightings.BaseStatSpAtt;
                         break;
                     case "defense":
                         score.BaseStatDef =
-                            (kvp.Value / 600.0) * weightings.BaseStatTotal * weightings.BaseStatDef;
+                            normalizedStat * weightings.BaseStatTotal * weightings.BaseStatDef;
                         break;
                     case "special-defense":
                         score.BaseStatSpDef =
-                            (kvp.Value / 600.0)
+                            normalizedStat
                             * weightings.BaseStatTotal
                             * weightings.BaseStatSpDef;
                         break;
                     case "speed":
                         score.BaseStatSpe =
-                            (kvp.Value / 600.0) * weightings.BaseStatTotal * weightings.BaseStatSpe;
+                            normalizedStat * weightings.BaseStatTotal * weightings.BaseStatSpe;
                         break;
                 }
             }
