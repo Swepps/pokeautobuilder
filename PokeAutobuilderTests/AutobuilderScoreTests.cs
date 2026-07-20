@@ -80,12 +80,18 @@ namespace PokeAutobuilderTests
             Assert.Equal(0.0, result.SumWeightings());
         }
 
+        // 1 - 0.2^(average / 100) - see CalculateStatCurveScore in TeamScorer.cs
+        private static double ExpectedStatCurveScore(double average)
+        {
+            return 1.0 - Math.Pow(0.2, average / 100.0);
+        }
+
         [Fact]
-        public void BaseStatScore_IsSumAcrossTeamNormalizedBy600()
+        public void BaseStatScore_IsCurvedAgainstPerMemberAverage()
         {
             var pokemon = TestFixtures.MakeScoringPokemon(
                 "stat-mon",
-                baseStats: new Dictionary<string, int> { { "hp", 300 } }
+                baseStats: new Dictionary<string, int> { { "hp", 80 } }
             );
             PokemonTeam team = MakeTeam(pokemon);
 
@@ -93,9 +99,73 @@ namespace PokeAutobuilderTests
 
             AutobuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
 
-            Assert.Equal(300 / 600.0, result.BaseStatHp);
+            // averaged over team size (1 member here), then run through the diminishing-returns
+            // curve rather than divided by a flat 600 that assumes a full 6-member team
+            Assert.Equal(ExpectedStatCurveScore(80), result.BaseStatHp, precision: 10);
             // the other stat scores shouldn't have been touched since their weightings are 0
             Assert.Equal(0.0, result.BaseStatAtt);
+        }
+
+        [Fact]
+        public void BaseStatScore_AverageOfOneHundredScoresAboutEightyPercent()
+        {
+            var pokemon = TestFixtures.MakeScoringPokemon(
+                "stat-mon",
+                baseStats: new Dictionary<string, int> { { "hp", 100 } }
+            );
+            PokemonTeam team = MakeTeam(pokemon);
+
+            AutobuilderWeightings weightings = ZeroedWeightings(baseStatTotal: 1.0, baseStatHp: 1.0);
+
+            AutobuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
+
+            // a "good" (green-band) stat average of 100 should land right around 80%, matching
+            // the colour bands in PokemonStatsChartPane
+            Assert.Equal(0.8, result.BaseStatHp, precision: 10);
+        }
+
+        [Fact]
+        public void BaseStatScore_ApproachesButNeverReachesOneForExtremeStats()
+        {
+            var pokemon = TestFixtures.MakeScoringPokemon(
+                "stat-mon",
+                baseStats: new Dictionary<string, int> { { "hp", 255 } } // Blissey-level HP
+            );
+            PokemonTeam team = MakeTeam(pokemon);
+
+            AutobuilderWeightings weightings = ZeroedWeightings(baseStatTotal: 1.0, baseStatHp: 1.0);
+
+            AutobuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
+
+            Assert.True(result.BaseStatHp < 1.0);
+            Assert.True(result.BaseStatHp > 0.9);
+        }
+
+        [Fact]
+        public void BaseStatScore_SmallerTeamIsNotDevaluedRelativeToFullTeam()
+        {
+            var soloMon = TestFixtures.MakeScoringPokemon(
+                "solo-mon",
+                baseStats: new Dictionary<string, int> { { "hp", 90 } }
+            );
+            PokemonTeam soloTeam = MakeTeam(soloMon);
+
+            var fullTeam = MakeTeam(
+                TestFixtures.MakeScoringPokemon("mon-1", baseStats: new Dictionary<string, int> { { "hp", 90 } }),
+                TestFixtures.MakeScoringPokemon("mon-2", baseStats: new Dictionary<string, int> { { "hp", 90 } }),
+                TestFixtures.MakeScoringPokemon("mon-3", baseStats: new Dictionary<string, int> { { "hp", 90 } }),
+                TestFixtures.MakeScoringPokemon("mon-4", baseStats: new Dictionary<string, int> { { "hp", 90 } }),
+                TestFixtures.MakeScoringPokemon("mon-5", baseStats: new Dictionary<string, int> { { "hp", 90 } }),
+                TestFixtures.MakeScoringPokemon("mon-6", baseStats: new Dictionary<string, int> { { "hp", 90 } })
+            );
+
+            AutobuilderWeightings weightings = ZeroedWeightings(baseStatTotal: 1.0, baseStatHp: 1.0);
+
+            AutobuilderWeightings soloResult = TeamScorer.CalculateScore(soloTeam, weightings);
+            AutobuilderWeightings fullResult = TeamScorer.CalculateScore(fullTeam, weightings);
+
+            // same average stat quality per member should score the same regardless of team size
+            Assert.Equal(fullResult.BaseStatHp, soloResult.BaseStatHp);
         }
 
         [Fact]

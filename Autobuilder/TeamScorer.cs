@@ -259,6 +259,23 @@ namespace Autobuilder
             return (invert ? curve : 1.0 - curve) * weighting;
         }
 
+        // "good" per-member base stat average that CalculateStatCurveScore treats as ~80% -
+        // chosen to line up with where PokemonStatsChartPane's colour bands turn from green
+        // ("good") towards teal ("great"), so a score in the 0.8 region reads the same way the
+        // stats chart does.
+        private const double GoodBaseStatPerPokemon = 100.0;
+
+        // Diminishing-returns curve for "more is better" stat averages: approaches but never
+        // reaches a perfect score, so a handful of exceptional Pokemon can't instantly max out
+        // the score, and there's no flat plateau once the underlying average passes some fixed
+        // threshold. This is a continuous cousin of the semi-log curve CalculateAmountScore uses
+        // for type-coverage counts - same "1 - r^x" shape, just over a continuous average
+        // instead of a discrete count.
+        private static double CalculateStatCurveScore(double average)
+        {
+            return 1.0 - Math.Pow(0.2, average / GoodBaseStatPerPokemon);
+        }
+
         private static void CalculateStatsScore(
             PokemonTeam team,
             AutobuilderWeightings weightings,
@@ -281,37 +298,40 @@ namespace Autobuilder
                 }
             }
 
+            int teamSize = team.CountPokemon();
+
             foreach (KeyValuePair<string, int> kvp in statTotals)
             {
+                double normalizedStat = CalculateStatCurveScore((double)kvp.Value / teamSize);
                 switch (kvp.Key)
                 {
                     case "hp":
                         score.BaseStatHp =
-                            (kvp.Value / 600.0) * weightings.BaseStatTotal * weightings.BaseStatHp;
+                            normalizedStat * weightings.BaseStatTotal * weightings.BaseStatHp;
                         break;
                     case "attack":
                         score.BaseStatAtt =
-                            (kvp.Value / 600.0) * weightings.BaseStatTotal * weightings.BaseStatAtt;
+                            normalizedStat * weightings.BaseStatTotal * weightings.BaseStatAtt;
                         break;
                     case "special-attack":
                         score.BaseStatSpAtt =
-                            (kvp.Value / 600.0)
+                            normalizedStat
                             * weightings.BaseStatTotal
                             * weightings.BaseStatSpAtt;
                         break;
                     case "defense":
                         score.BaseStatDef =
-                            (kvp.Value / 600.0) * weightings.BaseStatTotal * weightings.BaseStatDef;
+                            normalizedStat * weightings.BaseStatTotal * weightings.BaseStatDef;
                         break;
                     case "special-defense":
                         score.BaseStatSpDef =
-                            (kvp.Value / 600.0)
+                            normalizedStat
                             * weightings.BaseStatTotal
                             * weightings.BaseStatSpDef;
                         break;
                     case "speed":
                         score.BaseStatSpe =
-                            (kvp.Value / 600.0) * weightings.BaseStatTotal * weightings.BaseStatSpe;
+                            normalizedStat * weightings.BaseStatTotal * weightings.BaseStatSpe;
                         break;
                 }
             }
