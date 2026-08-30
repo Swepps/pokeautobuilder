@@ -29,14 +29,14 @@ namespace PokeAutobuilderTests
 
             var pokemon = TestFixtures.MakePokemon(_chart,"basic-mon", types: [t]);
 
-            Assert.Equal(2.0, pokemon.GetResistance("test-weak-to"));
-            Assert.Equal(0.5, pokemon.GetResistance("test-resist"));
-            Assert.Equal(0.0, pokemon.GetResistance("test-immune"));
-            Assert.Equal(1.0, pokemon.GetResistance("test-untouched")); // defaults to neutral
+            Assert.Equal(2.0, pokemon.GetResistance("test-weak-to", RulesetId.Unrestricted));
+            Assert.Equal(0.5, pokemon.GetResistance("test-resist", RulesetId.Unrestricted));
+            Assert.Equal(0.0, pokemon.GetResistance("test-immune", RulesetId.Unrestricted));
+            Assert.Equal(1.0, pokemon.GetResistance("test-untouched", RulesetId.Unrestricted)); // defaults to neutral
 
-            Assert.Equal(2.0, pokemon.Multipliers.Attack["test-super-effective"]);
-            Assert.Equal(0.5, pokemon.Multipliers.Attack["test-not-very-effective"]);
-            Assert.Equal(0.0, pokemon.Multipliers.Attack["test-no-effect"]);
+            Assert.Equal(2.0, pokemon.GetMultipliers(RulesetId.Unrestricted).Attack["test-super-effective"]);
+            Assert.Equal(0.5, pokemon.GetMultipliers(RulesetId.Unrestricted).Attack["test-not-very-effective"]);
+            Assert.Equal(0.0, pokemon.GetMultipliers(RulesetId.Unrestricted).Attack["test-no-effect"]);
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace PokeAutobuilderTests
             var pokemon = TestFixtures.MakePokemon(_chart,"dual-weak-mon", types: [a, b]);
 
             // both types independently weak (2.0x) should stack multiplicatively to 4.0x, not just 2.0x
-            Assert.Equal(4.0, pokemon.GetResistance("test-target"));
+            Assert.Equal(4.0, pokemon.GetResistance("test-target", RulesetId.Unrestricted));
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace PokeAutobuilderTests
             var pokemon = TestFixtures.MakePokemon(_chart,"neutral-mon", types: [resist, weak]);
 
             // 0.5 * 2.0 should cancel out to a neutral 1.0
-            Assert.Equal(1.0, pokemon.GetResistance("test-target"));
+            Assert.Equal(1.0, pokemon.GetResistance("test-target", RulesetId.Unrestricted));
         }
 
         [Theory]
@@ -74,7 +74,7 @@ namespace PokeAutobuilderTests
             List<Type> types = immuneFirst ? [immune, weak] : [weak, immune];
             var pokemon = TestFixtures.MakePokemon(_chart,"immune-mon", types: types);
 
-            Assert.Equal(0.0, pokemon.GetResistance("test-target"));
+            Assert.Equal(0.0, pokemon.GetResistance("test-target", RulesetId.Unrestricted));
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace PokeAutobuilderTests
 
             var pokemon = TestFixtures.MakePokemon(_chart,"dual-attack-mon", types: [a, b]);
 
-            Assert.Equal(2.0, pokemon.Multipliers.Attack["test-target"]);
+            Assert.Equal(2.0, pokemon.GetMultipliers(RulesetId.Unrestricted).Attack["test-target"]);
         }
 
         [Fact]
@@ -96,14 +96,14 @@ namespace PokeAutobuilderTests
             Type heavy = TestFixtures.MakeType(_chart,"test-heavy", doubleDamageFrom: ["ground"]);
 
             var withoutLevitate = TestFixtures.MakePokemon(_chart,"heavy-mon", types: [heavy]);
-            Assert.Equal(2.0, withoutLevitate.GetResistance("ground"));
+            Assert.Equal(2.0, withoutLevitate.GetResistance("ground", RulesetId.Unrestricted));
 
             var withLevitate = TestFixtures.MakePokemon(_chart,
                 "levitate-mon",
                 types: [heavy],
                 abilityName: "levitate"
             );
-            Assert.Equal(0.0, withLevitate.GetResistance("ground"));
+            Assert.Equal(0.0, withLevitate.GetResistance("ground", RulesetId.Unrestricted));
         }
 
         [Fact]
@@ -113,8 +113,8 @@ namespace PokeAutobuilderTests
 
             var pokemon = TestFixtures.MakePokemon(_chart,"thick-fat-mon", types: [plain], abilityName: "thick-fat");
 
-            Assert.Equal(0.5, pokemon.GetResistance("fire"));
-            Assert.Equal(0.5, pokemon.GetResistance("ice"));
+            Assert.Equal(0.5, pokemon.GetResistance("fire", RulesetId.Unrestricted));
+            Assert.Equal(0.5, pokemon.GetResistance("ice", RulesetId.Unrestricted));
         }
 
         [Fact]
@@ -129,7 +129,7 @@ namespace PokeAutobuilderTests
             );
 
             // 2.0 (innate weakness) * 0.5 (thick fat) = 1.0, back to neutral
-            Assert.Equal(1.0, pokemon.GetResistance("fire"));
+            Assert.Equal(1.0, pokemon.GetResistance("fire", RulesetId.Unrestricted));
         }
 
         [Fact]
@@ -143,8 +143,8 @@ namespace PokeAutobuilderTests
 
             var pokemon = TestFixtures.MakePokemon(_chart,"solid-rock-mon", types: [mixed], abilityName: "solid-rock");
 
-            Assert.Equal(1.5, pokemon.GetResistance("test-weak")); // 2.0 * 0.75
-            Assert.Equal(0.5, pokemon.GetResistance("test-resist")); // untouched, wasn't >= 2.0
+            Assert.Equal(1.5, pokemon.GetResistance("test-weak", RulesetId.Unrestricted)); // 2.0 * 0.75
+            Assert.Equal(0.5, pokemon.GetResistance("test-resist", RulesetId.Unrestricted)); // untouched, wasn't >= 2.0
         }
 
         [Fact]
@@ -155,8 +155,8 @@ namespace PokeAutobuilderTests
 
             var pokemon = TestFixtures.MakePokemon(_chart,"wonder-guard-mon", types: [single], abilityName: "wonder-guard");
 
-            Assert.Equal(2.0, pokemon.GetResistance("fire")); // genuine weakness left alone
-            Assert.Equal(0.0, pokemon.GetResistance("water")); // no weakness -> forced immune
+            Assert.Equal(2.0, pokemon.GetResistance("fire", RulesetId.Unrestricted)); // genuine weakness left alone
+            Assert.Equal(0.0, pokemon.GetResistance("water", RulesetId.Unrestricted)); // no weakness -> forced immune
         }
     }
 }

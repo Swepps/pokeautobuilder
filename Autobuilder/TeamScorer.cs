@@ -360,7 +360,7 @@ namespace Autobuilder
                 // IsTypeCoveredBySTAB/IsTypeCoveredByMove checks below, just without re-testing
                 // types that can't be covered.
                 double countCoverage = 0;
-                foreach (KeyValuePair<string, double> kvp in p.Multipliers.Attack)
+                foreach (KeyValuePair<string, double> kvp in p.GetMultipliers(team.Ruleset.Id).Attack)
                 {
                     if (
                         kvp.Value >= 2.0
@@ -421,7 +421,7 @@ namespace Autobuilder
                 // (1.0 / 1.0 - 1.0 = 0) - so only types actually present in Defense can affect
                 // the result, and we can scan just those instead of every global type.
                 double countResistances = 0;
-                foreach (KeyValuePair<string, double> kvp in p.Multipliers.Defense)
+                foreach (KeyValuePair<string, double> kvp in p.GetMultipliers(team.Ruleset.Id).Defense)
                 {
                     if (
                         !weightings.Types.TryGetValue(kvp.Key, out bool isWeighted)

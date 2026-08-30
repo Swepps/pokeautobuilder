@@ -176,7 +176,7 @@
             SearchLocations.Add(new SmartPokedex(PokeApiService, "National Pokédex", new NamedApiResource<Pokedex> { Name = "national", Url = "https://pokeapi.co/api/v2/pokedex/1/" }));
             foreach (PokemonVersionGroup versionGroup in PokemonVersionGroup.All)
             {
-                SearchLocations.Add(new SmartPokedex(PokeApiService, versionGroup.DisplayName, new NamedApiResource<VersionGroup> { Name = versionGroup.ApiName, Url = versionGroup.ApiUrl }));
+                SearchLocations.Add(new SmartPokedex(PokeApiService, versionGroup.DisplayName, new NamedApiResource<VersionGroup> { Name = versionGroup.ApiName, Url = versionGroup.ApiUrl }, versionGroup));
             }
 
             StateHasChanged();

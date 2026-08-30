@@ -2,6 +2,7 @@
 @using Utility
 
 @inject PokeApiService PokeApiService
+@inject TypeChart TypeChart
 
 @if (Pokemon is not null)
 {
@@ -11,9 +12,9 @@
 			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center" Spacing="0">
 				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 50px;">STAB</MudText>
 				<div class="d-flex flex-wrap justify-start align-content-start">
-				@foreach (string t in Globals.AllTypes)
+				@foreach (string t in _activeRuleset.EnabledTypes)
 				{
-					@if (Pokemon.IsTypeCoveredBySTAB(t))
+					@if (Pokemon.IsTypeCoveredBySTAB(t, _activeRuleset.Id))
 					{
 						<MudTooltip Text="@StringUtils.PrettifyString(t)">
 							<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" Height="20" Class="ma-1" />
@@ -26,7 +27,7 @@
 			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center" Spacing="0">
 				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 60px">Moves</MudText>
 				<div class="d-flex flex-wrap justify-start align-content-start">
-					@foreach (string t in Globals.AllTypes)
+					@foreach (string t in _activeRuleset.EnabledTypes)
 					{
 						@if (Pokemon.IsTypeCoveredByMove(t))
 						{
@@ -45,10 +46,19 @@
 	[Parameter]
 	public SmartPokemon? Pokemon { get; set; }
 
+	[CascadingParameter]
+	public BoxRules? ActiveRuleset { get; set; }
+
+	private BoxRules _activeRuleset => ActiveRuleset ?? BoxRules.Unrestricted();
+
 	protected override async Task OnParametersSetAsync()
 	{
 		if (Pokemon is not null)
+		{
 			await Pokemon.SelectedMoves.UpdateAttackMultipliers(PokeApiService);
+			if (!Pokemon.HasInitializedRuleset(_activeRuleset.Id))
+				Pokemon.InitializeTypes(TypeChart.GetOrBuildDerived(_activeRuleset.Id, _activeRuleset.DisabledTypes), _activeRuleset.Id);
+		}
 
 		base.OnParametersSet();
 	}

@@ -7,6 +7,15 @@ namespace PokemonDataModel
         [JsonPropertyName("pokemon")]
         public List<SmartPokemon> Pokemon { get; set; }
 
+        [JsonPropertyName("rules")]
+        public BoxRules Rules { get; set; } = BoxRules.Unrestricted();
+
+        // Remembers which search location (a Pokedex name, per ILazyPokemonList.Name) this box was
+        // last browsing on the storage page's "Add" panel, so switching boxes and coming back
+        // restores where you were - e.g. adding from Emerald into a Gen 3 box.
+        [JsonPropertyName("lastSearchLocationName")]
+        public string? LastSearchLocationName { get; set; }
+
         private string _name = string.Empty;
         [JsonPropertyName("name")]
         public string Name
@@ -88,6 +97,23 @@ namespace PokemonDataModel
             }
 
             return newTeam;
+        }
+
+        // Warms every Pokemon in this box's multiplier cache for this box's current ruleset, so
+        // downstream consumers (the auto-builder's genetic algorithm, coverage/defense panes) can
+        // read GetMultipliers/GetResistance/etc. without checking first. Call whenever a Pokemon is
+        // added to the box or the box's Rules change - the genetic algorithm never manufactures a
+        // Pokemon that wasn't already attached to the box, so warming here is sufficient.
+        public void EnsureInitialized(TypeChart baseChart)
+        {
+            TypeChart chart = baseChart.GetOrBuildDerived(Rules.Id, Rules.DisabledTypes);
+            foreach (SmartPokemon pokemon in Pokemon)
+            {
+                if (!pokemon.HasInitializedRuleset(Rules.Id))
+                {
+                    pokemon.InitializeTypes(chart, Rules.Id);
+                }
+            }
         }
 
         public Task<IEnumerable<IPokemonSearchable>> GetListAsync()
