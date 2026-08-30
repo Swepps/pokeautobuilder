@@ -23,14 +23,17 @@ namespace Autobuilder
 
             double fitness = pokemonTeamChromosome.WeightingScores.SumWeightings();
 
-            // duplicates in a team don't qualify as a valid team
-            // can't have more than one mega-evolved pokemon in a team
-            if (
-                fitness < 0
-                || team.ContainsDuplicates()
-                || (!_weightings.AllowMultipleMegas && team.CountMegaPokemon() > 1)
-                || (!_weightings.AllowMultipleGmax && team.CountGmaxPokemon() > 1)
-            )
+            // duplicates in a team don't qualify as a valid team. AllowMegas/AllowGmax being false
+            // bans the mechanic outright (any count > 0), which supersedes AllowMultipleMegas/Gmax
+            // (only relevant once the mechanic is allowed at all)
+            bool tooManyMegas = _weightings.AllowMegas
+                ? !_weightings.AllowMultipleMegas && team.CountMegaPokemon() > 1
+                : team.CountMegaPokemon() > 0;
+            bool tooManyGmax = _weightings.AllowGmax
+                ? !_weightings.AllowMultipleGmax && team.CountGmaxPokemon() > 1
+                : team.CountGmaxPokemon() > 0;
+
+            if (fitness < 0 || team.ContainsDuplicates() || tooManyMegas || tooManyGmax)
                 fitness = 0;
 
             return fitness;

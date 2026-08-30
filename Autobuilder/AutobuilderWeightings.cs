@@ -27,7 +27,9 @@ namespace Autobuilder
         double baseStatSpDef = 1.0,
         double baseStatSpe = 1.0,
         bool allowMultipleMegas = false,
-        bool allowMultipleGmax = false
+        bool allowMultipleGmax = false,
+        bool allowMegas = true,
+        bool allowGmax = true
     )
     {
         public Dictionary<string, bool> Types = typeWeightings;
@@ -67,6 +69,10 @@ namespace Autobuilder
         // generation settings
         public bool AllowMultipleMegas { get; set; } = allowMultipleMegas;
         public bool AllowMultipleGmax { get; set; } = allowMultipleGmax;
+
+        // whether the mechanic exists at all, distinct from "more than one at a time"
+        public bool AllowMegas { get; set; } = allowMegas;
+        public bool AllowGmax { get; set; } = allowGmax;
 
         public AutobuilderWeightings()
             : this(MakeDefaultTypeWeightings()) { }

@@ -62,9 +62,10 @@
                     <div class="mt-1 mb-1">
                         @foreach (string t in Globals.AllTypes)
                         {
-                            <MudButton OnClick="() => OnClickType(t)" Style="height: 48px; min-width: 48px" Class="pa-0" Disabled="Generating">
-                                <MudTooltip Text="@StringUtils.PrettifyString(t)" RootClass="d-flex">
-                                    @if (Generating)
+                            bool isRulesetDisabled = SelectedBox?.Rules.DisabledTypes.Contains(t) ?? false;
+                            <MudButton OnClick="() => OnClickType(t)" Style="height: 48px; min-width: 48px" Class="pa-0" Disabled="@(Generating || isRulesetDisabled)">
+                                <MudTooltip Text="@(isRulesetDisabled ? StringUtils.PrettifyString(t) + " (not available for this box)" : StringUtils.PrettifyString(t))" RootClass="d-flex">
+                                    @if (Generating || isRulesetDisabled)
                                     {
                                         <MudImage Src="@StringUtils.DisabledTypeImgFromName(t)" alt="@t" Height="30" Class="ma-1" />
                                     }
@@ -265,6 +266,7 @@
         <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Size="Size.Medium" Max="@NumGenerations" />
     }
 
+    <CascadingValue Value="BestTeam.Ruleset">
     <MudGrid Class="mb-2">
         <MudItem xs="12">
             <MudGrid Justify="Justify.SpaceEvenly">
@@ -329,6 +331,7 @@
             </MudItem>
         }
     </MudGrid>
+    </CascadingValue>
 
     @if (UniqueTeamsSorted.Count > 0)
     {
@@ -417,6 +420,20 @@
         {
             _selectedBox = value;
             _lockedPokemon.Clear();
+            ApplyRulesetTypeConstraints();
+        }
+    }
+
+    // A box's ruleset constrains (rather than replaces) the manual per-type toggles below - force
+    // any type the box disables to off, without touching the user's choices for enabled types.
+    private void ApplyRulesetTypeConstraints()
+    {
+        if (SelectedBox is null)
+            return;
+
+        foreach (string disabledType in SelectedBox.Rules.DisabledTypes)
+        {
+            GenerationParameters.Types[disabledType] = false;
         }
     }
 
@@ -569,6 +586,7 @@
 
             // load the parameters from the profile
             GenerationParameters = Profile.AutobuilderParams;
+            ApplyRulesetTypeConstraints();
 
             // set generation ran callback event
             GeneticAlgorithm.GenerationRan += HandleGenerationRan;
@@ -592,6 +610,7 @@
         }
 
         GenerationParameters = Profile.AutobuilderParams;
+        ApplyRulesetTypeConstraints();
 
         return base.OnParametersSetAsync();
     }
@@ -600,6 +619,9 @@
 
     public void OnClickType(string typeName)
     {
+        if (SelectedBox?.Rules.DisabledTypes.Contains(typeName) ?? false)
+            return;
+
         GenerationParameters.Types[typeName] = !GenerationParameters.Types[typeName];
         StateHasChanged();
     }
@@ -627,8 +649,10 @@
         _ = Profile.SetAutobuilderParamsAsync(GenerationParameters);
 
         AutobuilderWeightings weightingsCopy = new(GenerationParameters);
-        weightingsCopy.AllowMultipleMegas = Profile.AllowMultipleMegas;
-        weightingsCopy.AllowMultipleGmax = Profile.AllowMultipleGmax;
+        weightingsCopy.AllowMultipleMegas = SelectedBox?.Rules.AllowMultipleMegas ?? false;
+        weightingsCopy.AllowMultipleGmax = SelectedBox?.Rules.AllowMultipleGmax ?? false;
+        weightingsCopy.AllowMegas = SelectedBox?.Rules.AllowMegas ?? true;
+        weightingsCopy.AllowGmax = SelectedBox?.Rules.AllowGmax ?? true;
 
         PokemonTeam lockedMembers = new();
         lockedMembers.Pokemon.AddRange(_lockedPokemon);
