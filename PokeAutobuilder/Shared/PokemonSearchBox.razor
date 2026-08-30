@@ -205,12 +205,15 @@
         }
         else
         {
-            SmartPokemon? searchedPokemon = await PokeApiService.GetPokemonAsync(pokemonName);
+            // reuse an already-loaded selection instead of re-fetching (would reset its moves)
+            SmartPokemon? searchedPokemon = PokemonSearchValue is SmartPokemon existingPokemon && existingPokemon.Name == pokemonName
+                ? existingPokemon
+                : await PokeApiService.GetPokemonAsync(pokemonName);
             if (searchedPokemon is not null)
                 await SetPokemonAsync(searchedPokemon);
             else
                 _errorFetchingPokemon = true;
-        }        
+        }
     }
 
     public async Task SetPokemonAsync(SmartPokemon? pokemon)

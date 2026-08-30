@@ -11,7 +11,10 @@
 				<MudChip T="string" Color="@_bandColor" Size="Size.Small">@_bandLabel</MudChip>
 			</div>
 			<div class="mx-auto" style="height: 320px; max-width: 420px;">
-				<ApexCharts.ApexChart TItem="RadarPoint" Options="_options">
+				<ApexCharts.ApexChart @ref="_chart"
+				TItem="RadarPoint"
+				Options="_options"
+				OnRendered="@(_ => _chartRendered = true)">
 					<ApexCharts.ApexPointSeries TItem="RadarPoint"
 												 Items="_radarPoints"
 												 Name="Score"
@@ -64,6 +67,9 @@
 		public double Value;
 	}
 
+	private ApexCharts.ApexChart<RadarPoint>? _chart;
+	private bool _chartRendered = false;
+
 	private readonly ApexCharts.ApexChartOptions<RadarPoint> _options = new()
 	{
 		Chart = new ApexCharts.Chart()
@@ -79,7 +85,7 @@
 		Yaxis = [ new ApexCharts.YAxis { Min = 0, Max = 100, Show = false } ],
 	};
 
-	protected override void OnParametersSet()
+	protected override async Task OnParametersSetAsync()
 	{
 		if (Team is null)
 		{
@@ -88,11 +94,19 @@
 		}
 
 		_breakdown = TeamScorer.CalculateBreakdown(Team);
-		_radarPoints = _breakdown.Groups
-			.Select(g => new RadarPoint { Name = g.Name, Value = g.AverageScore * 100 })
-			.ToList();
+		_radarPoints.Clear();
+		foreach (var group in _breakdown.Groups)
+		{
+			_radarPoints.Add(new RadarPoint { Name = group.Name, Value = group.AverageScore * 100 });
+		}
 
 		(_bandLabel, _bandColor) = GetBand(_breakdown.TotalScore / _breakdown.MaxScore);
+
+		if (_chart is not null && _chartRendered)
+		{
+			await _chart.RenderAsync();
+		}
+		StateHasChanged();
 	}
 
 	private static (string, Color) GetBand(double fraction)

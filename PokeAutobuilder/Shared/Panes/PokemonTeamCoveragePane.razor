@@ -93,7 +93,8 @@
 		if (Team is null)
 			return;
 
-		foreach (SmartPokemon? p in Team.Pokemon)
+		// snapshot: loop awaits per-Pokemon, so Team.Pokemon could otherwise mutate mid-enumeration
+		foreach (SmartPokemon? p in Team.Pokemon.ToList())
 		{
 			if (p is not null)
 				await p.SelectedMoves.UpdateAttackMultipliers(PokeApiService);
