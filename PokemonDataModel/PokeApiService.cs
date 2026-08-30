@@ -350,7 +350,11 @@ namespace PokemonDataModel
             return null;
         }
 
-        public async Task<List<SmartPokemon>> GetNextEvolutions(SmartPokemon pokemon)
+        // `generation` restricts results to evolutions whose species already existed by that
+        // generation - e.g. Seadra's only evolution (Kingdra) is excluded under a Gen 1 ruleset,
+        // since Kingdra wasn't introduced until Gen 2. Null (Unrestricted) returns every evolution
+        // regardless of when it was introduced, matching the previous unconditional behavior.
+        public async Task<List<SmartPokemon>> GetNextEvolutions(SmartPokemon pokemon, int? generation = null)
         {
             List<SmartPokemon> result = [];
             try
@@ -366,7 +370,7 @@ namespace PokemonDataModel
                         PokemonSpecies? evolvedSpecies = await GetPokemonSpeciesAsync(
                             evolution.Species.Name
                         );
-                        if (evolvedSpecies is not null)
+                        if (evolvedSpecies is not null && IsSpeciesAvailableInGeneration(evolvedSpecies, generation))
                         {
                             SmartPokemon? evolvedPokemon = await GetPokemonAsync(
                                 evolvedSpecies.Varieties[0].Pokemon.Name
@@ -387,7 +391,7 @@ namespace PokemonDataModel
             return result;
         }
 
-        public async Task<bool> CanEvolve(SmartPokemon pokemon)
+        public async Task<bool> CanEvolve(SmartPokemon pokemon, int? generation = null)
         {
             try
             {
@@ -397,9 +401,15 @@ namespace PokemonDataModel
                 ChainLink? chainLink = FindPokemonChainLink(chain.Chain, species.Name);
                 if (chainLink is not null)
                 {
-                    if (chainLink.EvolvesTo.Count > 0)
+                    foreach (ChainLink evolution in chainLink.EvolvesTo)
                     {
-                        return true;
+                        PokemonSpecies? evolvedSpecies = await GetPokemonSpeciesAsync(
+                            evolution.Species.Name
+                        );
+                        if (evolvedSpecies is not null && IsSpeciesAvailableInGeneration(evolvedSpecies, generation))
+                        {
+                            return true;
+                        }
                     }
                 }
             }
@@ -410,6 +420,9 @@ namespace PokemonDataModel
 
             return false;
         }
+
+        private static bool IsSpeciesAvailableInGeneration(PokemonSpecies species, int? generation) =>
+            generation is null || PokemonGenerationNames.Parse(species.Generation.Name) <= generation;
 
         internal class ComparePokemonMoves : IEqualityComparer<PokemonMove>
         {

@@ -21,6 +21,10 @@
                 {
                     <MudText Typo="Typo.body2">@(Pokemon!.ToString()) has no evolutions!</MudText>
                 }
+                else if (_noEvolutionsInRuleset)
+                {
+                    <MudText Typo="Typo.body2">@(Pokemon!.ToString())'s evolutions aren't available in this ruleset.</MudText>
+                }
                 else if (_evolutions.Count == 0)
                 {
                     <MudProgressCircular Indeterminate="true" />
@@ -55,6 +59,7 @@
 
     private List<SmartPokemon> _evolutions = [];
     private bool _noEvolutions = false;
+    private bool _noEvolutionsInRuleset = false;
 
     private List<SmartPokemon> _selectedPokemonList = [];
     private SmartPokemon? _selectedPokemon;
@@ -71,10 +76,22 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        _evolutions = await PokeApiService.GetNextEvolutions(Pokemon!);
+        int? generation = ActiveRuleset?.Generation;
+        _evolutions = await PokeApiService.GetNextEvolutions(Pokemon!, generation);
+
         if (_evolutions.Count == 0)
         {
-            _noEvolutions = true;
+            // distinguish "genuinely nothing to evolve into" from "this ruleset's generation is too
+            // early for any of them" (e.g. Seadra has no evolutions at all vs. Seadra's only
+            // evolution, Kingdra, not existing yet under a Gen 1 ruleset) - re-check unrestricted so
+            // the message doesn't claim "no evolutions" when there genuinely are some, just not here
+            bool hasAnyEvolutions = generation is null
+                || (await PokeApiService.GetNextEvolutions(Pokemon!)).Count > 0;
+
+            if (hasAnyEvolutions)
+                _noEvolutionsInRuleset = true;
+            else
+                _noEvolutions = true;
         }
     }
 

@@ -315,7 +315,7 @@
 
     protected async Task OnSelectPokemonAsync(SmartPokemon selectedPokemon)
     {
-        _selectedPokemonCanEvolve = await PokeApiService.CanEvolve(selectedPokemon);
+        _selectedPokemonCanEvolve = await PokeApiService.CanEvolve(selectedPokemon, SelectedBox.Rules.Generation);
         SelectedPokemon = selectedPokemon;
         _storagePanel = StoragePanel.Edit;
         StateHasChanged();
