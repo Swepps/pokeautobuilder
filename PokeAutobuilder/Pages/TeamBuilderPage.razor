@@ -139,7 +139,6 @@
         if (cards.Count != PokemonTeam.MaxTeamSize)
             return;
 
-        bool anyPokemonChanged = false;
         for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
             SmartPokemon? selectedPokemon = null;
@@ -150,12 +149,14 @@
             if (cards[i].Pokemon != selectedPokemon)
             {
                 cards[i].Pokemon = selectedPokemon;
-                anyPokemonChanged = true;
             }
         }
+    }
 
-        if (anyPokemonChanged)
-            StateHasChanged();
+    private void OnTeamChanged()
+    {
+        SetSelectedPokemon();
+        StateHasChanged();
     }
 
     protected Task<IEnumerable<IPokemonSearchable>> SearchAsync(string? searchString, CancellationToken token)
@@ -176,7 +177,7 @@
     protected override void OnInitialized()
     {
         // register interest in session changing to update this page
-        Session.OnTeamChange += SetSelectedPokemon;
+        Session.OnTeamChange += OnTeamChanged;
 
         _teamName = Session.Team.Name;
         _searchLocation = SearchLocations!.Where((s) => s.Name.Equals(Session.SearchLocation)).FirstOrDefault();
@@ -189,6 +190,6 @@
 
     public void Dispose()
     {
-        Session.OnTeamChange -= SetSelectedPokemon;
+        Session.OnTeamChange -= OnTeamChanged;
     }
 }
