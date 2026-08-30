@@ -141,6 +141,11 @@ namespace PokeAutobuilder.Source.Services
             set => _preferences.Set(_preferences.Value with { AllowMultipleGmax = value });
         }
 
+        // Seeds a newly created box's ruleset from the (formerly global) mega/gmax preference -
+        // once created, a box's Rules are independent and no longer track this preference live.
+        public BoxRules MakeDefaultRulesForNewBox() =>
+            BoxRules.Unrestricted(AllowMultipleMegas, AllowMultipleGmax);
+
         public List<PokeApiNet.Type> AllTypes
         {
             get => _allTypes.Value;
@@ -199,15 +204,31 @@ namespace PokeAutobuilder.Source.Services
                     }
                     else if (_pokemonStorage.Value.Boxes.Count == 0)
                     {
-                        _pokemonStorage.Value.Boxes.Add(new PokemonBox("Box 1"));
+                        _pokemonStorage.Value.Boxes.Add(new PokemonBox("Box 1") { Rules = MakeDefaultRulesForNewBox() });
                     }
 
+                    // this box predates BoxRules entirely, so seed it from the (formerly global)
+                    // mega/gmax preference the same way the < 1.5 migration below does
+                    SeedBoxRulesFromPreferences();
+                    EnsureAllBoxesInitialized();
                     await _pokemonStorage.SetAsync(_pokemonStorage.Value);
                     await UpdateVersionAsync();
                 }
                 else
                 {
                     await LoadPokemonStorageAsync();
+
+                    // boxes existed before BoxRules did - one-time snapshot of the (formerly
+                    // global) mega/gmax preference onto each, so upgrading doesn't silently change
+                    // existing boxes' behavior. After this, a box's Rules are independent of the
+                    // global preference (which now only seeds *new* boxes going forward).
+                    if (profileStorageVersion < 1.5)
+                    {
+                        SeedBoxRulesFromPreferences();
+                        EnsureAllBoxesInitialized();
+                        await _pokemonStorage.SetAsync(_pokemonStorage.Value);
+                        await UpdateVersionAsync();
+                    }
                 }
 
                 // load team storage
@@ -260,9 +281,54 @@ namespace PokeAutobuilder.Source.Services
             {
                 _pokemonStorage.Value.Boxes.Add(new PokemonBox("Box 1"));
             }
+
+            EnsureAllBoxesInitialized();
+        }
+
+        // Warms every box's Pokemon for that box's own ruleset - the auto-builder and coverage/
+        // defense panes trust a Pokemon's multiplier cache is already populated for whatever
+        // ruleset they read (SmartPokemon.GetMultipliers throws otherwise), so this must run
+        // whenever boxes are (re)loaded or a box's Rules change.
+        private void EnsureAllBoxesInitialized()
+        {
+            foreach (PokemonBox box in _pokemonStorage.Value.Boxes)
+            {
+                // a box saved by a newer app version (or imported from one - JsonValidator only
+                // flags this for the immediate upload warning, it can't fix what's actually
+                // persisted since the raw uploaded JSON is written to local storage directly by
+                // JS) may carry ruleset fields this version doesn't understand; reset rather than
+                // risk misinterpreting them
+                if (box.Rules.SchemaVersion > BoxRules.CurrentSchemaVersion)
+                {
+                    box.Rules = BoxRules.Unrestricted();
+                }
+
+                box.EnsureInitialized(_typeChart);
+            }
+        }
+
+        private void SeedBoxRulesFromPreferences()
+        {
+            foreach (PokemonBox box in _pokemonStorage.Value.Boxes)
+            {
+                box.Rules = box.Rules with
+                {
+                    AllowMultipleMegas = _preferences.Value.AllowMultipleMegas,
+                    AllowMultipleGmax = _preferences.Value.AllowMultipleGmax,
+                };
+            }
         }
 
         public Task UpdatePokemonStorageAsync() => _pokemonStorage.SetAsync(PokemonStorage);
+
+        // Call after changing a box's Rules (e.g. from the box-rules preset editor) so its
+        // already-stored Pokemon get warmed for the new ruleset before anything reads them.
+        public Task UpdateBoxRulesAsync(PokemonBox box, BoxRules rules)
+        {
+            box.Rules = rules;
+            box.EnsureInitialized(_typeChart);
+            return UpdatePokemonStorageAsync();
+        }
 
         public async Task AddPokemonToStorageAsync(SmartPokemon pokemon, int boxIdx)
         {
@@ -273,7 +339,9 @@ namespace PokeAutobuilder.Source.Services
                 );
             }
 
-            PokemonStorage.Boxes[boxIdx].Pokemon.Add(pokemon);
+            PokemonBox box = PokemonStorage.Boxes[boxIdx];
+            box.Pokemon.Add(pokemon);
+            box.EnsureInitialized(_typeChart);
             await UpdatePokemonStorageAsync();
         }
 
@@ -313,6 +381,7 @@ namespace PokeAutobuilder.Source.Services
 
             owningBox.Pokemon.RemoveAt(pokemonIdx);
             owningBox.Pokemon.Insert(pokemonIdx, newPokemon);
+            owningBox.EnsureInitialized(_typeChart);
 
             await UpdatePokemonStorageAsync();
             return true;
