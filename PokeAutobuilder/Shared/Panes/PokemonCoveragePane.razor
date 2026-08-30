@@ -57,7 +57,7 @@
 		{
 			await Pokemon.SelectedMoves.UpdateAttackMultipliers(PokeApiService);
 			if (!Pokemon.HasInitializedRuleset(_activeRuleset.Id))
-				Pokemon.InitializeTypes(TypeChart.GetOrBuildDerived(_activeRuleset.Id, _activeRuleset.DisabledTypes), _activeRuleset.Id);
+				Pokemon.InitializeTypes(TypeChart.GetOrBuildDerived(_activeRuleset.Id, _activeRuleset.DisabledTypes), _activeRuleset);
 		}
 
 		base.OnParametersSet();

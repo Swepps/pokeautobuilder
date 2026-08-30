@@ -74,7 +74,7 @@ namespace PokeAutobuilder.Source.Services
             {
                 if (pokemon is not null && !pokemon.HasInitializedRuleset(Team.Ruleset.Id))
                 {
-                    pokemon.InitializeTypes(chart, Team.Ruleset.Id);
+                    pokemon.InitializeTypes(chart, Team.Ruleset);
                 }
             }
         }

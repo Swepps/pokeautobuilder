@@ -43,14 +43,18 @@ namespace PokemonDataModel
         // Identity/cache key for derived TypeCharts, per-ruleset Pokemon multiplier caches, and
         // ruleset-equality comparisons elsewhere (e.g. whether switching search location in the
         // team builder counts as a different ruleset). Deliberately excludes SchemaVersion/
-        // PresetId/Generation, none of which affect behavior on their own - Generation is only
-        // ever a label for how DisabledTypes/AllowMegas/AllowGmax were derived, so two BoxRules
-        // that arrive at the same concrete values must resolve to the same cache entry regardless
-        // of which generation (if any) produced them.
+        // PresetId, neither of which affects behavior on its own. Generation IS included despite
+        // being derivable-adjacent to DisabledTypes - historical type resolution (a species' actual
+        // types in a given generation, e.g. Clefable as Normal pre-Gen 6) depends on the exact
+        // generation number, not just which types are disabled, and several generations (2-5) share
+        // an identical DisabledTypes/AllowMegas/AllowGmax combination despite being meaningfully
+        // different rulesets for that purpose.
         [JsonIgnore]
         public RulesetId Id =>
             new(
                 string.Join(",", DisabledTypes.OrderBy(t => t, StringComparer.Ordinal))
+                    + "|gen="
+                    + (Generation?.ToString() ?? "none")
                     + "|megas="
                     + AllowMegas
                     + "|multiMegas="

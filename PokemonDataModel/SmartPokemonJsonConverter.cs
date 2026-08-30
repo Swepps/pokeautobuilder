@@ -55,7 +55,7 @@ namespace PokemonDataModel
                 ref reader,
                 WithoutThisConverter(options)
             );
-            pokemon?.InitializeTypes(_typeChart, RulesetId.Unrestricted);
+            pokemon?.InitializeTypes(_typeChart, BoxRules.Unrestricted());
             return pokemon;
         }
 

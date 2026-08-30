@@ -138,7 +138,7 @@ namespace PokeAutobuilderTests
 
             // the JSON constructor leaves types/multipliers unresolved (in the app, the
             // SmartPokemonJsonConverter does this immediately after deserializing)
-            pokemon.InitializeTypes(typeChart, RulesetId.Unrestricted);
+            pokemon.InitializeTypes(typeChart, BoxRules.Unrestricted());
 
             return pokemon;
         }

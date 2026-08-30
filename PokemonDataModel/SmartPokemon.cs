@@ -109,7 +109,7 @@ namespace PokemonDataModel
             // needs to be done before lists can be generated but after ability is selected. A newly
             // built Pokemon always starts with its Unrestricted-ruleset entry pre-warmed for free;
             // other rulesets are warmed lazily once the Pokemon is attached to a box/team using them.
-            InitializeTypes(typeChart, RulesetId.Unrestricted);
+            InitializeTypes(typeChart, BoxRules.Unrestricted());
             Resistances = GetDefenseResistList();
             Weaknesses = GetDefenseWeakList();
             STABCoverage = GetSTABCoverageList();
@@ -180,20 +180,40 @@ namespace PokemonDataModel
         }
 
         // Resolves this pokemon's type names into full Type objects (with damage relations) via
-        // the given chart and computes/caches the type-effectiveness multipliers for `rulesetId`
-        // only - re-callable per ruleset (e.g. once for Unrestricted, again for a box's Gen-1
-        // ruleset), and re-callable for a ruleset already cached to refresh it (e.g. after the
-        // chart it was built from changes).
-        public void InitializeTypes(TypeChart typeChart, RulesetId rulesetId)
+        // the given chart and computes/caches the type-effectiveness multipliers for `rules` only -
+        // re-callable per ruleset (e.g. once for Unrestricted, again for a box's Gen-1 ruleset), and
+        // re-callable for a ruleset already cached to refresh it (e.g. after the chart it was built
+        // from changes). Uses GetTypesForGeneration rather than the raw (always-current) Types list,
+        // so a Gen-1 ruleset resolves e.g. Clefable as pure Normal, not "Fairy with the type hidden".
+        public void InitializeTypes(TypeChart typeChart, BoxRules rules)
         {
-            RulesetCache cache = GetOrCreateCache(rulesetId);
+            RulesetCache cache = GetOrCreateCache(rules.Id);
             cache.LoadedTypes.Clear();
-            foreach (PokemonType t in Types)
+            foreach (PokemonType t in GetTypesForGeneration(rules.Generation))
             {
                 cache.LoadedTypes.Add(typeChart.Resolve(t.Type.Name));
             }
 
             RecomputeMultipliers(cache);
+        }
+
+        // What this Pokemon's types actually were as of the given generation, per PokeAPI's
+        // past_types (each entry's Generation is "the final generation in which the Pokemon had
+        // this data" - so the applicable entry is the one with the smallest generation number that
+        // is still >= the target, and no entry applying at all means the target generation is at or
+        // after the current typing). Returns the current Types unchanged when generation is null
+        // (Unrestricted) or the Pokemon has no past_types entries (its type has never changed).
+        public IReadOnlyList<PokemonType> GetTypesForGeneration(int? generation)
+        {
+            if (generation is null)
+                return Types;
+
+            PokemonPastTypes? applicable = PastTypes
+                .Where(pt => PokemonGenerationNames.Parse(pt.Generation.Name) >= generation)
+                .OrderBy(pt => PokemonGenerationNames.Parse(pt.Generation.Name))
+                .FirstOrDefault();
+
+            return applicable?.Types ?? Types;
         }
 
         public bool HasInitializedRuleset(RulesetId rulesetId) => _rulesetCaches.ContainsKey(rulesetId);

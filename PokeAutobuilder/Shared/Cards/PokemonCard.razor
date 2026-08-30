@@ -15,7 +15,7 @@
             <MudImage Fluid="true" Src="@Pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@Pokemon.Name" Style="-webkit-filter: drop-shadow(5px 5px 5px #222); filter: drop-shadow(5px 5px 5px #222);" />
         </MudTooltip>
         <MudStack Row="true" Class="pa-2">
-            @foreach (PokemonType t in Pokemon.Types.Where(t => _activeRuleset.EnabledTypes.Contains(t.Type.Name)))
+            @foreach (PokemonType t in Pokemon.GetTypesForGeneration(_activeRuleset.Generation).Where(t => _activeRuleset.EnabledTypes.Contains(t.Type.Name)))
             {
                 <MudTooltip Text="@StringUtils.PrettifyString(t.Type.Name)">
                     <MudImage Src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" Width="50" />
@@ -44,11 +44,11 @@ else
     [CascadingParameter]
     public BoxRules? ActiveRuleset { get; set; }
 
-    // Filters the raw (always-current) type list down to what's enabled under the active ruleset -
-    // e.g. Azumarill shows Water only under a Gen 3 ruleset, not Water/Fairy. This is a display
-    // filter, not real historical retyping (Azumarill was actually pure Water pre-Gen 6 per
-    // PokeAPI's past_types, not "Water with Fairy hidden") - modeling that accurately is out of
-    // scope for this slice.
+    // Resolves this Pokemon's actual historical types for the ruleset's generation (e.g. Clefable
+    // as pure Normal under a Gen 3 ruleset, not modern Fairy with the badge hidden), then still
+    // filters by EnabledTypes as a defensive no-op - a correctly resolved historical type should
+    // never be one the same ruleset disables, since DisabledTypes is derived from the same
+    // generation, but this keeps a resolution bug from ever displaying an impossible type badge.
     private BoxRules _activeRuleset => ActiveRuleset ?? BoxRules.Unrestricted();
 
     private Generation? _generation;

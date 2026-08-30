@@ -111,7 +111,7 @@ namespace PokemonDataModel
             {
                 if (!pokemon.HasInitializedRuleset(Rules.Id))
                 {
-                    pokemon.InitializeTypes(chart, Rules.Id);
+                    pokemon.InitializeTypes(chart, Rules);
                 }
             }
         }
