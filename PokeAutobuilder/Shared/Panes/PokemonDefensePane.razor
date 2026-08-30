@@ -1,6 +1,8 @@
 ﻿@using PokemonDataModel
 @using Utility
 
+@inject TypeChart TypeChart
+
 @if (Pokemon is not null)
 {
 	<div class="d-flex flex-column align-center justify-center">
@@ -9,19 +11,19 @@
 			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center" Spacing="0">
 				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 50px">Resist</MudText>
 				<div class="d-flex flex-wrap justify-start align-content-start">
-					@foreach (string t in Globals.AllTypes)
+					@foreach (string t in _activeRuleset.EnabledTypes)
 					{
-						@if (Pokemon.GetResistance(t) < 1.0)
+						@if (Pokemon.GetResistance(t, _activeRuleset.Id) < 1.0)
 						{
 							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
 								<MudTooltip Text="@StringUtils.PrettifyString(t)">
 									<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" Height="20" Class="ma-1" />
 								</MudTooltip>
-								@if (Pokemon.GetResistance(t) == 0.5)
+								@if (Pokemon.GetResistance(t, _activeRuleset.Id) == 0.5)
 								{
 									<MudText Typo="Typo.caption">½x</MudText>
 								}
-								else if (Pokemon.GetResistance(t) == 0.25)
+								else if (Pokemon.GetResistance(t, _activeRuleset.Id) == 0.25)
 								{
 									<MudText Typo="Typo.caption" Style="font-weight: bold;">¼x</MudText>
 								}
@@ -38,21 +40,21 @@
 			<MudStack Row="true" Style="width: 100%;" AlignItems="AlignItems.Center" Spacing="0">
 				<MudText Typo="Typo.caption" Class="mr-1" Style="width: 50px">Weak</MudText>
 				<div class="d-flex flex-wrap justify-start align-content-start">
-					@foreach (string t in Globals.AllTypes)
+					@foreach (string t in _activeRuleset.EnabledTypes)
 					{
-						@if (Pokemon.GetResistance(t) > 1.0)
+						@if (Pokemon.GetResistance(t, _activeRuleset.Id) > 1.0)
 						{
 							<MudStack Spacing="0" Class="d-flex flex-column align-center justify-center ma-1">
 								<MudTooltip Text="@StringUtils.PrettifyString(t)">
 									<MudImage Src="@StringUtils.TypeImgFromName(t)" Alt="@t" Height="20" Class="ma-1" />
 								</MudTooltip>
-								@if (Pokemon.GetResistance(t) <= 2.0)
+								@if (Pokemon.GetResistance(t, _activeRuleset.Id) <= 2.0)
 								{
-									<MudText Typo="Typo.caption">@(Pokemon.GetResistance(t))x</MudText>
+									<MudText Typo="Typo.caption">@(Pokemon.GetResistance(t, _activeRuleset.Id))x</MudText>
 								}
 								else
 								{
-									<MudText Typo="Typo.caption" Style="font-weight: bold;">@(Pokemon.GetResistance(t))x</MudText>
+									<MudText Typo="Typo.caption" Style="font-weight: bold;">@(Pokemon.GetResistance(t, _activeRuleset.Id))x</MudText>
 								}
 							</MudStack>
 						}
@@ -66,4 +68,15 @@
 @code {
 	[Parameter]
 	public SmartPokemon? Pokemon { get; set; }
+
+	[CascadingParameter]
+	public BoxRules? ActiveRuleset { get; set; }
+
+	private BoxRules _activeRuleset => ActiveRuleset ?? BoxRules.Unrestricted();
+
+	protected override void OnParametersSet()
+	{
+		if (Pokemon is not null && !Pokemon.HasInitializedRuleset(_activeRuleset.Id))
+			Pokemon.InitializeTypes(TypeChart.GetOrBuildDerived(_activeRuleset.Id, _activeRuleset.DisabledTypes), _activeRuleset);
+	}
 }

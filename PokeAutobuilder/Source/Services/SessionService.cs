@@ -6,6 +6,7 @@ namespace PokeAutobuilder.Source.Services
     public class SessionService
     {
         private readonly ISessionStorageService _sessionStorageService;
+        private readonly TypeChart _typeChart;
 
         public event Action? OnTeamChange;
 
@@ -28,9 +29,10 @@ namespace PokeAutobuilder.Source.Services
             set => _searchLocation.Set(value);
         }
 
-        public SessionService(ISessionStorageService sessionStorageService)
+        public SessionService(ISessionStorageService sessionStorageService, TypeChart typeChart)
         {
             _sessionStorageService = sessionStorageService;
+            _typeChart = typeChart;
 
             _team = new(POKEMON_TEAM_KEY, new(), Load<PokemonTeam>, Save);
             _team.OnChanged += () => OnTeamChange?.Invoke();
@@ -56,6 +58,25 @@ namespace PokeAutobuilder.Source.Services
                     _team.Value.Pokemon.Add(null);
                 }
             }
+
+            EnsureTeamInitialized();
+        }
+
+        // Warms every team member's multiplier cache for the team's own ruleset - a member
+        // deserialized from session storage only has its Unrestricted entry pre-warmed
+        // (SmartPokemonJsonConverter can't know the team's ruleset), and a member freshly picked
+        // from a search box may come from a different ruleset entirely. Downstream readers
+        // (coverage/defense panes, TeamScorer) trust the cache is already populated.
+        private void EnsureTeamInitialized()
+        {
+            TypeChart chart = _typeChart.GetOrBuildDerived(Team.Ruleset.Id, Team.Ruleset.DisabledTypes);
+            foreach (SmartPokemon? pokemon in Team.Pokemon)
+            {
+                if (pokemon is not null && !pokemon.HasInitializedRuleset(Team.Ruleset.Id))
+                {
+                    pokemon.InitializeTypes(chart, Team.Ruleset);
+                }
+            }
         }
 
         public async Task ClearSessionDataAsync()
@@ -73,6 +94,7 @@ namespace PokeAutobuilder.Source.Services
                 return;
 
             Team.Pokemon[index] = pokemon;
+            EnsureTeamInitialized();
             await SetTeamAsync(Team);
         }
 

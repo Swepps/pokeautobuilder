@@ -10,6 +10,9 @@ namespace PokemonDataModel
         [JsonPropertyName("pokemon")]
         public List<SmartPokemon?> Pokemon { get; set; } = [];
 
+        [JsonPropertyName("ruleset")]
+        public BoxRules Ruleset { get; set; } = BoxRules.Unrestricted();
+
         [JsonPropertyName("team_name")]
         private string name = "";
         public string Name
@@ -69,6 +72,7 @@ namespace PokemonDataModel
 			}
 
             Name = team.Name;
+            Ruleset = team.Ruleset;
 		}
 
 		public bool ContainsDuplicates()
@@ -129,7 +133,7 @@ namespace PokemonDataModel
                 SmartPokemon? p = Pokemon[i];
                 if (p == null) continue;
 
-                if (p.Multipliers.Defense.TryGetValue(typeName, out double value)
+                if (p.GetMultipliers(Ruleset.Id).Defense.TryGetValue(typeName, out double value)
                     &&
                     value > 1.0)
                 {
@@ -148,7 +152,7 @@ namespace PokemonDataModel
                 SmartPokemon? p = Pokemon[i];
                 if (p == null) continue;
 
-                if (p.Multipliers.Defense.TryGetValue(typeName, out double value)
+                if (p.GetMultipliers(Ruleset.Id).Defense.TryGetValue(typeName, out double value)
                     &&
                     value < 1.0)
                 {
@@ -167,7 +171,7 @@ namespace PokemonDataModel
                 SmartPokemon? p = Pokemon[i];
                 if (p == null) continue;
 
-                if (p.IsTypeCoveredBySTAB(typeName))
+                if (p.IsTypeCoveredBySTAB(typeName, Ruleset.Id))
                 {
                     coverage++;
                 }
@@ -211,6 +215,13 @@ namespace PokemonDataModel
             Dictionary<string, int> stabCoverage = [];
             Dictionary<string, int> moveCoverage = [];
 
+            // seeded with the full type universe, not just Ruleset.EnabledTypes - TeamScorer's
+            // helpers (and CalculateBreakdown's ruleset-agnostic "objective score", which always
+            // scores against every type regardless of this team's ruleset) index these dictionaries
+            // by Globals.AllTypes directly and expect every key to exist. A disabled type still
+            // naturally reports zero coverage here, since the derived TypeChart never gives it any
+            // multiplier entries in the first place - which types get *scored* is entirely down to
+            // which ones a caller's weightings.Types marks as enabled, not which keys exist here.
             foreach (string type in Globals.AllTypes)
             {
                 weaknesses[type] = 0;
@@ -224,7 +235,9 @@ namespace PokemonDataModel
                 if (p is null)
                     continue;
 
-                foreach (KeyValuePair<string, double> kvp in p.Multipliers.Defense)
+                Multipliers multipliers = p.GetMultipliers(Ruleset.Id);
+
+                foreach (KeyValuePair<string, double> kvp in multipliers.Defense)
                 {
                     if (kvp.Value > 1.0 && weaknesses.TryGetValue(kvp.Key, out int wCount))
                         weaknesses[kvp.Key] = wCount + 1;
@@ -232,7 +245,7 @@ namespace PokemonDataModel
                         resistances[kvp.Key] = rCount + 1;
                 }
 
-                foreach (KeyValuePair<string, double> kvp in p.Multipliers.Attack)
+                foreach (KeyValuePair<string, double> kvp in multipliers.Attack)
                 {
                     if (kvp.Value >= 2.0 && stabCoverage.TryGetValue(kvp.Key, out int sCount))
                         stabCoverage[kvp.Key] = sCount + 1;

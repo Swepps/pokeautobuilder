@@ -148,7 +148,7 @@ namespace Autobuilder
         {
             var genes = GetGenes();
 
-            PokemonTeam team = new();
+            PokemonTeam team = new() { Ruleset = _box.Rules };
             for (int i = 0; i < m_length; i++)
             {
                 SmartPokemon? pokemon = genes[i].Value as SmartPokemon;

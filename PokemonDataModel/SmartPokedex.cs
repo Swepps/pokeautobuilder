@@ -18,11 +18,17 @@ namespace PokemonDataModel
             Name = name;
             PokedexResource = pokedexResource;
         }
-        public SmartPokedex(PokeApiService apiService, string name, NamedApiResource<VersionGroup> versionGroupResource)
+        public SmartPokedex(
+            PokeApiService apiService,
+            string name,
+            NamedApiResource<VersionGroup> versionGroupResource,
+            PokemonVersionGroup? sourceVersionGroup = null
+        )
         {
             _apiService = apiService;
             Name = name;
             VersionGroupResource = versionGroupResource;
+            SourceVersionGroup = sourceVersionGroup;
         }
         public SmartPokedex(PokeApiService apiService, string name, Pokedex pokedex)
         {
@@ -33,6 +39,11 @@ namespace PokemonDataModel
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
+
+        // Set only for a dex built from a version group (null for the National Dex) - lets a
+        // consumer resolve this dex's generation-based default ruleset by direct reference rather
+        // than matching Name against PokemonVersionGroup.DisplayName as a fragile string lookup.
+        public PokemonVersionGroup? SourceVersionGroup { get; }
 
         private readonly PokeApiService _apiService;
         private readonly NamedApiResource<Pokedex>? PokedexResource;

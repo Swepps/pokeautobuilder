@@ -43,7 +43,9 @@
             }
         </div>
 
-        <PokemonCard Pokemon="Pokemon" IsNameDisplayed="false" />
+        <CascadingValue Value="ActiveRuleset">
+            <PokemonCard Pokemon="Pokemon" IsNameDisplayed="false" />
+        </CascadingValue>
         <MudButtonGroup Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" Class="mt-2">
             <MudTooltip Text="Details">
                 <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
@@ -101,6 +103,13 @@
 
     [Parameter]
     public EventCallback<bool> OnLockChanged { get; set; }
+
+    // Threaded into the Details dialog so its coverage/defense panes reflect the right ruleset -
+    // a dialog opened via DialogService.ShowAsync isn't a descendant of this component in the
+    // render tree, so a plain CascadingValue here wouldn't reach it; it has to go as a dialog
+    // parameter instead.
+    [Parameter]
+    public BoxRules? ActiveRuleset { get; set; }
 
     [Parameter]
     public bool Lockable { get; set; } = false;
@@ -182,13 +191,69 @@
     {
         if (PokemonSearchValue is not null)
         {
-            _pokemonSearchValueVarieties = (await PokemonSearchValue.GetAllVarietiesAsync(PokeApiService)).ToList();
+            var varieties = (await PokemonSearchValue.GetAllVarietiesAsync(PokeApiService)).ToList();
+            await LoadVarietiesAsync(varieties);
             await SearchPokemon(_pokemonSearchValueVarieties[0].Name);
         }
         else
         {
             await SearchPokemon(null);
         }
+    }
+
+    // Every variety's PokemonForm data (needed to tell whether it's a valid pick under the active
+    // ruleset), fetched once per species selection and cached here - so a later ruleset change
+    // (RefilterVarieties) can redecide which varieties to show without an extra round of API calls.
+    private List<(NamedApiResource<Pokemon> Variety, PokemonForm? Form)> _varietiesWithForms = [];
+
+    private async Task LoadVarietiesAsync(List<NamedApiResource<Pokemon>> varieties)
+    {
+        _varietiesWithForms = [];
+        foreach (NamedApiResource<Pokemon> variety in varieties)
+        {
+            // only one variety exists - nothing to filter, and no point spending a request on its form
+            PokemonForm? form = varieties.Count > 1 ? await PokeApiService.GetPokemonFormAsync(variety.Name) : null;
+            _varietiesWithForms.Add((variety, form));
+        }
+
+        RefilterVarieties();
+    }
+
+    // Forms/varieties (regional forms, megas, gmax) aren't all available in every game a species
+    // itself appears in - e.g. Voltorb-Hisui wasn't obtainable in Red & Blue even though Voltorb
+    // was. Filters the ones this ruleset's generation/mega/gmax rules wouldn't allow, so they can't
+    // be picked from the Form dropdown in the first place. An already-selected variety that becomes
+    // incompatible after a ruleset change is left alone rather than force-cleared, matching how a
+    // box keeps a since-incompatible Pokemon rather than evicting it. Synchronous and re-callable
+    // whenever the ruleset changes, since it just re-decides against the already-fetched forms.
+    private void RefilterVarieties()
+    {
+        BoxRules rules = ActiveRuleset ?? BoxRules.Unrestricted();
+        List<NamedApiResource<Pokemon>> compatible = _varietiesWithForms
+            // fail open when a form couldn't be resolved (no lookup attempted, or a lookup miss)
+            // rather than silently hiding an otherwise-valid variety
+            .Where(vf => rules.Generation is null || vf.Form is null || IsFormCompatible(vf.Form, rules))
+            .Select(vf => vf.Variety)
+            .ToList();
+
+        // never filter down to nothing - if every variety somehow got excluded (a resolution bug),
+        // showing the unfiltered list is far less disruptive than an empty Form dropdown
+        _pokemonSearchValueVarieties = compatible.Count > 0
+            ? compatible
+            : _varietiesWithForms.Select(vf => vf.Variety).ToList();
+        _pokemonSearchValueVarietiesChanged = true;
+    }
+
+    private static bool IsFormCompatible(PokemonForm form, BoxRules rules)
+    {
+        if (form.IsMega && !rules.AllowMegas)
+            return false;
+
+        if (form.FormName == "gmax" && !rules.AllowGmax)
+            return false;
+
+        int? formGeneration = PokemonVersionGroup.GenerationForApiName(form.VersionGroup.Name);
+        return formGeneration is null || formGeneration <= rules.Generation;
     }
 
     public async Task SearchPokemon(string? pokemonName)
@@ -200,6 +265,7 @@
         {
             _pokemon = null;
             _pokemonFormName = null;
+            _varietiesWithForms = [];
             _pokemonSearchValueVarieties.Clear();
             _ = OnPokemonChanged.InvokeAsync(this);
         }
@@ -225,17 +291,15 @@
         {
             _pokemonSearchValue = new SmartPokemonEntry(_pokemon.Id, _pokemon.Species);
             _pokemonFormName = _pokemon.Name;
-            _pokemonSearchValueVarieties.Clear();
             PokemonSpecies species = await _pokemon.GetSpeciesAsync(PokeApiService);
-            foreach (PokemonSpeciesVariety variety in species.Varieties)
-            {
-                _pokemonSearchValueVarieties.Add(variety.Pokemon);
-            }
+            List<NamedApiResource<Pokemon>> varieties = species.Varieties.Select(v => v.Pokemon).ToList();
+            await LoadVarietiesAsync(varieties);
         }
         else
         {
             _pokemonSearchValue = null;
             _pokemonFormName = null;
+            _varietiesWithForms = [];
             _pokemonSearchValueVarieties.Clear();
         }
 
@@ -259,6 +323,7 @@
     {
         var parameters = new DialogParameters();
         parameters.Add("Pokemon", Pokemon);
+        parameters.Add("ActiveRuleset", ActiveRuleset);
 
         var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.PrettifyString(Pokemon!.Name), parameters);
         var result = await dialog.Result;
@@ -281,13 +346,32 @@
         }
     }
 
+    // The Pokemon's own type badge (rendered via PokemonCard, cascaded ActiveRuleset) needs to
+    // redraw when the ruleset itself changes even though none of the other tracked fields did -
+    // e.g. editing a box's ruleset while its Add panel still shows a previously-searched Pokemon.
+    // Compared by RulesetId rather than the BoxRules reference/record equality, since that's the
+    // actual identity that determines whether a redraw would show anything different.
+    private RulesetId? _prevActiveRulesetId;
+
+    // Re-decides which already-fetched varieties are pickable whenever the ruleset itself changes
+    // (e.g. the box's ruleset is edited while this search box still shows a previously-picked
+    // Pokemon) - RefilterVarieties is synchronous, so this doesn't need to be *Async.
+    protected override void OnParametersSet()
+    {
+        if (_prevActiveRulesetId != ActiveRuleset?.Id && _varietiesWithForms.Count > 0)
+        {
+            RefilterVarieties();
+        }
+    }
+
     protected override bool ShouldRender()
     {
-        return _prevPokemon != _pokemon 
+        return _prevPokemon != _pokemon
         || _prevPokemonSearchValue != _pokemonSearchValue
         || _prevPokemonFormName != _pokemonFormName
         || _prevLocked != _locked
-        || _pokemonSearchValueVarietiesChanged;
+        || _pokemonSearchValueVarietiesChanged
+        || _prevActiveRulesetId != ActiveRuleset?.Id;
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -297,5 +381,6 @@
         _prevPokemonFormName = _pokemonFormName;
         _prevLocked = _locked;
         _pokemonSearchValueVarietiesChanged = false;
+        _prevActiveRulesetId = ActiveRuleset?.Id;
     }
 }

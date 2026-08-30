@@ -4,10 +4,13 @@ using System.Text.Json.Serialization;
 namespace PokemonDataModel
 {
     // Deserializes SmartPokemon and immediately resolves its types/multipliers against the given
-    // TypeChart, so a deserialized SmartPokemon is always fully initialized - callers never see a
-    // half-constructed instance. Registered into Blazored local/session storage's
-    // JsonSerializerOptions in Program.cs, which covers every persistence path (boxes, team
-    // storage, session team, box upload).
+    // (base/Unrestricted) TypeChart, so a deserialized SmartPokemon is always fully initialized -
+    // callers never see a half-constructed instance. Registered into Blazored local/session
+    // storage's JsonSerializerOptions in Program.cs, which covers every persistence path (boxes,
+    // team storage, session team, box upload). This converter only has access to the single base
+    // chart injected in Program.cs, not to whichever box/team ruleset the deserialized Pokemon will
+    // end up under - that ruleset's cache entry is warmed separately once the Pokemon is attached
+    // to its box/team (see PokemonBox.EnsureInitialized / ProfileService).
     public class SmartPokemonJsonConverter : JsonConverter<SmartPokemon>
     {
         private readonly TypeChart _typeChart;
@@ -52,7 +55,7 @@ namespace PokemonDataModel
                 ref reader,
                 WithoutThisConverter(options)
             );
-            pokemon?.InitializeTypes(_typeChart);
+            pokemon?.InitializeTypes(_typeChart, BoxRules.Unrestricted());
             return pokemon;
         }
 

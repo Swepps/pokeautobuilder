@@ -8,6 +8,7 @@
 @inject ProfileService Profile
 @inject ISnackbar Snackbar
 @inject PokeApiService PokeApi
+@inject IDialogService DialogService
 
 @implements IDisposable
 
@@ -19,6 +20,7 @@
     <MudGrid Justify="Justify.FlexEnd">
         <MudItem xs="12" sm="6" Class="d-flex align-end justify-start mud-width-full">
             <MudSelect T="ILazyPokemonList" Label="Search Location" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+            ToStringFunc="@(l => l?.Name ?? string.Empty)"
             @bind-Value="SearchLocation">
                 @foreach (ILazyPokemonList list in SearchLocations!)
                 {
@@ -50,7 +52,7 @@
         @for (int i = 0; i < PokemonTeam.MaxTeamSize; i++)
         {
             <MudItem xs="6" sm="4" lg="2">
-                <PokemonSearchBox @ref="tempCard" SearchFunc="SearchAsync" OnPokemonChanged="PokemonSearchBoxUpdatedAsync" OnLockChanged="StateHasChanged" Lockable="true">
+                <PokemonSearchBox @ref="tempCard" SearchFunc="SearchAsync" OnPokemonChanged="PokemonSearchBoxUpdatedAsync" OnLockChanged="StateHasChanged" Lockable="true" ActiveRuleset="Session.Team.Ruleset">
                     <ExtraButtons>
                         @*                         <MudTooltip Text="Randomize">
                             <MudIconButton Disabled="Locked" Size="Size.Small" Icon="@Icons.Material.Filled.Loop" OnClick="OnClickRandomize"></MudIconButton>
@@ -60,11 +62,19 @@
             </MudItem>
         }
     </MudGrid>
-    @if (!Profile.AllowMultipleMegas && MultipleMegasSelected)
+    @if (!Session.Team.Ruleset.AllowMegas && MegaSelected)
+    {
+        <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: Mega Evolution is not available in this ruleset</MudText>
+    }
+    else if (!Session.Team.Ruleset.AllowMultipleMegas && MultipleMegasSelected)
     {
         <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: More than one Mega-Evolved Pokémon have been added to the team</MudText>
     }
-    @if (!Profile.AllowMultipleGmax && MultipleGmaxSelected)
+    @if (!Session.Team.Ruleset.AllowGmax && GmaxSelected)
+    {
+        <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: Gigantamax is not available in this ruleset</MudText>
+    }
+    else if (!Session.Team.Ruleset.AllowMultipleGmax && MultipleGmaxSelected)
     {
         <MudText Typo="Typo.subtitle2" Color="Color.Warning">Warning: More than one Gigantamax Pokémon have been added to the team</MudText>
     }
@@ -86,18 +96,74 @@
     [CascadingParameter]
     public List<ILazyPokemonList>? SearchLocations { get; set; }
 
+    // _searchLocation ("committed") is what SearchAsync actually searches against.
+    // _pendingSearchLocation is what the MudSelect displays - kept separate because confirming a
+    // ruleset-changing switch is async (a dialog), so the bound value can't just be assigned
+    // straight through: it needs to be revertable if the user cancels the confirmation.
     ILazyPokemonList? _searchLocation;
+    ILazyPokemonList? _pendingSearchLocation;
     ILazyPokemonList? SearchLocation
     {
-        get => _searchLocation;
+        get => _pendingSearchLocation;
         set
         {
-            _searchLocation = value;
+            _pendingSearchLocation = value;
             if (value is not null)
             {
-                _ = Session.SetSearchLocationAsync(value.Name);
+                _ = HandleSearchLocationChangeAsync(value);
             }
         }
+    }
+
+    // Resolves the ruleset a team built from this location should use: a box's own rules; a
+    // version-group Pokedex's generation default; or Unrestricted for the National Dex/anything
+    // else. Mega/Gmax default from the (formerly global) preference, same as a newly created box.
+    private BoxRules ResolveRulesetForLocation(ILazyPokemonList location)
+    {
+        if (location is PokemonBox box)
+            return box.Rules;
+
+        if (location is SmartPokedex { SourceVersionGroup: { } group })
+            return BoxRules.ForGeneration(group.Generation, Profile.AllowMultipleMegas, Profile.AllowMultipleGmax);
+
+        return BoxRules.Unrestricted(Profile.AllowMultipleMegas, Profile.AllowMultipleGmax);
+    }
+
+    private async Task HandleSearchLocationChangeAsync(ILazyPokemonList newLocation)
+    {
+        BoxRules newRuleset = ResolveRulesetForLocation(newLocation);
+
+        if (newRuleset.Id != Session.Team.Ruleset.Id)
+        {
+            if (!Session.Team.IsEmpty)
+            {
+                bool? result = await DialogService.ShowMessageBoxAsync(
+                    "Warning",
+                    "Switching search location will clear your current team, because it uses a different ruleset. Continue?",
+                    yesText: "Switch",
+                    cancelText: "Cancel",
+                    options: new() { MaxWidth = MaxWidth.ExtraSmall });
+
+                if (result is null)
+                {
+                    // reverts the dropdown's visual selection back to what's actually committed
+                    _pendingSearchLocation = _searchLocation;
+                    StateHasChanged();
+                    return;
+                }
+
+                for (int i = 0; i < Session.Team.Pokemon.Count; i++)
+                {
+                    Session.Team.Pokemon[i] = null;
+                }
+            }
+
+            Session.Team.Ruleset = newRuleset;
+            await Session.SetTeamAsync(Session.Team);
+        }
+
+        _searchLocation = newLocation;
+        await Session.SetSearchLocationAsync(newLocation.Name);
     }
 
     private string _teamName { get; set; } = "";
@@ -122,7 +188,11 @@
     // reads from Session.Team (kept in sync with the cards by PokemonSearchBoxUpdatedAsync on
     // every selection change) rather than scanning the PokemonSearchBox components directly, so
     // this validity rule lives on the domain model and can be unit tested without a component tree
+    public bool MegaSelected => Session.Team.CountMegaPokemon() > 0;
+
     public bool MultipleMegasSelected => Session.Team.CountMegaPokemon() > 1;
+
+    public bool GmaxSelected => Session.Team.CountGmaxPokemon() > 0;
 
     public bool MultipleGmaxSelected => Session.Team.CountGmaxPokemon() > 1;
 
@@ -181,6 +251,7 @@
 
         _teamName = Session.Team.Name;
         _searchLocation = SearchLocations!.Where((s) => s.Name.Equals(Session.SearchLocation)).FirstOrDefault();
+        _pendingSearchLocation = _searchLocation;
     }
 
     protected override void OnAfterRender(bool firstRender)

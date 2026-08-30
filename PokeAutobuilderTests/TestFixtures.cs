@@ -138,7 +138,7 @@ namespace PokeAutobuilderTests
 
             // the JSON constructor leaves types/multipliers unresolved (in the app, the
             // SmartPokemonJsonConverter does this immediately after deserializing)
-            pokemon.InitializeTypes(typeChart);
+            pokemon.InitializeTypes(typeChart, BoxRules.Unrestricted());
 
             return pokemon;
         }
@@ -160,11 +160,13 @@ namespace PokeAutobuilderTests
             // keeping scoring-test call sites free of chart plumbing they don't care about
             SmartPokemon pokemon = MakePokemon(new TypeChart(), name, types: [], abilityName: null, baseStats: baseStats);
 
+            Multipliers multipliers = pokemon.GetMultipliers(RulesetId.Unrestricted);
+
             if (defense is not null)
             {
                 foreach ((string type, double value) in defense)
                 {
-                    pokemon.Multipliers.Defense[type] = value;
+                    multipliers.Defense[type] = value;
                 }
             }
 
@@ -172,7 +174,7 @@ namespace PokeAutobuilderTests
             {
                 foreach ((string type, double value) in attack)
                 {
-                    pokemon.Multipliers.Attack[type] = value;
+                    multipliers.Attack[type] = value;
                 }
             }
 

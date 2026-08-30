@@ -69,36 +69,31 @@
 		}
 	}
 
-	protected override void OnInitialized()
-	{
-		foreach (string t in Globals.AllTypes)
-		{
-			typeHeaders.Add(t);
-		}
-		OnParametersSet();
-	}
-
-
 	protected override void OnParametersSet()
 	{
 		if (Team is null)
 			return;
 
+		// rebuilt each time rather than once in OnInitialized - the enabled-type set depends on
+		// Team.Ruleset, which isn't necessarily known yet when this component initializes
+		typeHeaders = new List<string>() { "" };
+		typeHeaders.AddRange(Team.Ruleset.EnabledTypes);
+
 		// defense table data
 		defenseRows.Clear();
 
-		string[] resistances = new string[Globals.AllTypes.Count + 1];
+		string[] resistances = new string[typeHeaders.Count];
 		resistances[0] = "Resist";
-		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
+		for (int i = 1; i < typeHeaders.Count; i++)
 		{
 			resistances[i] = Team.CountResistances(typeHeaders[i]).ToString();
 		}
 
 		defenseRows.Add(resistances);
 
-		string[] weaknesses = new string[Globals.AllTypes.Count + 1];
+		string[] weaknesses = new string[typeHeaders.Count];
 		weaknesses[0] = "Weak";
-		for (int i = 1; i < Globals.AllTypes.Count + 1; i++)
+		for (int i = 1; i < typeHeaders.Count; i++)
 		{
 			weaknesses[i] = Team.CountWeaknesses(typeHeaders[i]).ToString();
 		}

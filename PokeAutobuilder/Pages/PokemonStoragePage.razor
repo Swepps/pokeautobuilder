@@ -26,10 +26,11 @@
             case StoragePanel.Add: 
                 <MudStack Class="pa-2" Style="max-width: 250px;">
                     <MudSelect T="ILazyPokemonList" Label="Search Location" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter" FullWidth="false"
+                    ToStringFunc="@(l => l?.Name ?? string.Empty)"
                     @bind-Value="_searchLocation">
                         @foreach (ILazyPokemonList list in SearchLocations!)
                         {
-                            @if (!Profile.PokemonStorage.Boxes.Contains(list))
+                            @if (IsSearchLocationCompatible(list))
                             {
                                 <MudSelectItem T="ILazyPokemonList" Value="list">
                                     @list.Name
@@ -38,7 +39,7 @@
                         }
                     </MudSelect>
                     <div style="max-width: 250px;">
-                        <PokemonSearchBox @ref="_pokemonSearchBox" SearchFunc="SearchAsync">
+                        <PokemonSearchBox @ref="_pokemonSearchBox" SearchFunc="SearchAsync" ActiveRuleset="SelectedBox.Rules">
                             <ExtraButtons>
 
                                 @if (_pokemonSearchBox!.Pokemon is not null)
@@ -60,34 +61,36 @@
                 break;
 
             case StoragePanel.Edit:
-                <PokemonDetails Pokemon="SelectedPokemon" OnMoveChanged="OnPokemonMoveChanged">
-                    <ActionsContent>
-                        <div class="d-flex justify-center align-end mud-height-full">
-                            <MudButtonGroup Vertical="true" 
-                            OverrideStyles="false"
-                            Size="Size.Large"
-                            Class="mud-width-full"
-                            >
-                                <MudButton Variant="Variant.Outlined"
-                                Disabled="true">
-                                    MOVE
-                                </MudButton>
-                                <MudButton 
-                                Variant="Variant.Outlined"
-                                OnClick="OnClickEvolveAsync"
-                                Disabled="@(!_selectedPokemonCanEvolve)">
-                                    EVOLVE
-                                </MudButton>
-                                <MudButton Color="Color.Error"
-                                Variant="Variant.Outlined"
-                                OnClick="OnClickReleaseAsync"
-                                Disabled="@(SelectedPokemon is null)">
-                                    RELEASE
-                                </MudButton>
-                            </MudButtonGroup>
-                        </div>
-                    </ActionsContent>
-                </PokemonDetails>
+                <CascadingValue Value="SelectedBox.Rules">
+                    <PokemonDetails Pokemon="SelectedPokemon" OnMoveChanged="OnPokemonMoveChanged">
+                        <ActionsContent>
+                            <div class="d-flex justify-center align-end mud-height-full">
+                                <MudButtonGroup Vertical="true"
+                                OverrideStyles="false"
+                                Size="Size.Large"
+                                Class="mud-width-full"
+                                >
+                                    <MudButton Variant="Variant.Outlined"
+                                    Disabled="true">
+                                        MOVE
+                                    </MudButton>
+                                    <MudButton
+                                    Variant="Variant.Outlined"
+                                    OnClick="OnClickEvolveAsync"
+                                    Disabled="@(!_selectedPokemonCanEvolve)">
+                                        EVOLVE
+                                    </MudButton>
+                                    <MudButton Color="Color.Error"
+                                    Variant="Variant.Outlined"
+                                    OnClick="OnClickReleaseAsync"
+                                    Disabled="@(SelectedPokemon is null)">
+                                        RELEASE
+                                    </MudButton>
+                                </MudButtonGroup>
+                            </div>
+                        </ActionsContent>
+                    </PokemonDetails>
+                </CascadingValue>
                 break;
 
             default:
@@ -133,8 +136,18 @@
                         <MudTextField @bind-Value="_boxName"
                                       Label="Box Name"
                                       Variant="Variant.Outlined"
-                                      FullWidth="false" 
+                                      FullWidth="false"
                                       Margin="Margin.Dense"/>
+
+                        <MudSelect T="int?" Label="Ruleset" @bind-Value="_selectedBoxGeneration"
+                                   AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter"
+                                   Variant="Variant.Outlined" FullWidth="false" Margin="Margin.Dense">
+                            <MudSelectItem T="int?" Value="null">Unrestricted</MudSelectItem>
+                            @foreach (int gen in _generationOptions)
+                            {
+                                <MudSelectItem T="int?" Value="gen">Generation @gen</MudSelectItem>
+                            }
+                        </MudSelect>
 
                         <MudPagination Count="@Profile.PokemonStorage.Boxes.Count" @bind-Selected="SelectedBoxNumber" BoundaryCount="2" />
                     </MudStack>
@@ -154,7 +167,52 @@
     [CascadingParameter]
     public List<ILazyPokemonList>? SearchLocations { get; set; }
 
-    ILazyPokemonList? _searchLocation;
+    private ILazyPokemonList? _searchLocationField;
+    private ILazyPokemonList? _searchLocation
+    {
+        get => _searchLocationField;
+        set
+        {
+            _searchLocationField = value;
+            if (value is not null)
+            {
+                SelectedBox.LastSearchLocationName = value.Name;
+                _ = Profile.UpdatePokemonStorageAsync();
+            }
+        }
+    }
+
+    // A box's ruleset generation (if any) constrains which Pokedex search locations make sense for
+    // it - e.g. a Gen 3 box should only offer Ruby/Sapphire, Emerald, FireRed/LeafGreen and
+    // Colosseum, not the National Dex or other generations' games. Boxes themselves are never
+    // shown here regardless of ruleset (existing behavior - the Add panel searches games, not
+    // other boxes). Unrestricted (Generation is null) keeps today's "everything" behavior.
+    private bool IsSearchLocationCompatible(ILazyPokemonList location)
+    {
+        if (Profile.PokemonStorage.Boxes.Contains(location))
+            return false;
+
+        int? generation = SelectedBox.Rules.Generation;
+        if (generation is null)
+            return true;
+
+        return location is SmartPokedex dex
+            && dex.SourceVersionGroup is not null
+            && dex.SourceVersionGroup.Generation == generation;
+    }
+
+    // Restores this box's remembered search location (e.g. it was last browsing Emerald), falling
+    // back to the first ruleset-compatible option if there's no remembered location or it's no
+    // longer valid (the box's ruleset changed, or the remembered location doesn't exist this
+    // session). Assigns the backing field directly rather than through the _searchLocation
+    // property setter, since merely resolving/restoring isn't a user action worth re-persisting.
+    private void ResolveSearchLocationForSelectedBox()
+    {
+        IEnumerable<ILazyPokemonList> compatible = (SearchLocations ?? []).Where(IsSearchLocationCompatible);
+        _searchLocationField =
+            compatible.FirstOrDefault(l => l.Name == SelectedBox.LastSearchLocationName)
+            ?? compatible.FirstOrDefault();
+    }
 
     private PokemonSearchBox? _pokemonSearchBox;
 
@@ -191,6 +249,7 @@
         set
         {
             _selectedBox = value;
+            ResolveSearchLocationForSelectedBox();
         }
     }
 
@@ -201,6 +260,27 @@
         {
             SelectedBox.Name = value;
             _ = Profile.UpdatePokemonStorageAsync();
+        }
+    }
+
+    // materialized rather than looped with a bare `for` in the markup - a `for` loop's variable is
+    // a single mutable slot shared by every iteration's render fragment, so every MudSelectItem
+    // would end up showing whatever value the loop variable held when the fragments actually
+    // render (here, 10, one past the last iteration) rather than its own generation number
+    private static readonly int[] _generationOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    // null = Unrestricted, otherwise the generation preset
+    private int? _selectedBoxGeneration
+    {
+        get => SelectedBox.Rules.Generation;
+        set
+        {
+            BoxRules currentRules = SelectedBox.Rules;
+            BoxRules newRules = value is int gen
+                ? BoxRules.ForGeneration(gen, currentRules.AllowMultipleMegas, currentRules.AllowMultipleGmax)
+                : BoxRules.Unrestricted(currentRules.AllowMultipleMegas, currentRules.AllowMultipleGmax);
+            _ = Profile.UpdateBoxRulesAsync(SelectedBox, newRules);
+            ResolveSearchLocationForSelectedBox();
         }
     }
 
@@ -215,10 +295,6 @@
     {
         // register interest in session changing to update this page
         Profile.OnStorageChange += StateHasChanged;
-        if (SearchLocations is not null)
-        {
-            _searchLocation = SearchLocations.FirstOrDefault((ILazyPokemonList list) => !Profile.PokemonStorage.Boxes.Contains(list));
-        }
 
         if (Profile.PokemonStorage.Boxes.Count > 0)
         {
@@ -228,6 +304,7 @@
         {
             Profile.PokemonStorage.Boxes.Add(SelectedBox);
             _ = Profile.UpdatePokemonStorageAsync();
+            ResolveSearchLocationForSelectedBox();
         }
     }
 
@@ -238,7 +315,7 @@
 
     protected async Task OnSelectPokemonAsync(SmartPokemon selectedPokemon)
     {
-        _selectedPokemonCanEvolve = await PokeApiService.CanEvolve(selectedPokemon);
+        _selectedPokemonCanEvolve = await PokeApiService.CanEvolve(selectedPokemon, SelectedBox.Rules.Generation);
         SelectedPokemon = selectedPokemon;
         _storagePanel = StoragePanel.Edit;
         StateHasChanged();
@@ -246,7 +323,7 @@
 
     protected void OnClickAddBox()
     {
-        Profile.PokemonStorage.Boxes.Add(new($"Box {Profile.PokemonStorage.Boxes.Count + 1}"));
+        Profile.PokemonStorage.Boxes.Add(new PokemonBox($"Box {Profile.PokemonStorage.Boxes.Count + 1}") { Rules = Profile.MakeDefaultRulesForNewBox() });
         _ = Profile.UpdatePokemonStorageAsync();
         if (SearchLocations is not null)
         {
@@ -296,10 +373,13 @@
         await JS.InvokeVoidAsync("localStorageHelper.clickElement", _filePicker.Element);
     }
 
+    private string? _pendingUploadWarning;
+
     [JSInvokable]
     public Task<bool> ValidateBoxJson(string json)
     {
-        return Task.FromResult(JsonValidator.TryValidatePokemonBoxJson(json, out _));
+        bool isValid = JsonValidator.TryValidatePokemonBoxJson(json, out _, out _pendingUploadWarning);
+        return Task.FromResult(isValid);
     }
 
     [JSInvokable]
@@ -310,6 +390,13 @@
         SelectedBoxNumber = Profile.PokemonStorage.Boxes.Count;
         SelectedPokemon = null;
         _storagePanel = StoragePanel.Add;
+
+        if (_pendingUploadWarning is not null)
+        {
+            Snackbar.Add(_pendingUploadWarning, Severity.Warning);
+            _pendingUploadWarning = null;
+        }
+
         StateHasChanged();
     }
 
@@ -354,6 +441,7 @@
     {
         var parameters = new DialogParameters();
         parameters.Add("Pokemon", SelectedPokemon);
+        parameters.Add("ActiveRuleset", SelectedBox.Rules);
 
         var dialog = await DialogService.ShowAsync<EvolvePokemonDialog>("Evolving " + SelectedPokemon!.ToString() + "..."
         , parameters

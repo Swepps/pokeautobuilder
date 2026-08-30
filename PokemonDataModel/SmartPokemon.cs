@@ -17,11 +17,18 @@ namespace PokemonDataModel
         public List<string> STABCoverage { get; init; }
         public List<string> MoveCoverage { get; init; }
 
-        [JsonIgnore]
-        public List<Type> LoadedTypes { get; set; }
+        // Bundles a resolved-types snapshot with its multipliers for one ruleset. A Pokemon can be
+        // attached to boxes/teams under different rulesets at once (it's shared by reference across
+        // them), so each ruleset gets its own independent entry rather than one ambient pair of
+        // fields that the most-recently-touched ruleset would clobber.
+        private sealed class RulesetCache
+        {
+            public List<Type> LoadedTypes = [];
+            public Multipliers Multipliers = new();
+        }
 
         [JsonIgnore]
-        public Multipliers Multipliers { get; init; }
+        private readonly Dictionary<RulesetId, RulesetCache> _rulesetCaches = new();
 
         [JsonIgnore]
         private PokemonSpecies? _loadedSpecies { get; set; }
@@ -99,9 +106,10 @@ namespace PokemonDataModel
             // smart variables that make this pokemon class more useful
             SelectedAbility = Abilities.FirstOrDefault();
             SelectedMoves = new PokemonMoveset();
-            LoadedTypes = new();
-            Multipliers = new Multipliers();
-            InitializeTypes(typeChart); // needs to be done before lists can be generated but after ability is selected
+            // needs to be done before lists can be generated but after ability is selected. A newly
+            // built Pokemon always starts with its Unrestricted-ruleset entry pre-warmed for free;
+            // other rulesets are warmed lazily once the Pokemon is attached to a box/team using them.
+            InitializeTypes(typeChart, BoxRules.Unrestricted());
             Resistances = GetDefenseResistList();
             Weaknesses = GetDefenseWeakList();
             STABCoverage = GetSTABCoverageList();
@@ -164,27 +172,74 @@ namespace PokemonDataModel
             this.STABCoverage = STABCoverage;
             this.MoveCoverage = MoveCoverage;
 
-            // types/multipliers stay empty here - the JSON constructor is invoked by
+            // the ruleset cache stays empty here - the JSON constructor is invoked by
             // System.Text.Json during deserialization, which can't supply a TypeChart.
             // SmartPokemonJsonConverter (registered on every persistence path) calls
             // InitializeTypes immediately after deserializing, so callers never see an
             // uninitialized instance.
-            LoadedTypes = new();
-            Multipliers = new Multipliers();
         }
 
         // Resolves this pokemon's type names into full Type objects (with damage relations) via
-        // the given chart and computes the type-effectiveness multipliers. Re-callable with a
-        // different chart (e.g. a different generation's type effectiveness).
-        public void InitializeTypes(TypeChart typeChart)
+        // the given chart and computes/caches the type-effectiveness multipliers for `rules` only -
+        // re-callable per ruleset (e.g. once for Unrestricted, again for a box's Gen-1 ruleset), and
+        // re-callable for a ruleset already cached to refresh it (e.g. after the chart it was built
+        // from changes). Uses GetTypesForGeneration rather than the raw (always-current) Types list,
+        // so a Gen-1 ruleset resolves e.g. Clefable as pure Normal, not "Fairy with the type hidden".
+        public void InitializeTypes(TypeChart typeChart, BoxRules rules)
         {
-            LoadedTypes.Clear();
-            foreach (PokemonType t in Types)
+            RulesetCache cache = GetOrCreateCache(rules.Id);
+            cache.LoadedTypes.Clear();
+            foreach (PokemonType t in GetTypesForGeneration(rules.Generation))
             {
-                LoadedTypes.Add(typeChart.Resolve(t.Type.Name));
+                cache.LoadedTypes.Add(typeChart.Resolve(t.Type.Name));
             }
 
-            UpdateMultipliers();
+            RecomputeMultipliers(cache);
+        }
+
+        // What this Pokemon's types actually were as of the given generation, per PokeAPI's
+        // past_types (each entry's Generation is "the final generation in which the Pokemon had
+        // this data" - so the applicable entry is the one with the smallest generation number that
+        // is still >= the target, and no entry applying at all means the target generation is at or
+        // after the current typing). Returns the current Types unchanged when generation is null
+        // (Unrestricted) or the Pokemon has no past_types entries (its type has never changed).
+        public IReadOnlyList<PokemonType> GetTypesForGeneration(int? generation)
+        {
+            if (generation is null)
+                return Types;
+
+            PokemonPastTypes? applicable = PastTypes
+                .Where(pt => PokemonGenerationNames.Parse(pt.Generation.Name) >= generation)
+                .OrderBy(pt => PokemonGenerationNames.Parse(pt.Generation.Name))
+                .FirstOrDefault();
+
+            return applicable?.Types ?? Types;
+        }
+
+        public bool HasInitializedRuleset(RulesetId rulesetId) => _rulesetCaches.ContainsKey(rulesetId);
+
+        public Multipliers GetMultipliers(RulesetId rulesetId)
+        {
+            if (_rulesetCaches.TryGetValue(rulesetId, out RulesetCache? cache))
+            {
+                return cache.Multipliers;
+            }
+
+            throw new InvalidOperationException(
+                $"Multipliers for ruleset '{rulesetId.Value}' have not been computed for {Name} - "
+                    + "call InitializeTypes for this ruleset first."
+            );
+        }
+
+        private RulesetCache GetOrCreateCache(RulesetId rulesetId)
+        {
+            if (!_rulesetCaches.TryGetValue(rulesetId, out RulesetCache? cache))
+            {
+                cache = new RulesetCache();
+                _rulesetCaches[rulesetId] = cache;
+            }
+
+            return cache;
         }
 
         public async Task<PokemonSpecies> GetSpeciesAsync(PokeApiService apiService)
@@ -249,9 +304,9 @@ namespace PokemonDataModel
             return moves.Find(m => m.Move.Name == moveName);
         }
 
-        public double GetResistance(string typeName)
+        public double GetResistance(string typeName, RulesetId rulesetId)
         {
-            if (Multipliers.Defense.TryGetValue(typeName, out double attEff))
+            if (GetMultipliers(rulesetId).Defense.TryGetValue(typeName, out double attEff))
             {
                 return attEff;
             }
@@ -261,9 +316,9 @@ namespace PokemonDataModel
             }
         }
 
-        public bool IsTypeCoveredBySTAB(string typeName)
+        public bool IsTypeCoveredBySTAB(string typeName, RulesetId rulesetId)
         {
-            if (Multipliers.Attack.TryGetValue(typeName, out double defEff))
+            if (GetMultipliers(rulesetId).Attack.TryGetValue(typeName, out double defEff))
             {
                 return defEff >= 2.0;
             }
@@ -286,7 +341,12 @@ namespace PokemonDataModel
             if (ab != null)
             {
                 SelectedAbility = ab;
-                UpdateMultipliers();
+                // recompute every ruleset this Pokemon has ever been evaluated against - each cache
+                // entry already has its own resolved LoadedTypes, so no TypeChart is needed here
+                foreach (RulesetCache cache in _rulesetCaches.Values)
+                {
+                    RecomputeMultipliers(cache);
+                }
                 return true;
             }
             return false;
@@ -337,24 +397,24 @@ namespace PokemonDataModel
             return total;
         }
 
-        public int CountTotalCoverage()
+        public int CountTotalCoverage(BoxRules rules)
         {
             int count = 0;
-            foreach (string type in Globals.AllTypes)
+            foreach (string type in rules.EnabledTypes)
             {
-                if (IsTypeCoveredBySTAB(type) || IsTypeCoveredByMove(type))
+                if (IsTypeCoveredBySTAB(type, rules.Id) || IsTypeCoveredByMove(type))
                     count++;
             }
 
             return count;
         }
 
-        public int CountTotalResistances()
+        public int CountTotalResistances(BoxRules rules)
         {
             int count = 0;
-            foreach (string type in Globals.AllTypes)
+            foreach (string type in rules.EnabledTypes)
             {
-                if (Multipliers.Defense.TryGetValue(type, out double value) && value < 1.0)
+                if (GetMultipliers(rules.Id).Defense.TryGetValue(type, out double value) && value < 1.0)
                 {
                     count++;
                 }
@@ -363,15 +423,15 @@ namespace PokemonDataModel
             return count;
         }
 
-        private void UpdateMultipliers()
+        private void RecomputeMultipliers(RulesetCache cache)
         {
-            Multipliers.Clear();
+            cache.Multipliers.Clear();
 
-            foreach (Type type in LoadedTypes)
+            foreach (Type type in cache.LoadedTypes)
             {
                 TypeRelations tr = type.DamageRelations;
 
-                TypeEffectiveness.ApplyOffensiveRelations(Multipliers.Attack, tr);
+                TypeEffectiveness.ApplyOffensiveRelations(cache.Multipliers.Attack, tr);
 
                 // defensive side is unique to a Pokemon's own types (movesets don't have one), and
                 // combines multiplicatively rather than taking the max, since a dual-type Pokemon's
@@ -379,11 +439,11 @@ namespace PokemonDataModel
                 foreach (var namedType in tr.NoDamageFrom)
                 {
                     // always set this to 0
-                    Multipliers.Defense[namedType.Name] = 0;
+                    cache.Multipliers.Defense[namedType.Name] = 0;
                 }
                 foreach (var namedType in tr.HalfDamageFrom)
                 {
-                    Multipliers.Defense[namedType.Name] = Multipliers.Defense.TryGetValue(
+                    cache.Multipliers.Defense[namedType.Name] = cache.Multipliers.Defense.TryGetValue(
                         namedType.Name,
                         out double existingHalf
                     )
@@ -392,7 +452,7 @@ namespace PokemonDataModel
                 }
                 foreach (var namedType in tr.DoubleDamageFrom)
                 {
-                    Multipliers.Defense[namedType.Name] = Multipliers.Defense.TryGetValue(
+                    cache.Multipliers.Defense[namedType.Name] = cache.Multipliers.Defense.TryGetValue(
                         namedType.Name,
                         out double existingDouble
                     )
@@ -403,7 +463,7 @@ namespace PokemonDataModel
 
             if (SelectedAbility is not null)
             {
-                AbilityEffects.Apply(SelectedAbility.Ability.Name, Multipliers);
+                AbilityEffects.Apply(SelectedAbility.Ability.Name, cache.Multipliers);
             }
         }
 
@@ -412,7 +472,7 @@ namespace PokemonDataModel
             List<string> ret = new List<string>();
             foreach (string type in Globals.AllTypes)
             {
-                double eff = GetResistance(type);
+                double eff = GetResistance(type, RulesetId.Unrestricted);
 
                 if (eff < 1.0 && eff > 0)
                     ret.Add(type);
@@ -426,7 +486,7 @@ namespace PokemonDataModel
             List<string> ret = new List<string>();
             foreach (string type in Globals.AllTypes)
             {
-                if (GetResistance(type) > 1.0)
+                if (GetResistance(type, RulesetId.Unrestricted) > 1.0)
                     ret.Add(type);
             }
 
@@ -438,7 +498,7 @@ namespace PokemonDataModel
             List<string> ret = new List<string>();
             foreach (string type in Globals.AllTypes)
             {
-                if (IsTypeCoveredBySTAB(type))
+                if (IsTypeCoveredBySTAB(type, RulesetId.Unrestricted))
                     ret.Add(type);
             }
 
