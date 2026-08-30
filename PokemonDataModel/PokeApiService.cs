@@ -254,6 +254,21 @@ namespace PokemonDataModel
             }
         }
 
+        public async Task<PokemonForm?> GetPokemonFormAsync(string formName)
+        {
+            try
+            {
+                PokemonForm form = await ApiClient.GetResourceAsync<PokemonForm>(formName);
+
+                return form;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+
         public async Task<Type?> GetTypeAsync(string typeName)
         {
             try

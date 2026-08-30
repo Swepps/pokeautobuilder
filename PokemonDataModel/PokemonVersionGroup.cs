@@ -11,6 +11,14 @@ namespace PokemonDataModel
     {
         public string ApiUrl => $"https://pokeapi.co/api/v2/version-group/{Id}/";
 
+        // Looks up a generation by a version-group's PokeAPI name (e.g. a PokemonForm's
+        // VersionGroup.Name) rather than its id - forms/varieties reference version groups this way.
+        // Null for a version group this app doesn't track as a search location (e.g. a Japan-only
+        // release like "red-green-japan") - callers should treat that as "no restriction known" and
+        // not withhold it, rather than guessing.
+        public static int? GenerationForApiName(string apiName) =>
+            All.FirstOrDefault(g => g.ApiName == apiName)?.Generation;
+
         public static readonly IReadOnlyList<PokemonVersionGroup> All =
         [
             new("Red & Blue", "red-blue", 1, 1),
