@@ -15,11 +15,11 @@
             <MudImage Fluid="true" Src="@Pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@Pokemon.Name" Style="-webkit-filter: drop-shadow(5px 5px 5px #222); filter: drop-shadow(5px 5px 5px #222);" />
         </MudTooltip>
         <MudStack Row="true" Class="pa-2">
-            @foreach (PokemonType t in Pokemon.Types)
+            @foreach (PokemonType t in Pokemon.Types.Where(t => _activeRuleset.EnabledTypes.Contains(t.Type.Name)))
             {
                 <MudTooltip Text="@StringUtils.PrettifyString(t.Type.Name)">
                     <MudImage Src="@StringUtils.TypeImgFromName(t.Type.Name)" alt="@t.Type.Name" Width="50" />
-                </MudTooltip>                
+                </MudTooltip>
             }
         </MudStack>
         @if (IsNameDisplayed)
@@ -40,6 +40,16 @@ else
 
     [Parameter]
     public bool IsNameDisplayed { get; set; } = true;
+
+    [CascadingParameter]
+    public BoxRules? ActiveRuleset { get; set; }
+
+    // Filters the raw (always-current) type list down to what's enabled under the active ruleset -
+    // e.g. Azumarill shows Water only under a Gen 3 ruleset, not Water/Fairy. This is a display
+    // filter, not real historical retyping (Azumarill was actually pure Water pre-Gen 6 per
+    // PokeAPI's past_types, not "Water with Fairy hidden") - modeling that accurately is out of
+    // scope for this slice.
+    private BoxRules _activeRuleset => ActiveRuleset ?? BoxRules.Unrestricted();
 
     private Generation? _generation;
 

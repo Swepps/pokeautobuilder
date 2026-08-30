@@ -8,7 +8,9 @@
 
 <MudDialog>
     <DialogContent>
-        <PokemonDetails Pokemon="@Pokemon" />
+        <CascadingValue Value="ActiveRuleset">
+            <PokemonDetails Pokemon="@Pokemon" />
+        </CascadingValue>
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
@@ -17,11 +19,14 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] 
+    [CascadingParameter]
     IMudDialogInstance? MudDialog { get; set; }
 
     [Parameter]
     public SmartPokemon? Pokemon { get; set; }
+
+    [Parameter]
+    public BoxRules? ActiveRuleset { get; set; }
 
     void Submit() => MudDialog!.Close(DialogResult.Ok(Pokemon));
     void Cancel() => MudDialog!.Cancel();

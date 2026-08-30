@@ -8,11 +8,13 @@
     <DialogContent>
         <MudGrid>
             <MudItem xs="12" sm="6">
-                <MudStack Row="true" AlignItems="AlignItems.Center">
-                    <PokemonCard Pokemon="@Pokemon" />
-                    <MudIcon Icon="@Icons.Material.Filled.DoubleArrow" Size="Size.Large"/>
-                    <PokemonCard Pokemon="@SelectedPokemon" />                    
-                </MudStack>                
+                <CascadingValue Value="ActiveRuleset">
+                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                        <PokemonCard Pokemon="@Pokemon" />
+                        <MudIcon Icon="@Icons.Material.Filled.DoubleArrow" Size="Size.Large"/>
+                        <PokemonCard Pokemon="@SelectedPokemon" />
+                    </MudStack>
+                </CascadingValue>
             </MudItem>
             <MudItem xs="12" sm="6">
                 @if (_noEvolutions)
@@ -47,6 +49,9 @@
 
     [Parameter, EditorRequired]
     public SmartPokemon? Pokemon { get; set; }
+
+    [Parameter]
+    public BoxRules? ActiveRuleset { get; set; }
 
     private List<SmartPokemon> _evolutions = [];
     private bool _noEvolutions = false;

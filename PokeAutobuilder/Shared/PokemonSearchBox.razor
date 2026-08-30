@@ -43,7 +43,9 @@
             }
         </div>
 
-        <PokemonCard Pokemon="Pokemon" IsNameDisplayed="false" />
+        <CascadingValue Value="ActiveRuleset">
+            <PokemonCard Pokemon="Pokemon" IsNameDisplayed="false" />
+        </CascadingValue>
         <MudButtonGroup Color="Color.Primary" Variant="Variant.Text" Size="Size.Small" Class="mt-2">
             <MudTooltip Text="Details">
                 <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.OpenInFull" OnClick="OnClickDetails"></MudIconButton>
@@ -101,6 +103,13 @@
 
     [Parameter]
     public EventCallback<bool> OnLockChanged { get; set; }
+
+    // Threaded into the Details dialog so its coverage/defense panes reflect the right ruleset -
+    // a dialog opened via DialogService.ShowAsync isn't a descendant of this component in the
+    // render tree, so a plain CascadingValue here wouldn't reach it; it has to go as a dialog
+    // parameter instead.
+    [Parameter]
+    public BoxRules? ActiveRuleset { get; set; }
 
     [Parameter]
     public bool Lockable { get; set; } = false;
@@ -259,6 +268,7 @@
     {
         var parameters = new DialogParameters();
         parameters.Add("Pokemon", Pokemon);
+        parameters.Add("ActiveRuleset", ActiveRuleset);
 
         var dialog = await DialogService.ShowAsync<PokemonDetailsDialog>(StringUtils.PrettifyString(Pokemon!.Name), parameters);
         var result = await dialog.Result;

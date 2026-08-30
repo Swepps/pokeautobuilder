@@ -8,19 +8,21 @@
         <DialogContent>
             <MudGrid>
                 <MudItem xs="12">
-                    <MudGrid Justify="Justify.SpaceEvenly">
-                        @foreach (SmartPokemon? p in Team.Pokemon)
-                        {
-                            @if (p is not null)
+                    <CascadingValue Value="Team.Ruleset">
+                        <MudGrid Justify="Justify.SpaceEvenly">
+                            @foreach (SmartPokemon? p in Team.Pokemon)
                             {
-                                <MudItem xs="4" md="2">
-                                    <MudPaper>
-                                        <PokemonCard Pokemon="p" />
-                                    </MudPaper>
-                                </MudItem>
+                                @if (p is not null)
+                                {
+                                    <MudItem xs="4" md="2">
+                                        <MudPaper>
+                                            <PokemonCard Pokemon="p" />
+                                        </MudPaper>
+                                    </MudItem>
+                                }
                             }
-                        }
-                    </MudGrid>
+                        </MudGrid>
+                    </CascadingValue>
                 </MudItem>
                 <MudItem xs="12">
                     <StatsTeamPanel Team="Team" />
