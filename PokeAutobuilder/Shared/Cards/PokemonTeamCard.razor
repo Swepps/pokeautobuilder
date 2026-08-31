@@ -3,6 +3,8 @@
 @inject IDialogService DialogService
 @inject NavigationManager NavigationManager
 
+@implements IDisposable
+
 @using PokeAutobuilder.Source.Services
 @using PokemonDataModel
 @using Utility
@@ -24,13 +26,15 @@
 	</MudStack>
 	<MudDivider DividerType="DividerType.FullWidth" />
 	<div class="justify-center gap-1 align-content-center mud-height-full mud-width-full">
-		@foreach (SmartPokemon? p in Team!.Pokemon)
-		{
-			@if (p is not null)
+		<CascadingValue Value="Team!.Ruleset">
+			@foreach (SmartPokemon? p in Team!.Pokemon)
 			{
-				<PokemonMiniCard Pokemon="p" />
+				@if (p is not null)
+				{
+					<PokemonMiniCard Pokemon="p" ArtworkLevel="ArtworkLevel" />
+				}
 			}
-		}
+		</CascadingValue>
 	</div>
 </MudStack>
 
@@ -40,6 +44,29 @@
 
 	[Parameter] // used for telling the parent of the card that it has updated
 	public EventCallback OnUpdated { get; set; }
+
+	// Resolved live (not cached) for the whole roster at once - not per card - so every mini card in
+	// this team renders at the same art era, and so a global artwork-preference change (not a
+	// parameter change - see the OnPreferencesChange subscription below) is picked up correctly.
+	// Especially relevant here since every team now carries its own ruleset, so two teams shown side
+	// by side (Team Storage) can easily span different generations.
+	private int ArtworkLevel => Team is null
+		? 0
+		: PokemonArtwork.ResolveGroupLevel(
+			Team.Pokemon.Where(p => p is not null)!,
+			Team.Ruleset.Generation,
+			ProfileService.MiniArtworkStyle
+		);
+
+	protected override void OnInitialized()
+	{
+		ProfileService.OnPreferencesChange += StateHasChanged;
+	}
+
+	public void Dispose()
+	{
+		ProfileService.OnPreferencesChange -= StateHasChanged;
+	}
 
 	// ensure Team has been set
 	public override Task SetParametersAsync(ParameterView parameters)

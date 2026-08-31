@@ -154,7 +154,9 @@
                 </MudToolBar>
             </MudPaper>
             <CascadingValue Value="@(_selectedPokemonList)">
-                <PokemonStorageBox PokemonCollection="SelectedBox!.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
+                <CascadingValue Value="SelectedBox!.Rules">
+                    <PokemonStorageBox PokemonCollection="SelectedBox!.Pokemon" OnClickPokemon="OnSelectPokemonAsync" />
+                </CascadingValue>
             </CascadingValue>
         </MudStack>
     </div>

@@ -1,8 +1,12 @@
 ﻿@using PokemonDataModel
 @using PokeAutobuilder.Shared.Cards
 @using PokeAutobuilder.Shared
+@using PokeAutobuilder.Source.Services
+
+@implements IDisposable
 
 @inject PokeApiService PokeApiService
+@inject ProfileService Profile
 
 <MudDialog>
     <DialogContent>
@@ -10,9 +14,9 @@
             <MudItem xs="12" sm="6">
                 <CascadingValue Value="ActiveRuleset">
                     <MudStack Row="true" AlignItems="AlignItems.Center">
-                        <PokemonCard Pokemon="@Pokemon" />
+                        <PokemonCard Pokemon="@Pokemon" ArtworkLevel="ArtworkLevel" />
                         <MudIcon Icon="@Icons.Material.Filled.DoubleArrow" Size="Size.Large"/>
-                        <PokemonCard Pokemon="@SelectedPokemon" />
+                        <PokemonCard Pokemon="@SelectedPokemon" ArtworkLevel="ArtworkLevel" />
                     </MudStack>
                 </CascadingValue>
             </MudItem>
@@ -33,8 +37,10 @@
                 {
                     <MudText Typo="Typo.h6">@(Pokemon!.ToString()) evolutions</MudText>
                     <MudPaper Class="pa-1 d-flex" Elevation="0" Square="true">
-                        <CascadingValue Value="@_selectedPokemonList" Name="SelectedPokemon">
-                            <PokemonStorageBox PokemonCollection="_evolutions" OnClickPokemon="OnSelectPokemon" />
+                        <CascadingValue Value="ActiveRuleset">
+                            <CascadingValue Value="@_selectedPokemonList" Name="SelectedPokemon">
+                                <PokemonStorageBox PokemonCollection="_evolutions" OnClickPokemon="OnSelectPokemon" />
+                            </CascadingValue>
                         </CascadingValue>
                     </MudPaper>
                 }
@@ -60,6 +66,26 @@
     private List<SmartPokemon> _evolutions = [];
     private bool _noEvolutions = false;
     private bool _noEvolutionsInRuleset = false;
+
+    // Resolved live from Pokemon and SelectedPokemon together (a "group of 2") so the before/after
+    // pair doesn't visually jump art eras against each other, and so a global artwork-preference
+    // change (not a parameter change - see the OnPreferencesChange subscription below) is picked up
+    // correctly - see PokemonArtwork.ResolveGroupLevel.
+    private int ArtworkLevel => PokemonArtwork.ResolveGroupLevel(
+        new[] { Pokemon, SelectedPokemon }.Where(p => p is not null)!,
+        ActiveRuleset?.Generation,
+        Profile.LargeArtworkStyle
+    );
+
+    protected override void OnInitialized()
+    {
+        Profile.OnPreferencesChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        Profile.OnPreferencesChange -= StateHasChanged;
+    }
 
     private List<SmartPokemon> _selectedPokemonList = [];
     private SmartPokemon? _selectedPokemon;

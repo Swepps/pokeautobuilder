@@ -1,4 +1,8 @@
-﻿@using PokeAutobuilder.Shared.Cards
+﻿@inject ProfileService Profile
+
+@implements IDisposable
+
+@using PokeAutobuilder.Shared.Cards
 @using PokeAutobuilder.Source.Services;
 @using PokemonDataModel
 
@@ -6,7 +10,7 @@
 	<div class="d-flex flex-wrap justify-start align-content-start py-1" style="overflow: auto;">
 		@foreach (SmartPokemon? p in PokemonCollection!)
 		{
-			<PokemonMiniCard Pokemon="p" OnClick="OnClickPokemonCard" Variant="@(SelectedPokemon is not null && SelectedPokemon.Contains(p) ? Variant.Outlined : Variant.Filled)" />
+			<PokemonMiniCard Pokemon="p" OnClick="OnClickPokemonCard" ArtworkLevel="ArtworkLevel" Variant="@(SelectedPokemon is not null && SelectedPokemon.Contains(p) ? Variant.Outlined : Variant.Filled)" />
 		}
 	</div>
 </MudPaper>
@@ -20,6 +24,25 @@
 
 	[CascadingParameter]
 	public List<SmartPokemon>? SelectedPokemon { get; set; }
+
+	[CascadingParameter]
+	public BoxRules? ActiveRuleset { get; set; }
+
+	// Resolved live (not cached) for the whole grid at once - not per card - so every mini card in
+	// this box/list renders at the same art era, and so a global artwork-preference change (not a
+	// parameter change - see the OnPreferencesChange subscription below) is picked up correctly.
+	private int ArtworkLevel =>
+		PokemonArtwork.ResolveGroupLevel(PokemonCollection ?? [], ActiveRuleset?.Generation, Profile.MiniArtworkStyle);
+
+	protected override void OnInitialized()
+	{
+		Profile.OnPreferencesChange += StateHasChanged;
+	}
+
+	public void Dispose()
+	{
+		Profile.OnPreferencesChange -= StateHasChanged;
+	}
 
 	public Task OnClickPokemonCard(SmartPokemon pokemon)
 	{
