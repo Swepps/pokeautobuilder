@@ -21,7 +21,11 @@
     [Parameter]
     public SmartPokemon? Pokemon { get; set; }
 
+    [CascadingParameter]
+    public BoxRules? ActiveRuleset { get; set; }
+
     private SmartPokemon? _prevPokemon;
+    private RulesetId? _prevRulesetId;
 
     private class StatItem
     {
@@ -69,18 +73,15 @@
 		}
 	};
 
-    public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed" };
-
     protected override async Task OnParametersSetAsync()
     {
         if (Pokemon is not null
-            && _prevPokemon != Pokemon)
+            && (_prevPokemon != Pokemon || _prevRulesetId != ActiveRuleset?.Id))
         {
             _stats.Clear();
-            double[] statsArray = Pokemon.GetBaseStatsArray();
-            for (var i = 0; i < statsArray.Length; i++)
+            foreach ((string label, int value) in Pokemon.GetBaseStatsForDisplay(ActiveRuleset?.Generation))
             {
-                _stats.Add(new() { Name = Labels[i], Value = statsArray[i] });
+                _stats.Add(new() { Name = label, Value = value });
             }
 
             if (_prevPokemon is not null)
@@ -89,6 +90,7 @@
             }
 
             _prevPokemon = Pokemon;
+            _prevRulesetId = ActiveRuleset?.Id;
         }
     }
 
