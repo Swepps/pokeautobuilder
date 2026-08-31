@@ -163,9 +163,26 @@ namespace PokemonDataModel
             {
                 string? url = layers[i](pokemon, generation);
                 if (url is not null)
-                    urls.Add(url);
+                    urls.Add(ToCacheFriendlyUrl(url));
             }
             return urls;
         }
+
+        // PokeApiNet's sprite URLs all point at raw.githubusercontent.com, which GitHub caps at a
+        // 5-minute browser cache lifetime (it's explicitly not meant to be used as a production
+        // asset host) - every image gets re-fetched on practically every page load. jsDelivr mirrors
+        // the exact same repo/path/file with a 7-day cache lifetime instead, so rewrite to it here,
+        // in the one place every sprite/artwork URL this app shows already passes through, rather
+        // than needing every UrlGetter above to know about it individually. Falls back to the
+        // original URL unchanged for anything that doesn't match the expected prefix (e.g. if
+        // PokeAPI ever moves its sprite hosting), so this can never turn a valid URL into a broken one.
+        private const string GitHubRawSpritesPrefix =
+            "https://raw.githubusercontent.com/PokeAPI/sprites/master/";
+        private const string JsDelivrSpritesPrefix = "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/";
+
+        private static string ToCacheFriendlyUrl(string url) =>
+            url.StartsWith(GitHubRawSpritesPrefix, StringComparison.Ordinal)
+                ? JsDelivrSpritesPrefix + url[GitHubRawSpritesPrefix.Length..]
+                : url;
     }
 }

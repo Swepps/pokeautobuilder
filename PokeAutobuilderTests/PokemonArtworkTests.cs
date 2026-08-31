@@ -61,6 +61,54 @@ namespace PokeAutobuilderTests
             };
 
         [Fact]
+        public void GetCandidates_RewritesGitHubRawUrlsToJsDelivr()
+        {
+            SmartPokemon p = MakeWithSprites(
+                "real-url",
+                new PokemonSprites
+                {
+                    Other = new PokemonSprites.OtherSprites
+                    {
+                        OfficialArtwork = new PokemonSprites.OtherSprites.OfficialArtworkSprites
+                        {
+                            FrontDefault =
+                                "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+                        },
+                    },
+                }
+            );
+
+            var candidates = PokemonArtwork.GetCandidates(p, null, LargeArtworkStyle.OfficialArtwork);
+
+            Assert.Equal(
+                "https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/25.png",
+                candidates[0]
+            );
+        }
+
+        [Fact]
+        public void GetCandidates_LeavesNonGitHubUrlsUnchanged()
+        {
+            SmartPokemon p = MakeWithSprites(
+                "other-host",
+                new PokemonSprites
+                {
+                    Other = new PokemonSprites.OtherSprites
+                    {
+                        OfficialArtwork = new PokemonSprites.OtherSprites.OfficialArtworkSprites
+                        {
+                            FrontDefault = "https://example.com/some-other-sprite-host/25.png",
+                        },
+                    },
+                }
+            );
+
+            var candidates = PokemonArtwork.GetCandidates(p, null, LargeArtworkStyle.OfficialArtwork);
+
+            Assert.Equal("https://example.com/some-other-sprite-host/25.png", candidates[0]);
+        }
+
+        [Fact]
         public void OfficialArtwork_PrefersOfficialArtworkUrl()
         {
             SmartPokemon p = MakeWithSprites("full", FullSprites());
