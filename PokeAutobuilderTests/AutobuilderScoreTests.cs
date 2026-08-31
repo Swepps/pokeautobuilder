@@ -141,6 +141,45 @@ namespace PokeAutobuilderTests
             Assert.True(result.BaseStatHp > 0.9);
         }
 
+        // Alakazam (id 65) had Sp. Atk 135 / Sp. Def 95 today, but Gen 1 never split the stat -
+        // SmartPokemon.GetStatsForGeneration resolves both to the same historical Special value
+        // (135) under a Gen 1 ruleset, so both scoring dimensions should score identically off
+        // that shared number even though their weightings are computed separately.
+        [Fact]
+        public void BaseStatScore_Gen1Ruleset_ScoresSpAtkAndSpDefIdenticallyFromSharedSpecial()
+        {
+            var alakazam = TestFixtures.MakeScoringPokemon(
+                "alakazam",
+                id: 65,
+                baseStats: new Dictionary<string, int>
+                {
+                    { "hp", 55 },
+                    { "attack", 50 },
+                    { "defense", 45 },
+                    { "special-attack", 135 },
+                    { "special-defense", 95 },
+                    { "speed", 120 },
+                }
+            );
+            PokemonTeam team = MakeTeam(alakazam);
+            team.Ruleset = BoxRules.ForGeneration(1);
+            // types are empty for a scoring pokemon, so an empty chart is safe here - this only
+            // needs to warm the Gen 1 ruleset's multiplier cache entry, same as PokemonBox/
+            // SessionService do in the app when a Pokemon is attached to a non-Unrestricted ruleset
+            alakazam.InitializeTypes(new TypeChart(), team.Ruleset);
+
+            AutobuilderWeightings weightings = ZeroedWeightings(
+                baseStatTotal: 1.0,
+                baseStatSpAtt: 1.0,
+                baseStatSpDef: 1.0
+            );
+
+            AutobuilderWeightings result = TeamScorer.CalculateScore(team, weightings);
+
+            Assert.Equal(ExpectedStatCurveScore(135), result.BaseStatSpAtt, precision: 10);
+            Assert.Equal(result.BaseStatSpAtt, result.BaseStatSpDef, precision: 10);
+        }
+
         [Fact]
         public void BaseStatScore_SmallerTeamIsNotDevaluedRelativeToFullTeam()
         {

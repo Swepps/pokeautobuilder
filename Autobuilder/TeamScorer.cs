@@ -158,14 +158,30 @@ namespace Autobuilder
                 ),
                 new(
                     "Stat Spread",
-                    [
-                        new("HP", "Team's combined HP base stat", scores.BaseStatHp),
-                        new("Attack", "Team's combined Attack base stat", scores.BaseStatAtt),
-                        new("Sp. Attack", "Team's combined Special Attack base stat", scores.BaseStatSpAtt),
-                        new("Defense", "Team's combined Defense base stat", scores.BaseStatDef),
-                        new("Sp. Defense", "Team's combined Special Defense base stat", scores.BaseStatSpDef),
-                        new("Speed", "Team's combined Speed base stat", scores.BaseStatSpe),
-                    ]
+                    // Under a Gen 1 ruleset special-attack/special-defense are the same resolved
+                    // Special stat (see SmartPokemon.GetStatsForGeneration), so scores.BaseStatSpAtt
+                    // and scores.BaseStatSpDef are always equal here too - shown as a single
+                    // "Special" category rather than two identical bars. This only changes the
+                    // display grouping; both terms still contribute individually to TotalScore
+                    // below via scores.SumWeightings().
+                    team.Ruleset.Generation == 1
+                        ?
+                        [
+                            new("HP", "Team's combined HP base stat", scores.BaseStatHp),
+                            new("Attack", "Team's combined Attack base stat", scores.BaseStatAtt),
+                            new("Special", "Team's combined Special base stat", scores.BaseStatSpAtt),
+                            new("Defense", "Team's combined Defense base stat", scores.BaseStatDef),
+                            new("Speed", "Team's combined Speed base stat", scores.BaseStatSpe),
+                        ]
+                        :
+                        [
+                            new("HP", "Team's combined HP base stat", scores.BaseStatHp),
+                            new("Attack", "Team's combined Attack base stat", scores.BaseStatAtt),
+                            new("Sp. Attack", "Team's combined Special Attack base stat", scores.BaseStatSpAtt),
+                            new("Defense", "Team's combined Defense base stat", scores.BaseStatDef),
+                            new("Sp. Defense", "Team's combined Special Defense base stat", scores.BaseStatSpDef),
+                            new("Speed", "Team's combined Speed base stat", scores.BaseStatSpe),
+                        ]
                 ),
             ];
 
@@ -295,12 +311,28 @@ namespace Autobuilder
                 if (pokemon == null)
                     continue;
 
-                foreach (PokemonStat stat in pokemon.Stats)
+                // Under a Gen 1 ruleset special-attack/special-defense are both the same resolved
+                // Special value (see SmartPokemon.GetStatsForGeneration) - so both scoring
+                // dimensions still work unmodified, just off the same underlying number, matching
+                // how a high-Special Gen 1 Pokemon really was both a strong attacker and a strong
+                // wall.
+                foreach (
+                    string statName in new[]
+                    {
+                        "hp",
+                        "attack",
+                        "defense",
+                        "special-attack",
+                        "special-defense",
+                        "speed",
+                    }
+                )
                 {
-                    if (statTotals.ContainsKey(stat.Stat.Name))
-                        statTotals[stat.Stat.Name] += stat.BaseStat;
+                    int value = pokemon.GetBaseStat(statName, team.Ruleset.Generation);
+                    if (statTotals.ContainsKey(statName))
+                        statTotals[statName] += value;
                     else
-                        statTotals[stat.Stat.Name] = stat.BaseStat;
+                        statTotals[statName] = value;
                 }
             }
 
@@ -380,17 +412,17 @@ namespace Autobuilder
                 }
                 // only really care about the highest offensive stat
                 double highestOffStat = Math.Max(
-                    p.GetBaseStat("attack"),
-                    p.GetBaseStat("special-attack")
+                    p.GetBaseStat("attack", team.Ruleset.Generation),
+                    p.GetBaseStat("special-attack", team.Ruleset.Generation)
                 );
-                double totalOffStats = highestOffStat + p.GetBaseStat("speed");
+                double totalOffStats = highestOffStat + p.GetBaseStat("speed", team.Ruleset.Generation);
                 // scale def stats to roughly same size as offense
                 double totalDefStats =
                     0.66
                     * (
-                        p.GetBaseStat("hp")
-                        + p.GetBaseStat("defense")
-                        + p.GetBaseStat("special-defense")
+                        p.GetBaseStat("hp", team.Ruleset.Generation)
+                        + p.GetBaseStat("defense", team.Ruleset.Generation)
+                        + p.GetBaseStat("special-defense", team.Ruleset.Generation)
                     );
                 double offensiveFactor = totalOffStats / totalDefStats;
 
@@ -433,13 +465,13 @@ namespace Autobuilder
                     countResistances += 1.0 / (value == 0 ? 0.25 : value) - 1.0;
                 }
                 double totalOffStats =
-                    p.GetBaseStat("attack")
-                    + p.GetBaseStat("special-attack")
-                    + p.GetBaseStat("speed");
+                    p.GetBaseStat("attack", team.Ruleset.Generation)
+                    + p.GetBaseStat("special-attack", team.Ruleset.Generation)
+                    + p.GetBaseStat("speed", team.Ruleset.Generation);
                 double totalDefStats =
-                    p.GetBaseStat("hp")
-                    + p.GetBaseStat("defense")
-                    + p.GetBaseStat("special-defense");
+                    p.GetBaseStat("hp", team.Ruleset.Generation)
+                    + p.GetBaseStat("defense", team.Ruleset.Generation)
+                    + p.GetBaseStat("special-defense", team.Ruleset.Generation);
                 double defensiveFactor = totalDefStats / totalOffStats;
 
                 resistancesScore +=

@@ -79,7 +79,6 @@
 
 	private List<Tuple<string, List<StatItem>>> _stats = [];
 
-	public string[] Labels = { "HP", "Attack", "Sp. Att", "Defense", "Sp. Def", "Speed" };
 	public string[] Colours = { "#F44336", "#009688", "#3F51B5", "#4CAF50", "#2196F3", "#FF5722" };
 
 	protected override async Task OnParametersSetAsync()
@@ -92,11 +91,10 @@
 		{
 			if (p is not null)
 			{
-				double[] statsArray = p.GetBaseStatsArray();
 				List<StatItem> pokemonStatList = [];
-				for (var i = 0; i < statsArray.Length; i++)
+				foreach ((string label, int value) in p.GetBaseStatsForDisplay(Team.Ruleset.Generation))
 				{
-					pokemonStatList.Add(new() { Name = Labels[i], Value = statsArray[i] });
+					pokemonStatList.Add(new() { Name = label, Value = value });
 				}
 				_stats.Add(new(p.ToString(), pokemonStatList));
 			}
