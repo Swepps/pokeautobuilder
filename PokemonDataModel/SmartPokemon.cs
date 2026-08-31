@@ -216,6 +216,110 @@ namespace PokemonDataModel
             return applicable?.Types ?? Types;
         }
 
+        // What this Pokemon's base stats actually were as of the given generation, per PokeAPI's
+        // past_stats (PastStatsTable). Unlike GetTypesForGeneration, an entry's stats are a sparse
+        // delta rather than a full replacement - e.g. Pikachu's Gen 1 entry only carries "special",
+        // its Gen 5 entry only carries defense/special-defense, and a Gen-1 lookup needs both
+        // layered together. So every entry with Generation >= target is applied as an overlay onto
+        // the current-day stats, working from the *largest* qualifying generation down to the
+        // smallest - the smallest (closest to the target) is applied last and wins any conflict,
+        // matching GetTypesForGeneration's "smallest qualifying generation" rule while still letting
+        // an older, unrelated-stat delta (Gen 1's Special) coexist with a newer one (Gen 5's
+        // Defense) instead of one replacing the other outright.
+        //
+        // "special" (Gen 1's single stat covering both offense and defense) is a distinct key in the
+        // table from "special-attack"/"special-defense" - once layering is done, a resolved
+        // "special" value is written into both of those keys, so callers never need to know Gen 1
+        // worked differently. A Pokemon with no qualifying entries at all for a Gen 1 lookup didn't
+        // exist yet in Gen 1 (every Gen-1-native species has an explicit Special entry) - approximated
+        // by collapsing special-defense onto the current special-attack value, rather than showing a
+        // Gen-1 Pokemon with a stat split that couldn't have existed.
+        public IReadOnlyDictionary<string, int> GetStatsForGeneration(int? generation)
+        {
+            Dictionary<string, int> resolved = Stats.ToDictionary(s => s.Stat.Name, s => s.BaseStat);
+
+            if (generation is null)
+                return resolved;
+
+            if (PastStatsTable.ByPokemonId.TryGetValue(Id, out IReadOnlyList<PastStatsEntry>? entries))
+            {
+                foreach (
+                    PastStatsEntry entry in entries
+                        .Where(e => e.Generation >= generation)
+                        .OrderByDescending(e => e.Generation)
+                )
+                {
+                    foreach ((string statName, int value) in entry.Stats)
+                    {
+                        resolved[statName] = value;
+                    }
+                }
+            }
+
+            if (resolved.TryGetValue("special", out int special))
+            {
+                resolved["special-attack"] = special;
+                resolved["special-defense"] = special;
+                resolved.Remove("special");
+            }
+            else if (generation == 1)
+            {
+                resolved["special-defense"] = resolved["special-attack"];
+            }
+
+            return resolved;
+        }
+
+        // A single base stat for the given generation (null = current day). Throws on an unknown
+        // stat name rather than the old sentinel-value (-1) behavior - every caller passes a
+        // hardcoded, known-valid name, so a typo should fail loudly instead of silently corrupting
+        // a score calculation.
+        public int GetBaseStat(string statName, int? generation = null)
+        {
+            IReadOnlyDictionary<string, int> stats = GetStatsForGeneration(generation);
+            if (!stats.TryGetValue(statName, out int value))
+                throw new ArgumentException($"Unknown stat name '{statName}'", nameof(statName));
+
+            return value;
+        }
+
+        // Base stats shaped for display: HP/Attack/Defense/Speed plus, under a Gen 1 ruleset, a
+        // single "Special" bar instead of separate Sp. Atk/Sp. Def ones (Gen 1 never had two - see
+        // GetStatsForGeneration) - so a chart iterating this list doesn't need to know about the
+        // Gen 1 special case itself. Sp. Atk and Sp. Def are always equal under Gen 1 by
+        // construction, so either one stands in for "Special".
+        public IReadOnlyList<(string Label, int Value)> GetBaseStatsForDisplay(int? generation)
+        {
+            IReadOnlyDictionary<string, int> stats = GetStatsForGeneration(generation);
+
+            if (generation == 1)
+            {
+                return
+                [
+                    ("HP", stats["hp"]),
+                    ("Attack", stats["attack"]),
+                    ("Special", stats["special-attack"]),
+                    ("Defense", stats["defense"]),
+                    ("Speed", stats["speed"]),
+                ];
+            }
+
+            return
+            [
+                ("HP", stats["hp"]),
+                ("Attack", stats["attack"]),
+                ("Sp. Atk", stats["special-attack"]),
+                ("Defense", stats["defense"]),
+                ("Sp. Def", stats["special-defense"]),
+                ("Speed", stats["speed"]),
+            ];
+        }
+
+        public int GetBaseStatsTotal(int? generation = null)
+        {
+            return GetBaseStatsForDisplay(generation).Sum(s => s.Value);
+        }
+
         public bool HasInitializedRuleset(RulesetId rulesetId) => _rulesetCaches.ContainsKey(rulesetId);
 
         public Multipliers GetMultipliers(RulesetId rulesetId)
@@ -360,41 +464,6 @@ namespace PokemonDataModel
                 return true;
             }
             return false;
-        }
-
-        public int GetBaseStat(string statName)
-        {
-            PokemonStat? stat = Stats.Find(x => x.Stat.Name == statName);
-            if (stat == null)
-                return -1;
-
-            return stat.BaseStat;
-        }
-
-        public double[] GetBaseStatsArray()
-        {
-            double[] stats = new double[6];
-
-            // make sure we're getting the correct stat in each position
-            stats[0] = GetBaseStat("hp");
-            stats[1] = GetBaseStat("attack");
-            stats[2] = GetBaseStat("special-attack");
-            stats[3] = GetBaseStat("defense");
-            stats[4] = GetBaseStat("special-defense");
-            stats[5] = GetBaseStat("speed");
-
-            return stats;
-        }
-
-        public int GetBaseStatsTotal()
-        {
-            int total = 0;
-            foreach (PokemonStat stat in Stats)
-            {
-                total += stat.BaseStat;
-            }
-
-            return total;
         }
 
         public int CountTotalCoverage(BoxRules rules)
