@@ -55,8 +55,8 @@ namespace PokemonDataModel
         private static string? GenerationMatchedUrl(SmartPokemon p, int? generation) =>
             generation switch
             {
-                1 => p.Sprites.Versions?.GenerationI?.Yellow?.FrontDefault,
-                2 => p.Sprites.Versions?.GenerationII?.Crystal?.FrontDefault,
+                1 => p.Sprites.Versions?.GenerationI?.Yellow?.FrontTransparent,
+                2 => p.Sprites.Versions?.GenerationII?.Crystal?.FrontTransparent,
                 3 => p.Sprites.Versions?.GenerationIII?.Emerald?.FrontDefault,
                 4 => p.Sprites.Versions?.GenerationIV?.Platinum?.FrontDefault,
                 _ => p.Sprites.Versions?.GenerationV?.BlackWhite?.FrontDefault,

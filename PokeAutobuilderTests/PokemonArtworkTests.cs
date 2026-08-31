@@ -31,7 +31,8 @@ namespace PokeAutobuilderTests
                     {
                         Yellow = new PokemonSprites.VersionSprites.GenerationISprites.YellowSprites
                         {
-                            FrontDefault = "gen1",
+                            FrontDefault = "gen1-opaque",
+                            FrontTransparent = "gen1",
                         },
                     },
                     GenerationV = new PokemonSprites.VersionSprites.GenerationVSprites
