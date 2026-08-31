@@ -215,21 +215,38 @@
                                          Tooltip="Importance of a the Attack base stat"
                                          @bind-Value="GenerationParameters.BaseStatAtt"
                                          Disabled="Generating" />
-                        <WeightingSlider Name="Sp. Attack"
-                                         InlineLabel="true"
-                                         Tooltip="Importance of a the Special Attack base stat"
-                                         @bind-Value="GenerationParameters.BaseStatSpAtt"
-                                         Disabled="Generating" />
+                        @if (SelectedBox?.Rules.Generation == 1)
+                        {
+                            @* Gen 1 had one "Special" stat covering both Sp. Attack and Sp. Defense - see
+                            SmartPokemon.GetStatsForGeneration - so a single slider drives both weightings. *@
+                            <WeightingSlider Name="Special"
+                                             InlineLabel="true"
+                                             Tooltip="Importance of the Special base stat (Gen 1 combined Sp. Attack and Sp. Defense into one stat)"
+                                             Value="@GenerationParameters.BaseStatSpAtt"
+                                             ValueChanged="@((double v) => { GenerationParameters.BaseStatSpAtt = v; GenerationParameters.BaseStatSpDef = v; })"
+                                             Disabled="Generating" />
+                        }
+                        else
+                        {
+                            <WeightingSlider Name="Sp. Attack"
+                                             InlineLabel="true"
+                                             Tooltip="Importance of a the Special Attack base stat"
+                                             @bind-Value="GenerationParameters.BaseStatSpAtt"
+                                             Disabled="Generating" />
+                        }
                         <WeightingSlider Name="Defense"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Defense base stat"
                                          @bind-Value="GenerationParameters.BaseStatDef"
                                          Disabled="Generating" />
-                        <WeightingSlider Name="Sp. Defense"
-                                         InlineLabel="true"
-                                         Tooltip="Importance of a the Special Defense base stat"
-                                         @bind-Value="GenerationParameters.BaseStatSpDef"
-                                         Disabled="Generating" />
+                        @if (SelectedBox?.Rules.Generation != 1)
+                        {
+                            <WeightingSlider Name="Sp. Defense"
+                                             InlineLabel="true"
+                                             Tooltip="Importance of a the Special Defense base stat"
+                                             @bind-Value="GenerationParameters.BaseStatSpDef"
+                                             Disabled="Generating" />
+                        }
                         <WeightingSlider Name="Speed"
                                          InlineLabel="true"
                                          Tooltip="Importance of a the Speed base stat"
@@ -421,6 +438,7 @@
             _selectedBox = value;
             _lockedPokemon.Clear();
             ApplyRulesetTypeConstraints();
+            ApplyRulesetStatConstraints();
         }
     }
 
@@ -434,6 +452,18 @@
         foreach (string disabledType in SelectedBox.Rules.DisabledTypes)
         {
             GenerationParameters.Types[disabledType] = false;
+        }
+    }
+
+    // A Gen 1 box shows a single "Special" slider driving both BaseStatSpAtt/BaseStatSpDef (see the
+    // Special WeightingSlider above) - if the two had different values from a prior non-Gen-1
+    // selection, force them equal so the single displayed value reflects what's actually being
+    // scored, rather than silently keeping a stale, invisible SpDef weighting.
+    private void ApplyRulesetStatConstraints()
+    {
+        if (SelectedBox?.Rules.Generation == 1)
+        {
+            GenerationParameters.BaseStatSpDef = GenerationParameters.BaseStatSpAtt;
         }
     }
 
@@ -587,6 +617,7 @@
             // load the parameters from the profile
             GenerationParameters = Profile.AutobuilderParams;
             ApplyRulesetTypeConstraints();
+            ApplyRulesetStatConstraints();
 
             // set generation ran callback event
             GeneticAlgorithm.GenerationRan += HandleGenerationRan;
@@ -611,6 +642,7 @@
 
         GenerationParameters = Profile.AutobuilderParams;
         ApplyRulesetTypeConstraints();
+        ApplyRulesetStatConstraints();
 
         return base.OnParametersSetAsync();
     }
