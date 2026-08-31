@@ -1,4 +1,5 @@
 ﻿@using PokeAutobuilder.Source.Services
+@using PokemonDataModel
 
 @inject ProfileService ProfileService
 
@@ -7,13 +8,34 @@
            OnBackdropClick="OnCloseDialog" @onkeydown="(e) => OnDialogKeyDown(e)">
     <DialogContent>
         <MudStack Class="py-4">
-            <MudSwitch @bind-Value="ProfileService.AllowMultipleMegas" T="bool"
-                       Label="Allow more than one Mega-Evolved Pokémon per team (default for new boxes)" />
-            <MudSwitch @bind-Value="ProfileService.AllowMultipleGmax" T="bool"
-                       Label="Allow more than one Gigantamax Pokémon per team (default for new boxes)" />
             <MudSwitch @bind-Value="ProfileService.IsDarkMode" T="bool"
                        Label="Dark theme" ThumbIcon="@(ProfileService.IsDarkMode ? Icons.Material.Outlined.DarkMode : Icons.Material.Filled.LightMode)"
                        ThumbIconColor="@(ProfileService.IsDarkMode ? Color.Dark : Color.Default)" />
+
+            <MudDivider Class="my-2" />
+
+            <MudSelect T="LargeArtworkStyle" Label="Large card artwork" @bind-Value="ProfileService.LargeArtworkStyle"
+                       ToStringFunc="LargeArtworkStyleLabel" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                @foreach (LargeArtworkStyle style in Enum.GetValues<LargeArtworkStyle>())
+                {
+                    <MudSelectItem T="LargeArtworkStyle" Value="style">@LargeArtworkStyleLabel(style)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudText Typo="Typo.caption">
+                "Generation matched" sprites use whichever game's sprites best suit a box/team's ruleset generation - Yellow, Crystal, Emerald, Platinum, or (Gen 5 onward, and Unrestricted) Black &amp; White.
+                The animated option only has an animated sprite for Gen 5+ - it renders as the static generation-matched sprite for an earlier generation's ruleset.
+            </MudText>
+
+            <MudSelect T="MiniArtworkStyle" Label="Mini card (box/team roster) artwork" @bind-Value="ProfileService.MiniArtworkStyle"
+                       ToStringFunc="MiniArtworkStyleLabel" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                @foreach (MiniArtworkStyle style in Enum.GetValues<MiniArtworkStyle>())
+                {
+                    <MudSelectItem T="MiniArtworkStyle" Value="style">@MiniArtworkStyleLabel(style)</MudSelectItem>
+                }
+            </MudSelect>
+            <MudText Typo="Typo.caption">
+                Box icons cover every Pokémon through Generation 8 (including most alt forms), falling back to the generation-matched sprite for anything newer.
+            </MudText>
         </MudStack>
     </DialogContent>
     <DialogActions>
@@ -24,6 +46,23 @@
 @code {
     [CascadingParameter]
     IMudDialogInstance? MudDialog { get; set; }
+
+    private static string LargeArtworkStyleLabel(LargeArtworkStyle style) => style switch
+    {
+        LargeArtworkStyle.OfficialArtwork => "Official Artwork",
+        LargeArtworkStyle.ShowdownAnimated => "Showdown Animated Sprite",
+        LargeArtworkStyle.PokemonHome => "Pokémon Home Artwork",
+        LargeArtworkStyle.GenerationMatched => "Generation Matched Sprite",
+        LargeArtworkStyle.GenerationMatchedAnimated => "Animated Generation Matched Sprite",
+        _ => style.ToString(),
+    };
+
+    private static string MiniArtworkStyleLabel(MiniArtworkStyle style) => style switch
+    {
+        MiniArtworkStyle.GenerationMatched => "Generation Matched Sprite",
+        MiniArtworkStyle.BoxIcon => "Box Icon",
+        _ => style.ToString(),
+    };
 
     private void OnCloseDialog()
     {

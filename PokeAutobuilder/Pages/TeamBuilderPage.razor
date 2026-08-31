@@ -116,17 +116,16 @@
     }
 
     // Resolves the ruleset a team built from this location should use: a box's own rules; a
-    // version-group Pokedex's generation default; or Unrestricted for the National Dex/anything
-    // else. Mega/Gmax default from the (formerly global) preference, same as a newly created box.
+    // version-group Pokedex's generation default; or Unrestricted for the National Dex/anything else.
     private BoxRules ResolveRulesetForLocation(ILazyPokemonList location)
     {
         if (location is PokemonBox box)
             return box.Rules;
 
         if (location is SmartPokedex { SourceVersionGroup: { } group })
-            return BoxRules.ForGeneration(group.Generation, Profile.AllowMultipleMegas, Profile.AllowMultipleGmax);
+            return BoxRules.ForGeneration(group.Generation);
 
-        return BoxRules.Unrestricted(Profile.AllowMultipleMegas, Profile.AllowMultipleGmax);
+        return BoxRules.Unrestricted();
     }
 
     private async Task HandleSearchLocationChangeAsync(ILazyPokemonList newLocation)

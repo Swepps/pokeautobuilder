@@ -10,8 +10,8 @@ namespace PokeAutobuilder.Source.Services
     public record Preferences
     {
         public bool DarkMode { get; init; }
-        public bool AllowMultipleMegas { get; init; }
-        public bool AllowMultipleGmax { get; init; }
+        public LargeArtworkStyle LargeArtworkStyle { get; init; }
+        public MiniArtworkStyle MiniArtworkStyle { get; init; }
     }
 
     public class ProfileService
@@ -53,7 +53,7 @@ namespace PokeAutobuilder.Source.Services
 
             _preferences = new(
                 PREFERENCES_KEY,
-                new() { DarkMode = true, AllowMultipleMegas = false, AllowMultipleGmax = false },
+                new() { DarkMode = true },
                 Load<Preferences>,
                 Save
             );
@@ -129,22 +129,19 @@ namespace PokeAutobuilder.Source.Services
             );
         }
 
-        public bool AllowMultipleMegas
+        public LargeArtworkStyle LargeArtworkStyle
         {
-            get => _preferences.Value.AllowMultipleMegas;
-            set => _preferences.Set(_preferences.Value with { AllowMultipleMegas = value });
+            get => _preferences.Value.LargeArtworkStyle;
+            set => _preferences.Set(_preferences.Value with { LargeArtworkStyle = value });
         }
 
-        public bool AllowMultipleGmax
+        public MiniArtworkStyle MiniArtworkStyle
         {
-            get => _preferences.Value.AllowMultipleGmax;
-            set => _preferences.Set(_preferences.Value with { AllowMultipleGmax = value });
+            get => _preferences.Value.MiniArtworkStyle;
+            set => _preferences.Set(_preferences.Value with { MiniArtworkStyle = value });
         }
 
-        // Seeds a newly created box's ruleset from the (formerly global) mega/gmax preference -
-        // once created, a box's Rules are independent and no longer track this preference live.
-        public BoxRules MakeDefaultRulesForNewBox() =>
-            BoxRules.Unrestricted(AllowMultipleMegas, AllowMultipleGmax);
+        public BoxRules MakeDefaultRulesForNewBox() => BoxRules.Unrestricted();
 
         public List<PokeApiNet.Type> AllTypes
         {
@@ -207,9 +204,7 @@ namespace PokeAutobuilder.Source.Services
                         _pokemonStorage.Value.Boxes.Add(new PokemonBox("Box 1") { Rules = MakeDefaultRulesForNewBox() });
                     }
 
-                    // this box predates BoxRules entirely, so seed it from the (formerly global)
-                    // mega/gmax preference the same way the < 1.5 migration below does
-                    SeedBoxRulesFromPreferences();
+                    // this box predates BoxRules entirely, so it just gets BoxRules' plain default
                     EnsureAllBoxesInitialized();
                     await _pokemonStorage.SetAsync(_pokemonStorage.Value);
                     await UpdateVersionAsync();
@@ -218,15 +213,12 @@ namespace PokeAutobuilder.Source.Services
                 {
                     await LoadPokemonStorageAsync();
 
-                    // boxes existed before BoxRules did - one-time snapshot of the (formerly
-                    // global) mega/gmax preference onto each, so upgrading doesn't silently change
-                    // existing boxes' behavior. After this, a box's Rules are independent of the
-                    // global preference (which now only seeds *new* boxes going forward).
+                    // boxes existed before BoxRules did - still bump the version marker for this
+                    // bracket even though there's no longer a global mega/gmax preference to seed
+                    // them from, so this doesn't skip the AllTypes refresh-on-version-change check
+                    // above on every future load
                     if (profileStorageVersion < 1.5)
                     {
-                        SeedBoxRulesFromPreferences();
-                        EnsureAllBoxesInitialized();
-                        await _pokemonStorage.SetAsync(_pokemonStorage.Value);
                         await UpdateVersionAsync();
                     }
                 }
@@ -304,18 +296,6 @@ namespace PokeAutobuilder.Source.Services
                 }
 
                 box.EnsureInitialized(_typeChart);
-            }
-        }
-
-        private void SeedBoxRulesFromPreferences()
-        {
-            foreach (PokemonBox box in _pokemonStorage.Value.Boxes)
-            {
-                box.Rules = box.Rules with
-                {
-                    AllowMultipleMegas = _preferences.Value.AllowMultipleMegas,
-                    AllowMultipleGmax = _preferences.Value.AllowMultipleGmax,
-                };
             }
         }
 
