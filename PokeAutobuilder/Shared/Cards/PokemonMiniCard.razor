@@ -1,6 +1,8 @@
 @inject ProfileService Profile
 @inject IDialogService DialogService
 
+@implements IDisposable
+
 @using PokeAutobuilder.Source.Services
 @using PokemonDataModel
 @using Utility
@@ -8,8 +10,7 @@
 <div class="poke-mini-card">
 	<MudTooltip Text="@Pokemon!.ToString()">
 		<MudButton Class="ma-2 poke-mini-card-btn" Color="Color.Surface" OnClick="OnClickCard" Variant="@Variant">
-			<MudImage Class="poke-mini-card-sprite"
-				Src="@(String.IsNullOrEmpty(Pokemon!.Sprites.FrontDefault) ? Pokemon!.Sprites.Other.OfficialArtwork.FrontDefault : Pokemon!.Sprites.FrontDefault)" />
+			<FallbackImage Class="poke-mini-card-sprite" Alt="@Pokemon!.ToString()" Urls="ArtworkCandidates" />
 		</MudButton>
 	</MudTooltip>
 </div>
@@ -24,6 +25,29 @@
 	[Parameter]
 	public Variant Variant { get; set; }
 
+	// The fallback-chain layer to start rendering from, shared across every card in a group so the
+	// group renders at one consistent art era - see PokemonArtwork and whichever parent computes
+	// this (e.g. PokemonStorageBox, PokemonTeamCard). Left null to resolve this Pokemon's own best
+	// level alone.
+	[Parameter]
+	public int? ArtworkLevel { get; set; }
+
+	[CascadingParameter]
+	public BoxRules? ActiveRuleset { get; set; }
+
+	// Computed live (not cached) so it's always correct whenever this component renders for any
+	// reason - including a global artwork-preference change, which isn't a parameter change.
+	private IReadOnlyList<string> ArtworkCandidates
+	{
+		get
+		{
+			int? generation = ActiveRuleset?.Generation;
+			int level = ArtworkLevel
+				?? PokemonArtwork.ResolveGroupLevel([Pokemon!], generation, Profile.MiniArtworkStyle);
+			return PokemonArtwork.GetCandidates(Pokemon!, generation, Profile.MiniArtworkStyle, level);
+		}
+	}
+
 	public override Task SetParametersAsync(ParameterView parameters)
 	{
 		parameters.SetParameterProperties(this);
@@ -31,6 +55,17 @@
 			throw new InvalidOperationException($"{nameof(PokemonMiniCard)} requires a {nameof(SmartPokemon)} parameter.");
 
 		return base.SetParametersAsync(ParameterView.Empty);
+	}
+
+	protected override void OnInitialized()
+	{
+		// see PokemonCard's identical subscription for why this is needed
+		Profile.OnPreferencesChange += StateHasChanged;
+	}
+
+	public void Dispose()
+	{
+		Profile.OnPreferencesChange -= StateHasChanged;
 	}
 
 	public Task OnClickCard()

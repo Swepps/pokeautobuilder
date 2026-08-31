@@ -1,5 +1,10 @@
-﻿@using PokeAutobuilder.Shared.Cards
+﻿@inject ProfileService Profile
+
+@implements IDisposable
+
+@using PokeAutobuilder.Shared.Cards
 @using PokeAutobuilder.Shared.Panes
+@using PokeAutobuilder.Source.Services
 @using PokemonDataModel
 
 @if (Team is not null)
@@ -16,7 +21,7 @@
                                 {
                                     <MudItem xs="4" md="2">
                                         <MudPaper>
-                                            <PokemonCard Pokemon="p" />
+                                            <PokemonCard Pokemon="p" ArtworkLevel="ArtworkLevel" />
                                         </MudPaper>
                                     </MudItem>
                                 }
@@ -43,8 +48,24 @@
     [Parameter]
     public PokemonTeam? Team { get; set; }
 
+    private int ArtworkLevel => Team is null
+        ? 0
+        : PokemonArtwork.ResolveGroupLevel(
+            Team.Pokemon.Where(p => p is not null)!,
+            Team.Ruleset.Generation,
+            Profile.LargeArtworkStyle
+        );
+
+    protected override void OnInitialized()
+    {
+        Profile.OnPreferencesChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        Profile.OnPreferencesChange -= StateHasChanged;
+    }
+
     void Submit() => MudDialog!.Close(DialogResult.Ok(true));
     void Cancel() => MudDialog!.Cancel();
-
-
 }

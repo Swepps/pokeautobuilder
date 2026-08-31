@@ -1,0 +1,42 @@
+@* Renders the first URL in Urls, and steps to the next one whenever the browser fails to load the
+current image - lets a caller hand over a best-to-worst chain of candidate sprite/artwork URLs
+(PokemonArtwork's coverage gaps mean almost every chain needs one) without needing to pre-check
+which one actually exists. *@
+
+<img src="@_currentUrl" alt="@Alt" class="@Class" style="@Style" @onerror="AdvanceToNextUrl" />
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<string> Urls { get; set; } = [];
+
+    [Parameter]
+    public string? Alt { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    private IReadOnlyList<string> _urls = [];
+    private int _index;
+
+    protected override void OnParametersSet()
+    {
+        // a new candidate list (different Pokemon, style, or resolved level) restarts from its own
+        // first URL, even if the previous list had already fallen through partway down its chain
+        if (!_urls.SequenceEqual(Urls))
+        {
+            _urls = Urls;
+            _index = 0;
+        }
+    }
+
+    private string? _currentUrl => _index < _urls.Count ? _urls[_index] : null;
+
+    private void AdvanceToNextUrl()
+    {
+        if (_index < _urls.Count - 1)
+            _index++;
+    }
+}

@@ -33,7 +33,9 @@
                     </MudSelect>
 
                     <CascadingValue Value="@_lockedPokemon">
-                        <PokemonStorageBox PokemonCollection="@(SelectedBox is not null ? SelectedBox.Pokemon : new())" OnClickPokemon="OnClickPokemon" />
+                        <CascadingValue Value="SelectedBox?.Rules">
+                            <PokemonStorageBox PokemonCollection="@(SelectedBox is not null ? SelectedBox.Pokemon : new())" OnClickPokemon="OnClickPokemon" />
+                        </CascadingValue>
                     </CascadingValue>
 
                 </MudExpansionPanel>
@@ -311,7 +313,7 @@
                                     {
                                         <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
                                     }
-                                    <PokemonCard Pokemon="p" />
+                                    <PokemonCard Pokemon="p" ArtworkLevel="BestTeamArtworkLevel" />
                                 </MudPaper>
                             }
                             else
@@ -321,7 +323,7 @@
                                     {
                                         <MudIcon Class="ma-1" Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" />
                                     }
-                                    <PokemonMiniCard Pokemon="p" />
+                                    <PokemonMiniCard Pokemon="p" ArtworkLevel="BestTeamMiniArtworkLevel" />
                                 </MudPaper>
                             }
                         </MudItem>
@@ -473,6 +475,24 @@
 
     private PokemonTeamGeneticAlgorithm GeneticAlgorithm = new PokemonTeamGeneticAlgorithm();
     private PokemonTeam BestTeam = new PokemonTeam();
+
+    // Computed fresh on every render rather than cached - BestTeam.Pokemon changes constantly while
+    // generating and there's no single lifecycle hook that reliably fires on every one of those
+    // changes, and resolving a handful of Pokemon's already-loaded sprite URLs is cheap enough not
+    // to need caching anyway. Shared across the whole team so it renders at one consistent art era.
+    private int BestTeamArtworkLevel =>
+        PokemonArtwork.ResolveGroupLevel(
+            BestTeam.Pokemon.Where(p => p is not null)!,
+            BestTeam.Ruleset.Generation,
+            Profile.LargeArtworkStyle
+        );
+
+    private int BestTeamMiniArtworkLevel =>
+        PokemonArtwork.ResolveGroupLevel(
+            BestTeam.Pokemon.Where(p => p is not null)!,
+            BestTeam.Ruleset.Generation,
+            Profile.MiniArtworkStyle
+        );
     private List<Tuple<double, PokemonTeam>> UniqueTeamsSorted = new();
     private readonly HashSet<string> _uniqueTeamSignatures = new();
 
@@ -622,6 +642,11 @@
             // set generation ran callback event
             GeneticAlgorithm.GenerationRan += HandleGenerationRan;
 
+            // BestTeamArtworkLevel/BestTeamMiniArtworkLevel are computed live from Profile's current
+            // style, but nothing else re-renders this page when only that global preference changes
+            // (it isn't a parameter) - see PokemonCard's identical subscription for more detail.
+            Profile.OnPreferencesChange += StateHasChanged;
+
             StateHasChanged();
         }
     }
@@ -647,7 +672,11 @@
         return base.OnParametersSetAsync();
     }
 
-    public void Dispose() => registration?.Dispose();
+    public void Dispose()
+    {
+        registration?.Dispose();
+        Profile.OnPreferencesChange -= StateHasChanged;
+    }
 
     public void OnClickType(string typeName)
     {

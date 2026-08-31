@@ -69,7 +69,8 @@ namespace PokeAutobuilderTests
             IEnumerable<Type> types,
             string? abilityName = null,
             Dictionary<string, int>? baseStats = null,
-            int id = 0
+            int id = 0,
+            PokemonSprites? sprites = null
         )
         {
             List<PokemonType> pokemonTypes = types
@@ -125,7 +126,7 @@ namespace PokeAutobuilderTests
                 LocationAreaEncounters: "",
                 Moves: [],
                 PastTypes: [],
-                Sprites: new PokemonSprites(),
+                Sprites: sprites ?? new PokemonSprites(),
                 Species: new NamedApiResource<PokemonSpecies> { Name = name },
                 Stats: stats,
                 Types: pokemonTypes,
@@ -155,12 +156,13 @@ namespace PokeAutobuilderTests
             Dictionary<string, double>? attack = null,
             IEnumerable<string>? moveCoverage = null,
             Dictionary<string, int>? baseStats = null,
-            int id = 0
+            int id = 0,
+            PokemonSprites? sprites = null
         )
         {
             // types are empty so the chart is never consulted - a throwaway empty one suffices,
             // keeping scoring-test call sites free of chart plumbing they don't care about
-            SmartPokemon pokemon = MakePokemon(new TypeChart(), name, types: [], abilityName: null, baseStats: baseStats, id: id);
+            SmartPokemon pokemon = MakePokemon(new TypeChart(), name, types: [], abilityName: null, baseStats: baseStats, id: id, sprites: sprites);
 
             Multipliers multipliers = pokemon.GetMultipliers(RulesetId.Unrestricted);
 

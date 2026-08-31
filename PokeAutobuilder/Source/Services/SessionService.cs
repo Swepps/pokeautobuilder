@@ -59,22 +59,24 @@ namespace PokeAutobuilder.Source.Services
                 }
             }
 
-            EnsureTeamInitialized();
+            EnsureTeamInitialized(Team);
         }
 
         // Warms every team member's multiplier cache for the team's own ruleset - a member
-        // deserialized from session storage only has its Unrestricted entry pre-warmed
+        // deserialized from storage only has its Unrestricted entry pre-warmed
         // (SmartPokemonJsonConverter can't know the team's ruleset), and a member freshly picked
         // from a search box may come from a different ruleset entirely. Downstream readers
-        // (coverage/defense panes, TeamScorer) trust the cache is already populated.
-        private void EnsureTeamInitialized()
+        // (coverage/defense panes, TeamScorer) trust the cache is already populated. Called on
+        // `team` directly (not the ambient Team property) so SetTeamAsync can warm an incoming
+        // team - e.g. one loaded from Team Storage - before it becomes the active one.
+        private void EnsureTeamInitialized(PokemonTeam team)
         {
-            TypeChart chart = _typeChart.GetOrBuildDerived(Team.Ruleset.Id, Team.Ruleset.DisabledTypes);
-            foreach (SmartPokemon? pokemon in Team.Pokemon)
+            TypeChart chart = _typeChart.GetOrBuildDerived(team.Ruleset.Id, team.Ruleset.DisabledTypes);
+            foreach (SmartPokemon? pokemon in team.Pokemon)
             {
-                if (pokemon is not null && !pokemon.HasInitializedRuleset(Team.Ruleset.Id))
+                if (pokemon is not null && !pokemon.HasInitializedRuleset(team.Ruleset.Id))
                 {
-                    pokemon.InitializeTypes(chart, Team.Ruleset);
+                    pokemon.InitializeTypes(chart, team.Ruleset);
                 }
             }
         }
@@ -86,7 +88,17 @@ namespace PokeAutobuilder.Source.Services
 
         public Task UpdatePokemonTeamAsync() => SetTeamAsync(Team);
 
-        public Task SetTeamAsync(PokemonTeam team) => _team.SetAsync(NormalizeTeamSize(team));
+        // The one place a team becomes "the active session team" - callers (loading a saved team
+        // into the editor, the auto-builder's best team, a slot edit below) don't need to remember
+        // to warm it themselves; a team whose Pokemon haven't been touched since deserializing (e.g.
+        // one just loaded from Team Storage) would otherwise throw the first time any coverage/
+        // defense/score pane reads a multiplier for this team's ruleset.
+        public Task SetTeamAsync(PokemonTeam team)
+        {
+            team = NormalizeTeamSize(team);
+            EnsureTeamInitialized(team);
+            return _team.SetAsync(team);
+        }
 
         public async Task SetTeamPokemonAsync(int index, SmartPokemon? pokemon)
         {
@@ -94,7 +106,6 @@ namespace PokeAutobuilder.Source.Services
                 return;
 
             Team.Pokemon[index] = pokemon;
-            EnsureTeamInitialized();
             await SetTeamAsync(Team);
         }
 
