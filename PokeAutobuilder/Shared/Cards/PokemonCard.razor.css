@@ -1,10 +1,13 @@
-/* Fixed 1:1 box (scaling with whatever width the parent gives it) so every card in a grid/roster
-   takes up the same footprint regardless of a given image's native aspect ratio - object-fit lets
-   the image scale down/up to fit inside that box without stretching or cropping it. ::deep is
-   needed since the actual <img> is rendered by the nested FallbackImage component, not directly
-   in this file - see PokemonMiniCard.razor.css for the same pattern. */
+/* A flat, fixed 1:1 box - not just an aspect ratio - so every large card is the same size
+   regardless of which artwork style is picked (some styles' own images are much smaller than
+   others at their native resolution) or which Pokemon is shown next to it in a grid/roster
+   (max-width: 100% is only a fallback for a container narrower than this, e.g. on mobile).
+   object-fit lets the image scale down/up to fit inside that box without stretching or cropping
+   it. ::deep is needed since the actual <img> is rendered by the nested FallbackImage component,
+   not directly in this file - see PokemonMiniCard.razor.css for the same pattern. */
 .poke-card ::deep .poke-card-artwork {
-	width: 100%;
+	width: 180px;
+	max-width: 100%;
 	aspect-ratio: 1 / 1;
 	object-fit: contain;
 	display: block;
