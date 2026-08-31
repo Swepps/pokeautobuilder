@@ -1,5 +1,8 @@
 ﻿@inject IDialogService DialogService
 @inject PokeApiService PokeApiService
+@inject ProfileService Profile
+
+@implements IDisposable
 
 @using PokeApiNet
 @using PokeAutobuilder.Source.Services;
@@ -12,7 +15,8 @@
 {
     <MudStack AlignItems="AlignItems.Center" Spacing="1">
         <MudTooltip Text="@Pokemon.Name">
-            <MudImage Fluid="true" Src="@Pokemon.Sprites.Other.OfficialArtwork.FrontDefault" alt="@Pokemon.Name" Style="-webkit-filter: drop-shadow(5px 5px 5px #222); filter: drop-shadow(5px 5px 5px #222);" />
+            <FallbackImage Urls="ArtworkCandidates" Alt="@Pokemon.Name"
+                           Style="@($"max-width:100%;height:auto;-webkit-filter: drop-shadow(5px 5px 5px #222); filter: drop-shadow(5px 5px 5px #222);{(PokemonArtwork.IsPixelArt(Profile.LargeArtworkStyle) ? " image-rendering: pixelated;" : "")}")" />
         </MudTooltip>
         <MudStack Row="true" Class="pa-2">
             @foreach (PokemonType t in Pokemon.GetTypesForGeneration(_activeRuleset.Generation).Where(t => _activeRuleset.EnabledTypes.Contains(t.Type.Name)))
@@ -41,6 +45,14 @@ else
     [Parameter]
     public bool IsNameDisplayed { get; set; } = true;
 
+    // The fallback-chain layer to start rendering from, shared across every card in a group (a box,
+    // a team roster) so the group renders at one consistent art era - see PokemonArtwork and
+    // whichever parent computes this (e.g. PokemonStorageBox, PokemonTeamCard). Left null for a
+    // standalone card (a details dialog, a search preview) with no siblings to stay consistent
+    // with, in which case this Pokemon resolves its own best level alone.
+    [Parameter]
+    public int? ArtworkLevel { get; set; }
+
     [CascadingParameter]
     public BoxRules? ActiveRuleset { get; set; }
 
@@ -53,6 +65,30 @@ else
 
     private Generation? _generation;
 
+    // Computed live (not cached) so it's always correct whenever this component renders for any
+    // reason - including a global artwork-preference change, which isn't a parameter change and so
+    // wouldn't otherwise be caught by a value cached in OnParametersSet.
+    private IReadOnlyList<string> ArtworkCandidates
+    {
+        get
+        {
+            if (Pokemon is null)
+                return [];
+
+            int level = ArtworkLevel
+                ?? PokemonArtwork.ResolveGroupLevel([Pokemon], _activeRuleset.Generation, Profile.LargeArtworkStyle);
+            return PokemonArtwork.GetCandidates(Pokemon, _activeRuleset.Generation, Profile.LargeArtworkStyle, level);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        // a global artwork-preference change isn't a parameter change, so nothing else would
+        // trigger this card to re-render and pick up the new style - MainLayout raises this same
+        // event for the same reason (dark mode), but its own re-render doesn't cascade this deep.
+        Profile.OnPreferencesChange += StateHasChanged;
+    }
+
     protected override async Task OnParametersSetAsync()
     {
         _generation = null;
@@ -61,5 +97,10 @@ else
             _generation = await Pokemon.GetGenerationAsync(PokeApiService);
             StateHasChanged();
         }
+    }
+
+    public void Dispose()
+    {
+        Profile.OnPreferencesChange -= StateHasChanged;
     }
 }
